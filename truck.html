@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Truck – Vorbestellung</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1916;
+      --border: #2e2c28;
+      --accent: #f5a623;
+      --accent-dark: #c47d0e;
+      --text: #f0ede6;
+      --muted: #7a7468;
+      --success: #4caf7d;
+      --error: #e05c5c;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 80px;
+    }
+
+    /* Hintergrund-Textur */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 100%, rgba(245,166,35,0.05) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .header-icon {
+      font-size: 52px;
+      margin-bottom: 12px;
+      display: block;
+      filter: drop-shadow(0 0 20px rgba(245,166,35,0.4));
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      width: 100%;
+      max-width: 480px;
+      animation: fadeUp 0.6s ease 0.1s both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.15);
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+      cursor: pointer;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7468' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+
+    .menu-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .menu-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .menu-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .menu-card.selected {
+      border-color: var(--accent);
+      background: rgba(245,166,35,0.08);
+    }
+
+    .menu-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .menu-card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .menu-card-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .menu-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-card.selected .menu-check {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .menu-card.selected .menu-check::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #0f0e0c;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn:hover {
+      background: #f0b83a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245,166,35,0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--success);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.error {
+      background: var(--error);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .nav-link {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    .nav-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .nav-link a:hover { text-decoration: underline; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="header-icon">🚚</span>
+    <h1>Food <span>Truck</span></h1>
+    <p class="subtitle">Jetzt einfach vorbestellen</p>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label for="name">Ihr Name</label>
+      <input type="text" id="name" placeholder="Max Mustermann" autocomplete="name" />
+    </div>
+
+    <div class="form-group">
+      <label for="date">Gewünschter Tag</label>
+      <input type="date" id="date" />
+    </div>
+
+    <div class="form-group">
+      <label>Menü-Auswahl</label>
+      <div class="menu-cards">
+        <div class="menu-card" id="card1" onclick="selectMenu('menu1')">
+          <input type="radio" name="menu" value="menu1" id="menu1" />
+          <div class="menu-check" id="check1"></div>
+          <div class="menu-card-title">Menü 1</div>
+          <div class="menu-card-desc">Tagesangebot 1</div>
+        </div>
+        <div class="menu-card" id="card2" onclick="selectMenu('menu2')">
+          <input type="radio" name="menu" value="menu2" id="menu2" />
+          <div class="menu-check" id="check2"></div>
+          <div class="menu-card-title">Menü 2</div>
+          <div class="menu-card-desc">Tagesangebot 2</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
+  </div>
+
+  <div class="nav-link">
+    Zur <a href="kantine.html">Kantine-Vorbestellung</a>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let selectedMenu = null;
+
+    // Datum: heute als Minimum setzen
+    const dateInput = document.getElementById('date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    dateInput.value = today;
+
+    function selectMenu(val) {
+      selectedMenu = val;
+      document.getElementById('card1').classList.toggle('selected', val === 'menu1');
+      document.getElementById('card2').classList.toggle('selected', val === 'menu2');
+    }
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isError ? ' error' : '') + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function submitOrder() {
+      const name = document.getElementById('name').value.trim();
+      const date = document.getElementById('date').value;
+
+      if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
+      if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
+      if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Wird gesendet…';
+
+      const { error } = await db.from('vorbestellungen').insert({
+        name,
+        datum: date,
+        menu: selectedMenu,
+        typ: 'truck',
+        erledigt: false
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Jetzt vorbestellen';
+
+      if (error) {
+        console.error(error);
+        showToast('Fehler beim Senden. Bitte erneut versuchen.', true);
+      } else {
+        showToast('✓ Vorbestellung erfolgreich!');
+        document.getElementById('name').value = '';
+        selectedMenu = null;
+        document.getElementById('card1').classList.remove('selected');
+        document.getElementById('card2').classList.remove('selected');
+      }
+    }
+  </script>
+</body>
+</html>
