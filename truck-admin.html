@@ -578,21 +578,13 @@ Falls für einen Tag kein Menü erkennbar ist, setze einen leeren String "".
 Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
 
       try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch('/api/ocr', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [{
-              role: 'user',
-              content: [
-                currentImageType === 'application/pdf'
-                  ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: currentImageBase64 } }
-                  : { type: 'image', source: { type: 'base64', media_type: currentImageType, data: currentImageBase64 } },
-                { type: 'text', text: prompt }
-              ]
-            }]
+            imageBase64: currentImageBase64,
+            imageType: currentImageType,
+            prompt
           })
         });
 
