@@ -236,11 +236,11 @@
             <span class="ocr-label">Speisekarte hochladen – KI liest Menüs automatisch aus</span>
             <div class="ocr-dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
                  ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-              <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" />
+              <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="handleFileSelect(event)" />
               <span class="ocr-icon">🖼️</span>
               <div class="ocr-text">
                 <strong>Bild hierher ziehen oder klicken</strong>
-                <span>JPG, PNG, WEBP – Claude erkennt Menü 1 & 2 für jeden Tag</span>
+                <span>JPG, PNG, WEBP, PDF – Claude erkennt Menü 1 & 2 für jeden Tag</span>
               </div>
               <img id="ocrPreview" class="ocr-preview" />
             </div>
@@ -510,7 +510,7 @@
       e.preventDefault();
       document.getElementById('dropzone').classList.remove('dragover');
       const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) processImage(file);
+      if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) processImage(file);
     }
     function handleFileSelect(e) {
       const file = e.target.files[0];
@@ -525,8 +525,24 @@
         currentImageType = file.type;
 
         const preview = document.getElementById('ocrPreview');
-        preview.src = dataUrl;
-        preview.style.display = 'block';
+        if (file.type === 'application/pdf') {
+          preview.style.display = 'none';
+          // show PDF indicator
+          const dz = document.getElementById('dropzone');
+          let pdfBadge = dz.querySelector('.pdf-badge');
+          if (!pdfBadge) {
+            pdfBadge = document.createElement('div');
+            pdfBadge.className = 'pdf-badge';
+            pdfBadge.style.cssText = 'background:rgba(62,207,142,0.15);color:var(--accent);border-radius:6px;padding:6px 12px;font-size:0.82rem;font-weight:600;flex-shrink:0;';
+            dz.appendChild(pdfBadge);
+          }
+          pdfBadge.textContent = '📄 ' + file.name;
+        } else {
+          preview.src = dataUrl;
+          preview.style.display = 'block';
+          const pdfBadge = document.getElementById('dropzone').querySelector('.pdf-badge');
+          if (pdfBadge) pdfBadge.remove();
+        }
 
         runOCR();
       };
@@ -571,7 +587,9 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
             messages: [{
               role: 'user',
               content: [
-                { type: 'image', source: { type: 'base64', media_type: currentImageType, data: currentImageBase64 } },
+                currentImageType === 'application/pdf'
+                  ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: currentImageBase64 } }
+                  : { type: 'image', source: { type: 'base64', media_type: currentImageType, data: currentImageBase64 } },
                 { type: 'text', text: prompt }
               ]
             }]
@@ -603,7 +621,10 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
 
       } catch (err) {
         console.error(err);
-        setOcrStatus('error', `Fehler: ${err.message}`);
+        const msg = err.message === 'Failed to fetch'
+          ? 'Verbindungsfehler – ist die Seite auf Vercel deployed? Lokal funktioniert die KI-Funktion nicht.'
+          : `Fehler: ${err.message}`;
+        setOcrStatus('error', msg);
       }
     }
 
