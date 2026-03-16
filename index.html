@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mittagessen vorbestellen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0b;
+      --surface: #161613;
+      --border: #2a2925;
+      --text: #f2efe8;
+      --muted: #7a7870;
+      --truck: #f5a623;
+      --truck-glow: rgba(245,166,35,0.2);
+      --kantine: #3ecf8e;
+      --kantine-glow: rgba(62,207,142,0.2);
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    /* Hintergrund */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(245,166,35,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 50%, rgba(62,207,142,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 56px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .header-eyebrow {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .header h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--truck), var(--kantine));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-sub {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+
+    @media (max-width: 560px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px 36px;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.01);
+    }
+
+    .card--truck {
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    .card--truck:hover {
+      border-color: rgba(245,166,35,0.5);
+      box-shadow: 0 20px 60px rgba(245,166,35,0.12);
+    }
+
+    .card--kantine {
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+
+    .card--kantine:hover {
+      border-color: rgba(62,207,142,0.5);
+      box-shadow: 0 20px 60px rgba(62,207,142,0.12);
+    }
+
+    /* Glow blob im hintergrund der card */
+    .card-glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      top: -60px;
+      right: -60px;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      opacity: 0;
+    }
+
+    .card--truck .card-glow { background: var(--truck-glow); }
+    .card--kantine .card-glow { background: var(--kantine-glow); }
+    .card:hover .card-glow { opacity: 1; }
+
+    /* Top accent bar */
+    .card-accent {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .card--truck .card-accent { background: linear-gradient(90deg, var(--truck), #f0b83a); }
+    .card--kantine .card-accent { background: linear-gradient(90deg, var(--kantine), #52d99e); }
+
+    /* Emoji Icon */
+    .card-icon {
+      font-size: 3.2rem;
+      margin-bottom: 20px;
+      display: block;
+      line-height: 1;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .card:hover .card-icon { transform: scale(1.12) translateY(-2px); }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .card--truck .card-title { color: var(--truck); }
+    .card--kantine .card-title { color: var(--kantine); }
+
+    .card-desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .card-cta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 28px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: gap 0.2s;
+    }
+
+    .card--truck .card-cta { color: var(--truck); }
+    .card--kantine .card-cta { color: var(--kantine); }
+    .card:hover .card-cta { gap: 10px; }
+
+    .card-cta-arrow {
+      font-size: 1.1rem;
+      transition: transform 0.2s;
+    }
+
+    .card:hover .card-cta-arrow { transform: translateX(3px); }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider-text {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Footer nav */
+    .footer-nav {
+      display: flex;
+      gap: 24px;
+      animation: fadeUp 0.7s ease 0.35s both;
+    }
+
+    .footer-link {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .footer-link:hover { color: var(--text); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+
+    <div class="header">
+      <div class="header-eyebrow">Mittagessen</div>
+      <h1>Was darf es<br><em>heute sein?</em></h1>
+      <p class="header-sub">Einfach online vorbestellen — schnell, unkompliziert, direkt.</p>
+    </div>
+
+    <div class="cards">
+
+      <!-- Truck -->
+      <a href="truck.html" class="card card--truck">
+        <div class="card-glow"></div>
+        <div class="card-accent"></div>
+        <span class="card-icon">🚚</span>
+        <div class="card-title">Food Truck</div>
+        <p class="card-desc">Frisch zubereitet direkt vor Ort. Wählen Sie Ihren Wunschtag und Ihr Menü.</p>
+        <div class="card-cta">
+          Jetzt vorbestellen
+          <span class="card-cta-arrow">→</span>
+        </div>
+      </a>
+
+      <!-- Kantine -->
+      <a href="kantine.html" class="card card--kantine">
+        <div class="card-glow"></div>
+        <div class="card-accent"></div>
+        <span class="card-icon">🍽️</span>
+        <div class="card-title">Kantine</div>
+        <p class="card-desc">Das tägliche Angebot aus unserer Betriebsküche. Bequem im Voraus reservieren.</p>
+        <div class="card-cta">
+          Jetzt vorbestellen
+          <span class="card-cta-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">Verwaltung</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="footer-nav">
+      <a href="truck-admin.html" class="footer-link">🚚 Truck Verwaltung</a>
+      <a href="kantine-admin.html" class="footer-link">🍽️ Kantine Verwaltung</a>
+    </div>
+
+  </div>
+
+</body>
+</html>
