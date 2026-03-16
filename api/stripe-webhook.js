@@ -1,10 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 
-export const config = {
-  api: { bodyParser: false }
-};
-
 async function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -15,7 +11,6 @@ async function getRawBody(req) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'POST') return res.status(405).end();
 
   const rawBody = await getRawBody(req);
