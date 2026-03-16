@@ -10,13 +10,13 @@
     :root {
       --bg: #0b0e1a; --surface: #131726; --border: #1e2236;
       --accent: #3ecf8e; --accent-dark: #2aaa72;
-      --text: #e8f0ec; --muted: #6b7d74;
-      --success: #3ecf8e; --error: #e05c5c; --radius: 14px;
+      --text: #f0ede6; --muted: #7a7468;
+      --success: #4caf7d; --error: #e05c5c; --radius: 14px;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px; }
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(62,207,142,0.07) 0%, transparent 60%); pointer-events: none; }
     .header { text-align: center; margin-bottom: 48px; animation: fadeUp 0.6s ease both; }
-    .header-icon { font-size: 52px; margin-bottom: 12px; display: block; filter: drop-shadow(0 0 20px rgba(62,207,142,0.4)); }
+    .header-icon { font-size: 52px; margin-bottom: 12px; display: block; filter: drop-shadow(0 0 20px rgba(245,166,35,0.4)); }
     h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; }
     h1 span { color: var(--accent); }
     .subtitle { color: var(--muted); margin-top: 8px; font-size: 1rem; }
@@ -32,30 +32,57 @@
     .menu-info.loaded { color: var(--text); border-color: rgba(62,207,142,0.3); }
     .menu-info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
     .menu-info-content { flex: 1; }
-    .menu-info-row { display: flex; gap: 8px; margin-bottom: 4px; align-items: baseline; }
+    .menu-info-row { display: flex; gap: 8px; margin-bottom: 4px; align-items: baseline; justify-content: space-between; }
     .menu-info-row:last-child { margin-bottom: 0; }
+    .menu-info-left { display: flex; gap: 8px; align-items: baseline; }
     .menu-info-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); min-width: 52px; flex-shrink: 0; }
     .menu-info-text { font-size: 0.88rem; }
+    .menu-info-preis { font-size: 0.82rem; color: var(--accent); font-weight: 600; }
 
     .menu-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .menu-card { border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; position: relative; }
     .menu-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .menu-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.08); }
+    .menu-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
     .menu-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-    .menu-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+    .menu-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text); }
     .menu-card-desc { font-size: 0.82rem; color: var(--muted); margin-top: 4px; transition: color 0.3s; }
     .menu-card-desc.has-text { color: var(--text); }
+    .menu-card-preis { font-size: 0.88rem; color: var(--accent); font-weight: 600; margin-top: 6px; }
     .menu-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); margin-bottom: 10px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
     .menu-card.selected .menu-check { background: var(--accent); border-color: var(--accent); }
     .menu-card.selected .menu-check::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
 
-    .btn { width: 100%; padding: 16px; background: var(--accent); color: #0c0f0e; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
+    /* Getränke */
+    .drink-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+    .drink-card { border: 2px solid var(--border); border-radius: 10px; padding: 12px 10px; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; text-align: center; }
+    .drink-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .drink-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
+    .drink-card.none-card { color: var(--muted); }
+    .drink-name { font-size: 0.85rem; font-weight: 600; }
+    .drink-preis { font-size: 0.78rem; color: var(--accent); margin-top: 3px; }
+    .drink-card.none-card .drink-preis { color: var(--muted); }
+
+    /* Zahlung */
+    .payment-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .payment-card { border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .payment-card:hover { border-color: var(--accent); }
+    .payment-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
+    .payment-icon { font-size: 1.6rem; }
+    .payment-label { font-size: 0.88rem; font-weight: 600; }
+
+    /* Zusammenfassung */
+    .summary { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px; color: var(--muted); }
+    .summary-row:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .summary-row span:last-child { color: var(--accent); }
+
+    .btn { width: 100%; padding: 16px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
     .btn:hover { background: #52d99e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(62,207,142,0.3); }
     .btn:active { transform: translateY(0); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: #0c0f0e; padding: 14px 24px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
-    .toast.error { background: var(--error); color: white; }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 14px 24px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
+    .toast.error { background: var(--error); }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .nav-link { margin-top: 24px; color: var(--muted); font-size: 0.9rem; text-align: center; animation: fadeUp 0.6s ease 0.2s both; }
     .nav-link a { color: var(--accent); text-decoration: none; font-weight: 600; }
@@ -93,15 +120,48 @@
           <div class="menu-check"></div>
           <div class="menu-card-title">Menü 1</div>
           <div class="menu-card-desc" id="desc1">Tagesangebot 1</div>
+          <div class="menu-card-preis" id="preis1"></div>
         </div>
         <div class="menu-card" id="card2" onclick="selectMenu('menu2')">
           <input type="radio" name="menu" value="menu2" />
           <div class="menu-check"></div>
           <div class="menu-card-title">Menü 2</div>
           <div class="menu-card-desc" id="desc2">Tagesangebot 2</div>
+          <div class="menu-card-preis" id="preis2"></div>
         </div>
       </div>
     </div>
+
+    <div class="form-group">
+      <label>Getränk dazu? <span style="color:var(--muted);font-size:0.8rem;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <div class="drink-grid" id="drinkGrid">
+        <div class="drink-card none-card selected" onclick="selectDrink(null, 0, this)">
+          <div class="drink-name">Kein Getränk</div>
+          <div class="drink-preis">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Zahlungsart</label>
+      <div class="payment-cards">
+        <div class="payment-card selected" id="payBar" onclick="selectPayment('bar')">
+          <span class="payment-icon">💵</span>
+          <span class="payment-label">Bar zahlen</span>
+        </div>
+        <div class="payment-card" id="payOnline" onclick="selectPayment('online')">
+          <span class="payment-icon">💳</span>
+          <span class="payment-label">Online zahlen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary" style="display:none">
+      <div class="summary-row"><span>Menü</span><span id="sumMenu">–</span></div>
+      <div class="summary-row" id="sumDrinkRow" style="display:none"><span>Getränk</span><span id="sumDrink">–</span></div>
+      <div class="summary-row"><span>Gesamt</span><span id="sumTotal">–</span></div>
+    </div>
+
     <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
   </div>
 
@@ -113,19 +173,42 @@
   <script>
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let selectedMenu = null;
+    let selectedMenuPreis = 0;
+    let selectedDrink = null;
+    let selectedDrinkPreis = 0;
+    let selectedPayment = 'bar';
+    let menuData = null;
 
     const dateInput = document.getElementById('date');
     const today = new Date().toISOString().split('T')[0];
     dateInput.min = today;
     dateInput.value = today;
+
+    // Getränke laden
+    async function loadDrinks() {
+      const { data } = await db.from('getraenke').select('*').eq('typ', 'kantine').eq('verfuegbar', true).order('reihenfolge');
+      if (!data) return;
+      const grid = document.getElementById('drinkGrid');
+      const noneCard = grid.querySelector('.none-card');
+      data.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'drink-card';
+        div.innerHTML = `<div class="drink-name">${esc(d.name)}</div><div class="drink-preis">${formatPreis(d.preis)}</div>`;
+        div.onclick = () => selectDrink(d.name, d.preis, div);
+        grid.appendChild(div);
+      });
+    }
+
+    loadDrinks();
     loadMenuForDate();
 
     function getWeekStart(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
       const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(d.setDate(diff)).toISOString().split('T')[0];
+      d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+      return pad4(d.getFullYear()) + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
     }
 
     function getDayKey(dateStr) {
@@ -138,31 +221,106 @@
       const dow = new Date(dateStr + 'T00:00:00').getDay();
       if (dow === 0 || dow === 6) { setMenuInfo(null, true); return; }
       const { data } = await db.from('menus').select('*').eq('typ', 'kantine').eq('woche_start', getWeekStart(dateStr)).maybeSingle();
+      menuData = data;
       if (!data) { setMenuInfo(null, false); return; }
       const dk = getDayKey(dateStr);
-      setMenuInfo({ menu1: data[`${dk}_menu1`] || '', menu2: data[`${dk}_menu2`] || '' }, false);
+      setMenuInfo({
+        menu1: data[`${dk}_menu1`] || '',
+        menu2: data[`${dk}_menu2`] || '',
+        preis1: data[`${dk}_menu1_preis`] || 0,
+        preis2: data[`${dk}_menu2_preis`] || 0,
+      }, false);
     }
 
     function setMenuInfo(menus, isWeekend) {
       const box = document.getElementById('menuInfo');
       const d1 = document.getElementById('desc1');
       const d2 = document.getElementById('desc2');
-      if (isWeekend) { box.className = 'menu-info'; box.innerHTML = '<span class="menu-info-icon">🚫</span><span>An Wochenenden gibt es keine Vorbestellungen.</span>'; return; }
+      const p1 = document.getElementById('preis1');
+      const p2 = document.getElementById('preis2');
+
+      if (isWeekend) {
+        box.className = 'menu-info';
+        box.innerHTML = '<span class="menu-info-icon">🚫</span><span>An Wochenenden gibt es keine Vorbestellungen.</span>';
+        return;
+      }
       if (!menus || (!menus.menu1 && !menus.menu2)) {
-        box.className = 'menu-info'; box.innerHTML = '<span class="menu-info-icon">📋</span><span>Für diesen Tag wurde noch kein Menü eingetragen.</span>';
+        box.className = 'menu-info';
+        box.innerHTML = '<span class="menu-info-icon">📋</span><span>Für diesen Tag wurde noch kein Menü eingetragen.</span>';
         d1.textContent = 'Tagesangebot 1'; d1.className = 'menu-card-desc';
-        d2.textContent = 'Tagesangebot 2'; d2.className = 'menu-card-desc'; return;
+        d2.textContent = 'Tagesangebot 2'; d2.className = 'menu-card-desc';
+        p1.textContent = ''; p2.textContent = '';
+        return;
       }
       box.className = 'menu-info loaded';
-      box.innerHTML = `<span class="menu-info-icon">🍴</span><div class="menu-info-content"><div class="menu-info-row"><span class="menu-info-label">Menü 1</span><span class="menu-info-text">${esc(menus.menu1||'–')}</span></div><div class="menu-info-row"><span class="menu-info-label">Menü 2</span><span class="menu-info-text">${esc(menus.menu2||'–')}</span></div></div>`;
+      box.innerHTML = `<span class="menu-info-icon">🍴</span><div class="menu-info-content">
+        <div class="menu-info-row"><div class="menu-info-left"><span class="menu-info-label">Menü 1</span><span class="menu-info-text">${esc(menus.menu1||'–')}</span></div>${menus.preis1 ? `<span class="menu-info-preis">${formatPreis(menus.preis1)}</span>` : ''}</div>
+        <div class="menu-info-row"><div class="menu-info-left"><span class="menu-info-label">Menü 2</span><span class="menu-info-text">${esc(menus.menu2||'–')}</span></div>${menus.preis2 ? `<span class="menu-info-preis">${formatPreis(menus.preis2)}</span>` : ''}</div>
+      </div>`;
+
       d1.textContent = menus.menu1 || 'Tagesangebot 1'; d1.className = menus.menu1 ? 'menu-card-desc has-text' : 'menu-card-desc';
       d2.textContent = menus.menu2 || 'Tagesangebot 2'; d2.className = menus.menu2 ? 'menu-card-desc has-text' : 'menu-card-desc';
+      p1.textContent = menus.preis1 ? formatPreis(menus.preis1) : '';
+      p2.textContent = menus.preis2 ? formatPreis(menus.preis2) : '';
     }
 
     function selectMenu(val) {
       selectedMenu = val;
       document.getElementById('card1').classList.toggle('selected', val === 'menu1');
       document.getElementById('card2').classList.toggle('selected', val === 'menu2');
+
+      // preis ermitteln
+      if (menuData && dateInput.value) {
+        const dk = getDayKey(dateInput.value);
+        selectedMenuPreis = parseFloat(menuData[`${dk}_${val}_preis`] || 0);
+      } else {
+        selectedMenuPreis = 0;
+      }
+      updateSummary();
+    }
+
+    function selectDrink(name, preis, el) {
+      selectedDrink = name;
+      selectedDrinkPreis = preis;
+      document.querySelectorAll('.drink-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      updateSummary();
+    }
+
+    function selectPayment(val) {
+      selectedPayment = val;
+      document.getElementById('payBar').classList.toggle('selected', val === 'bar');
+      document.getElementById('payOnline').classList.toggle('selected', val === 'online');
+      updateSummary();
+    }
+
+    function updateSummary() {
+      if (!selectedMenu) { document.getElementById('summary').style.display = 'none'; return; }
+      const total = selectedMenuPreis + selectedDrinkPreis;
+      document.getElementById('summary').style.display = 'block';
+
+      const menuLabel = selectedMenu === 'menu1'
+        ? (document.getElementById('desc1').textContent || 'Menü 1')
+        : (document.getElementById('desc2').textContent || 'Menü 2');
+
+      document.getElementById('sumMenu').textContent = selectedMenuPreis ? `${menuLabel.substring(0,20)} · ${formatPreis(selectedMenuPreis)}` : menuLabel.substring(0,25);
+
+      const drinkRow = document.getElementById('sumDrinkRow');
+      if (selectedDrink) {
+        drinkRow.style.display = 'flex';
+        document.getElementById('sumDrink').textContent = `${selectedDrink} · ${formatPreis(selectedDrinkPreis)}`;
+      } else {
+        drinkRow.style.display = 'none';
+      }
+
+      document.getElementById('sumTotal').textContent = total ? formatPreis(total) : '–';
+
+      const btn = document.getElementById('submitBtn');
+      if (selectedPayment === 'online' && total > 0) {
+        btn.textContent = `Jetzt bezahlen · ${formatPreis(total)}`;
+      } else {
+        btn.textContent = 'Jetzt vorbestellen';
+      }
     }
 
     function showToast(msg, isError = false) {
@@ -177,15 +335,65 @@
       if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
       if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
       if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
+
       const btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.textContent = 'Wird gesendet…';
-      const { error } = await db.from('vorbestellungen').insert({ name, datum: date, menu: selectedMenu, typ: 'kantine', erledigt: false });
-      btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
-      if (error) { showToast('Fehler beim Senden. Bitte erneut versuchen.', true); }
-      else { showToast('✓ Vorbestellung erfolgreich!'); document.getElementById('name').value = ''; selectedMenu = null; document.getElementById('card1').classList.remove('selected'); document.getElementById('card2').classList.remove('selected'); }
+      btn.disabled = true;
+      btn.textContent = 'Wird gesendet…';
+
+      const menuLabel = selectedMenu === 'menu1'
+        ? (document.getElementById('desc1').textContent || 'Menü 1')
+        : (document.getElementById('desc2').textContent || 'Menü 2');
+
+      if (selectedPayment === 'online' && selectedMenuPreis > 0) {
+        // Stripe checkout
+        try {
+          const items = [{ name: menuLabel, amount_cents: Math.round(selectedMenuPreis * 100) }];
+          if (selectedDrink) items.push({ name: selectedDrink, amount_cents: Math.round(selectedDrinkPreis * 100) });
+
+          const resp = await fetch('/api/create-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items,
+              bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin }
+            })
+          });
+          const data = await resp.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            throw new Error(data.error || 'Unbekannter Fehler');
+          }
+        } catch (err) {
+          btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
+          showToast('Fehler beim Zahlungsvorgang: ' + err.message, true);
+        }
+      } else {
+        // Bar zahlen → direkt in supabase
+        const { error } = await db.from('vorbestellungen').insert({
+          name, datum: date, menu: selectedMenu, typ: 'kantine',
+          getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
+          preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false
+        });
+        btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
+        if (error) { showToast('Fehler beim Senden.', true); }
+        else {
+          showToast('✓ Vorbestellung erfolgreich!');
+          document.getElementById('name').value = '';
+          selectedMenu = null; selectedDrink = null; selectedDrinkPreis = 0;
+          document.getElementById('card1').classList.remove('selected');
+          document.getElementById('card2').classList.remove('selected');
+          document.querySelectorAll('.drink-card').forEach(c => c.classList.remove('selected'));
+          document.querySelector('.none-card').classList.add('selected');
+          document.getElementById('summary').style.display = 'none';
+        }
+      }
     }
 
-    function esc(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function formatPreis(p) { return parseFloat(p).toFixed(2).replace('.', ',') + ' €'; }
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function pad2(n) { return String(n).padStart(2,'0'); }
+    function pad4(n) { return String(n).padStart(4,'0'); }
   </script>
 </body>
 </html>
