@@ -361,11 +361,14 @@
     }
 
     // ── KW HELPER ──
+    function toLocalDateStr(d) {
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
     function getWeekStart(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
       const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(d.setDate(diff)).toISOString().split('T')[0];
+      d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+      return toLocalDateStr(d);
     }
 
     function getKW(dateStr) {
@@ -388,7 +391,7 @@
     function changeWeek(dir) {
       const d = new Date(currentWeekStart + 'T00:00:00');
       d.setDate(d.getDate() + dir * 7);
-      currentWeekStart = d.toISOString().split('T')[0];
+      currentWeekStart = toLocalDateStr(d);
       renderMenuEditor();
       loadMenuData();
     }
