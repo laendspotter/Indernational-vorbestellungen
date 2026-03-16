@@ -156,6 +156,10 @@
       </div>
     </div>
 
+    <div id="paymentNotice" style="display:none;margin-bottom:16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:10px 14px;font-size:0.82rem;color:var(--muted);">
+      💳 Bei Online-Zahlung wird eine Zahlungsgebühr von 1,5&nbsp;%&nbsp;+&nbsp;0,25&nbsp;€ erhoben.
+    </div>
+
     <div class="summary" id="summary" style="display:none">
       <div class="summary-row"><span>Menü</span><span id="sumMenu">–</span></div>
       <div class="summary-row" id="sumDrinkRow" style="display:none"><span>Getränk</span><span id="sumDrink">–</span></div>
@@ -291,12 +295,15 @@
       selectedPayment = val;
       document.getElementById('payBar').classList.toggle('selected', val === 'bar');
       document.getElementById('payOnline').classList.toggle('selected', val === 'online');
+      document.getElementById('paymentNotice').style.display = val === 'online' ? 'block' : 'none';
       updateSummary();
     }
 
     function updateSummary() {
       if (!selectedMenu) { document.getElementById('summary').style.display = 'none'; return; }
-      const total = selectedMenuPreis + selectedDrinkPreis;
+      const subtotal = selectedMenuPreis + selectedDrinkPreis;
+      const stripeFee = selectedPayment === 'online' && subtotal > 0 ? Math.round((subtotal * 0.015 + 0.25) * 100) / 100 : 0;
+      const total = subtotal + stripeFee;
       document.getElementById('summary').style.display = 'block';
 
       const menuLabel = selectedMenu === 'menu1'
@@ -313,10 +320,25 @@
         drinkRow.style.display = 'none';
       }
 
+      let feeRow = document.getElementById('sumFeeRow');
+      if (!feeRow) {
+        feeRow = document.createElement('div');
+        feeRow.id = 'sumFeeRow';
+        feeRow.className = 'summary-row';
+        feeRow.innerHTML = '<span>Zahlungsgebühr</span><span id="sumFee">–</span>';
+        document.getElementById('sumTotal').closest('.summary-row').before(feeRow);
+      }
+      if (stripeFee > 0) {
+        feeRow.style.display = 'flex';
+        document.getElementById('sumFee').textContent = formatPreis(stripeFee);
+      } else {
+        feeRow.style.display = 'none';
+      }
+
       document.getElementById('sumTotal').textContent = total ? formatPreis(total) : '–';
 
       const btn = document.getElementById('submitBtn');
-      if (selectedPayment === 'online' && total > 0) {
+      if (selectedPayment === 'online' && subtotal > 0) {
         btn.textContent = `Jetzt bezahlen · ${formatPreis(total)}`;
       } else {
         btn.textContent = 'Jetzt vorbestellen';
@@ -347,8 +369,11 @@
       if (selectedPayment === 'online' && selectedMenuPreis > 0) {
         // Stripe checkout
         try {
+          const subtotal = selectedMenuPreis + selectedDrinkPreis;
+          const stripeFee = Math.round((subtotal * 0.015 + 0.25) * 100) / 100;
           const items = [{ name: menuLabel, amount_cents: Math.round(selectedMenuPreis * 100) }];
           if (selectedDrink) items.push({ name: selectedDrink, amount_cents: Math.round(selectedDrinkPreis * 100) });
+          items.push({ name: 'Zahlungsgebühr', amount_cents: Math.round(stripeFee * 100) });
 
           const resp = await fetch('/api/create-checkout', {
             method: 'POST',
