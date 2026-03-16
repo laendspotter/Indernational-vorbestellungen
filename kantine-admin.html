@@ -370,12 +370,10 @@
 
     function getKW(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
-      const jan4 = new Date(d.getFullYear(), 0, 4);
-      const startOfWeek1 = new Date(jan4);
-      startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
-      const diff = d - startOfWeek1;
-      const kw = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
-      return kw;
+      const thursday = new Date(d);
+      thursday.setDate(d.getDate() - (d.getDay() || 7) + 4);
+      const jan1 = new Date(thursday.getFullYear(), 0, 1);
+      return Math.ceil(((thursday - jan1) / 86400000 + 1) / 7);
     }
 
     function formatWeekLabel(weekStart) {
