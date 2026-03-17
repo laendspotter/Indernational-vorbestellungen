@@ -607,14 +607,22 @@
         return `
           <div class="day-row">
             <div class="day-name">${DAY_NAMES_FULL[dk]}<br><span style="font-size:0.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400">${dateStr}</span></div>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <input class="menu-input" id="inp_${dk}_1" placeholder="Menü 1" style="flex:1;" />
-              <button class="drink-toggle on" id="avail_${dk}_1" onclick="toggleAvail('${dk}','1')" title="Verfügbar / Ausverkauft"></button>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input class="menu-input" id="inp_${dk}_1" placeholder="Menü 1" style="flex:1;" />
+                <button class="drink-toggle on" id="avail_${dk}_1" onclick="toggleAvail('${dk}','1')" title="Verfügbar / Ausverkauft"></button>
+              </div>
+              <input class="menu-input" id="inp_${dk}_1_allergene" placeholder="Allergene (z.B. Gluten, Milch)" style="font-size:0.8rem;" />
+              <input class="menu-input" id="inp_${dk}_1_hinweis" placeholder="Hinweis (z.B. vegan, scharf)" style="font-size:0.8rem;" />
             </div>
             <input class="price-input" id="inp_${dk}_1_preis" placeholder="0,00" type="number" step="0.01" min="0" />
-            <div style="display:flex;gap:6px;align-items:center;">
-              <input class="menu-input" id="inp_${dk}_2" placeholder="Menü 2" style="flex:1;" />
-              <button class="drink-toggle on" id="avail_${dk}_2" onclick="toggleAvail('${dk}','2')" title="Verfügbar / Ausverkauft"></button>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input class="menu-input" id="inp_${dk}_2" placeholder="Menü 2" style="flex:1;" />
+                <button class="drink-toggle on" id="avail_${dk}_2" onclick="toggleAvail('${dk}','2')" title="Verfügbar / Ausverkauft"></button>
+              </div>
+              <input class="menu-input" id="inp_${dk}_2_allergene" placeholder="Allergene (z.B. Gluten, Milch)" style="font-size:0.8rem;" />
+              <input class="menu-input" id="inp_${dk}_2_hinweis" placeholder="Hinweis (z.B. vegan, scharf)" style="font-size:0.8rem;" />
             </div>
             <input class="price-input" id="inp_${dk}_2_preis" placeholder="0,00" type="number" step="0.01" min="0" />
           </div>`;
@@ -634,6 +642,14 @@
         i2.value = data ? (data[`${dk}_menu2`] || '') : '';
         if (p1) p1.value = data ? (data[`${dk}_menu1_preis`] || '') : '';
         if (p2) p2.value = data ? (data[`${dk}_menu2_preis`] || '') : '';
+        const al1 = document.getElementById(`inp_${dk}_1_allergene`);
+        const al2 = document.getElementById(`inp_${dk}_2_allergene`);
+        const hi1 = document.getElementById(`inp_${dk}_1_hinweis`);
+        const hi2 = document.getElementById(`inp_${dk}_2_hinweis`);
+        if (al1) al1.value = data ? (data[`${dk}_menu1_allergene`] || '') : '';
+        if (al2) al2.value = data ? (data[`${dk}_menu2_allergene`] || '') : '';
+        if (hi1) hi1.value = data ? (data[`${dk}_menu1_hinweis`] || '') : '';
+        if (hi2) hi2.value = data ? (data[`${dk}_menu2_hinweis`] || '') : '';
         const av1 = data ? (data[`${dk}_menu1_verfuegbar`] !== false) : true;
         const av2 = data ? (data[`${dk}_menu2_verfuegbar`] !== false) : true;
         if (a1) { a1.classList.toggle('on', av1); a1.classList.toggle('off', !av1); }
@@ -658,6 +674,14 @@
         const a2 = document.getElementById(`avail_${dk}_2`);
         payload[`${dk}_menu1_verfuegbar`] = a1 ? a1.classList.contains('on') : true;
         payload[`${dk}_menu2_verfuegbar`] = a2 ? a2.classList.contains('on') : true;
+        const al1s = document.getElementById(`inp_${dk}_1_allergene`);
+        const al2s = document.getElementById(`inp_${dk}_2_allergene`);
+        const hi1s = document.getElementById(`inp_${dk}_1_hinweis`);
+        const hi2s = document.getElementById(`inp_${dk}_2_hinweis`);
+        payload[`${dk}_menu1_allergene`] = al1s ? al1s.value.trim() : '';
+        payload[`${dk}_menu2_allergene`] = al2s ? al2s.value.trim() : '';
+        payload[`${dk}_menu1_hinweis`] = hi1s ? hi1s.value.trim() : '';
+        payload[`${dk}_menu2_hinweis`] = hi2s ? hi2s.value.trim() : '';
       });
       const { error } = await db.from('menus').upsert(payload, { onConflict: 'typ,woche_start' });
       btn.disabled = false; btn.textContent = 'Speichern';
@@ -724,15 +748,18 @@
         return `${DAY_NAMES_FULL[dk]} (${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })})`;
       }).join(', ');
 
-      const prompt = `Du siehst eine Speisekarte oder einen Wochenplan für die Woche mit KW ${getKW(currentWeekStart)}. Extrahiere Menünamen UND Preise.
+      const prompt = `Du siehst eine Speisekarte oder einen Wochenplan für die Woche mit KW ${getKW(currentWeekStart)}.
 Die Wochentage dieser Woche sind: ${dayDates}.
 
-Extrahiere bitte die Menünamen für jeden Wochentag (Montag bis Freitag).
-Jeder Tag hat Menü 1 und Menü 2.
+Extrahiere für jeden Wochentag (Montag bis Freitag):
+- Menünamen (menu1, menu2)
+- Preise in Euro als Dezimalzahl (preis1, preis2)
+- Allergene als kommagetrennte Liste auf Deutsch (allergene1, allergene2) - z.B. "Gluten, Milch, Eier"
+- Hinweise/Zusatzinfos falls vorhanden (hinweis1, hinweis2) - z.B. "vegan", "scharf", "enthält Schweinefleisch"
 
 Antworte NUR mit einem JSON-Objekt in diesem Format, ohne weitere Erklärungen oder Markdown:
 {
-  "mo": { "menu1": "...", "menu2": "...", "preis1": 0.00, "preis2": 0.00 },
+  "mo": { "menu1": "...", "menu2": "...", "preis1": 0.00, "preis2": 0.00, "allergene1": "...", "allergene2": "...", "hinweis1": "...", "hinweis2": "..." },
   "di": { "menu1": "...", "menu2": "..." },
   "mi": { "menu1": "...", "menu2": "..." },
   "do": { "menu1": "...", "menu2": "..." },

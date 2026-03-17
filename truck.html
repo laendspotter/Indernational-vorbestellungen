@@ -87,10 +87,42 @@
     .nav-link { margin-top: 24px; color: var(--muted); font-size: 0.9rem; text-align: center; animation: fadeUp 0.6s ease 0.2s both; }
     .nav-link a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .nav-link a:hover { text-decoration: underline; }
+    .allergen-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .allergen-tag { font-size: 0.75rem; background: rgba(122,116,104,0.15); border: 1px solid rgba(122,116,104,0.2); border-radius: 50px; padding: 2px 8px; color: var(--muted); display: flex; align-items: center; gap: 3px; }
+    .hinweis-tag { font-size: 0.75rem; background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.2); border-radius: 50px; padding: 2px 8px; color: var(--accent); }
+    .allergen-legend { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 20px; }
+    .allergen-legend-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
+    .allergen-legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+    .allergen-legend-item { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: rgba(19,23,38,0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid #1e2236;
+      color: #f0ede6;
+      padding: 8px 14px 8px 10px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .back-btn:hover { border-color: #f5a623; background: rgba(19,23,38,0.95); }
+
   </style>
 </head>
 <body>
+<a href="index.html" class="back-btn">‹ Zurück</a>
   <div id="authNav" style="margin-bottom:16px;animation:fadeUp 0.6s ease both;"></div>
   <div class="header">
     <span class="header-icon">🚚</span>
@@ -122,6 +154,7 @@
           <div class="menu-card-title">Menü 1</div>
           <div class="menu-card-desc" id="desc1">Tagesangebot 1</div>
           <div class="menu-card-preis" id="preis1"></div>
+          <div class="allergen-tags" id="tags1"></div>
         </div>
         <div class="menu-card" id="card2" onclick="selectMenu('menu2')">
           <input type="radio" name="menu" value="menu2" />
@@ -129,6 +162,7 @@
           <div class="menu-card-title">Menü 2</div>
           <div class="menu-card-desc" id="desc2">Tagesangebot 2</div>
           <div class="menu-card-preis" id="preis2"></div>
+          <div class="allergen-tags" id="tags2"></div>
         </div>
       </div>
     </div>
@@ -169,6 +203,26 @@
 
     <div id="bestellschlussNotice" style="display:none;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#e05c5c;margin-bottom:12px;"></div>
     <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
+  </div>
+
+  <div class="allergen-legend" style="width:100%;max-width:480px;animation:fadeUp 0.6s ease 0.3s both;">
+    <div class="allergen-legend-title">Allergen-Verzeichnis</div>
+    <div class="allergen-legend-grid">
+          <div class="allergen-legend-item"><span>🌾</span><span>Gluten</span></div>
+          <div class="allergen-legend-item"><span>🥛</span><span>Milch/Laktose</span></div>
+          <div class="allergen-legend-item"><span>🥚</span><span>Eier</span></div>
+          <div class="allergen-legend-item"><span>🥜</span><span>Erdnüsse</span></div>
+          <div class="allergen-legend-item"><span>🌰</span><span>Nüsse</span></div>
+          <div class="allergen-legend-item"><span>🐟</span><span>Fisch</span></div>
+          <div class="allergen-legend-item"><span>🦐</span><span>Meeresfrüchte</span></div>
+          <div class="allergen-legend-item"><span>🫘</span><span>Soja</span></div>
+          <div class="allergen-legend-item"><span>🥬</span><span>Sellerie</span></div>
+          <div class="allergen-legend-item"><span>🌿</span><span>Senf</span></div>
+          <div class="allergen-legend-item"><span>🌱</span><span>Sesam</span></div>
+          <div class="allergen-legend-item"><span>🍷</span><span>Sulfite</span></div>
+          <div class="allergen-legend-item"><span>🌸</span><span>Lupinen</span></div>
+          <div class="allergen-legend-item"><span>🐚</span><span>Weichtiere</span></div>
+    </div>
   </div>
 
   <div class="nav-link">Zur <a href="kantine.html">Kantine-Vorbestellung</a></div>
@@ -252,6 +306,10 @@
         preis2: data[`${dk}_menu2_preis`] || 0,
         verfuegbar1: data[`${dk}_menu1_verfuegbar`] !== false,
         verfuegbar2: data[`${dk}_menu2_verfuegbar`] !== false,
+        allergene1: data[`${dk}_menu1_allergene`] || '',
+        allergene2: data[`${dk}_menu2_allergene`] || '',
+        hinweis1: data[`${dk}_menu1_hinweis`] || '',
+        hinweis2: data[`${dk}_menu2_hinweis`] || '',
       }, false);
     }
 
@@ -283,6 +341,10 @@
 
       d1.textContent = menus.menu1 || 'Tagesangebot 1'; d1.className = menus.menu1 ? 'menu-card-desc has-text' : 'menu-card-desc';
       d2.textContent = menus.menu2 || 'Tagesangebot 2'; d2.className = menus.menu2 ? 'menu-card-desc has-text' : 'menu-card-desc';
+
+      // allergene + hinweise
+      renderAllergenTags('tags1', menus.allergene1 || '', menus.hinweis1 || '');
+      renderAllergenTags('tags2', menus.allergene2 || '', menus.hinweis2 || '');
 
       // ausverkauft handling
       const c1 = document.getElementById('card1');
@@ -505,6 +567,29 @@
         btn.disabled = false;
         btn.textContent = 'Jetzt vorbestellen';
         if (notice) notice.style.display = 'none';
+      }
+    }
+
+    const ALLERGEN_EMOJIS = {"gluten": "🌾", "weizen": "🌾", "roggen": "🌾", "milch": "🥛", "laktose": "🥛", "eier": "🥚", "ei": "🥚", "erdnüsse": "🥜", "erdnuss": "🥜", "nüsse": "🌰", "nuss": "🌰", "mandel": "🌰", "fisch": "🐟", "meeresfrüchte": "🦐", "krebstiere": "🦐", "soja": "🫘", "sellerie": "🥬", "senf": "🌿", "sesam": "🌱", "schwefeldioxid": "🍷", "sulfite": "🍷", "lupinen": "🌸", "weichtiere": "🐚"};
+
+    function renderAllergenTags(containerId, allergeneStr, hinweisStr) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = '';
+      if (hinweisStr) {
+        const span = document.createElement('span');
+        span.className = 'hinweis-tag';
+        span.textContent = hinweisStr;
+        el.appendChild(span);
+      }
+      if (allergeneStr) {
+        allergeneStr.split(',').map(a => a.trim().toLowerCase()).filter(Boolean).forEach(a => {
+          const emoji = ALLERGEN_EMOJIS[a] || '⚠️';
+          const span = document.createElement('span');
+          span.className = 'allergen-tag';
+          span.innerHTML = `${emoji} ${a.charAt(0).toUpperCase() + a.slice(1)}`;
+          el.appendChild(span);
+        });
       }
     }
 
