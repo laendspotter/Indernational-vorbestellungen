@@ -499,9 +499,15 @@
         return `
           <div class="day-row">
             <div class="day-name">${DAY_NAMES_FULL[dk]}<br><span style="font-size:0.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400">${dateStr}</span></div>
-            <input class="menu-input" id="inp_${dk}_1" placeholder="Menü 1" />
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input class="menu-input" id="inp_${dk}_1" placeholder="Menü 1" style="flex:1;" />
+              <button class="drink-toggle on" id="avail_${dk}_1" onclick="toggleAvail('${dk}','1')" title="Verfügbar / Ausverkauft"></button>
+            </div>
             <input class="price-input" id="inp_${dk}_1_preis" placeholder="0,00" type="number" step="0.01" min="0" />
-            <input class="menu-input" id="inp_${dk}_2" placeholder="Menü 2" />
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input class="menu-input" id="inp_${dk}_2" placeholder="Menü 2" style="flex:1;" />
+              <button class="drink-toggle on" id="avail_${dk}_2" onclick="toggleAvail('${dk}','2')" title="Verfügbar / Ausverkauft"></button>
+            </div>
             <input class="price-input" id="inp_${dk}_2_preis" placeholder="0,00" type="number" step="0.01" min="0" />
           </div>`;
       }).join('');
@@ -514,10 +520,16 @@
         const i2 = document.getElementById(`inp_${dk}_2`);
         const p1 = document.getElementById(`inp_${dk}_1_preis`);
         const p2 = document.getElementById(`inp_${dk}_2_preis`);
+        const a1 = document.getElementById(`avail_${dk}_1`);
+        const a2 = document.getElementById(`avail_${dk}_2`);
         i1.value = data ? (data[`${dk}_menu1`] || '') : '';
         i2.value = data ? (data[`${dk}_menu2`] || '') : '';
         if (p1) p1.value = data ? (data[`${dk}_menu1_preis`] || '') : '';
         if (p2) p2.value = data ? (data[`${dk}_menu2_preis`] || '') : '';
+        const av1 = data ? (data[`${dk}_menu1_verfuegbar`] !== false) : true;
+        const av2 = data ? (data[`${dk}_menu2_verfuegbar`] !== false) : true;
+        if (a1) { a1.classList.toggle('on', av1); a1.classList.toggle('off', !av1); }
+        if (a2) { a2.classList.toggle('on', av2); a2.classList.toggle('off', !av2); }
         i1.classList.remove('ai-filled');
         i2.classList.remove('ai-filled');
       });
@@ -534,6 +546,10 @@
         const p2 = document.getElementById(`inp_${dk}_2_preis`);
         payload[`${dk}_menu1_preis`] = p1 ? parseFloat(p1.value) || 0 : 0;
         payload[`${dk}_menu2_preis`] = p2 ? parseFloat(p2.value) || 0 : 0;
+        const a1 = document.getElementById(`avail_${dk}_1`);
+        const a2 = document.getElementById(`avail_${dk}_2`);
+        payload[`${dk}_menu1_verfuegbar`] = a1 ? a1.classList.contains('on') : true;
+        payload[`${dk}_menu2_verfuegbar`] = a2 ? a2.classList.contains('on') : true;
       });
       const { error } = await db.from('menus').upsert(payload, { onConflict: 'typ,woche_start' });
       btn.disabled = false; btn.textContent = 'Speichern';
@@ -674,6 +690,15 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
     function formatDate(d) { if (!d) return ''; return new Date(d + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }); }
     function formatTime(ts) { if (!ts) return ''; return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); }
     function esc(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function toggleAvail(dk, num) {
+      const btn = document.getElementById(`avail_${dk}_${num}`);
+      if (!btn) return;
+      const isOn = btn.classList.contains('on');
+      btn.classList.toggle('on', !isOn);
+      btn.classList.toggle('off', isOn);
+      btn.title = isOn ? 'Ausverkauft' : 'Verfügbar';
+    }
 
     // ── GETRÄNKE VERWALTUNG ──
     let drinkData = [];

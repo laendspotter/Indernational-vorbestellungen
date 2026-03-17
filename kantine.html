@@ -250,6 +250,8 @@
         menu2: data[`${dk}_menu2`] || '',
         preis1: data[`${dk}_menu1_preis`] || 0,
         preis2: data[`${dk}_menu2_preis`] || 0,
+        verfuegbar1: data[`${dk}_menu1_verfuegbar`] !== false,
+        verfuegbar2: data[`${dk}_menu2_verfuegbar`] !== false,
       }, false);
     }
 
@@ -281,6 +283,18 @@
 
       d1.textContent = menus.menu1 || 'Tagesangebot 1'; d1.className = menus.menu1 ? 'menu-card-desc has-text' : 'menu-card-desc';
       d2.textContent = menus.menu2 || 'Tagesangebot 2'; d2.className = menus.menu2 ? 'menu-card-desc has-text' : 'menu-card-desc';
+
+      // ausverkauft handling
+      const c1 = document.getElementById('card1');
+      const c2 = document.getElementById('card2');
+      if (menus.verfuegbar1 === false) {
+        c1.style.opacity = '0.4'; c1.style.pointerEvents = 'none';
+        d1.textContent = (menus.menu1 || 'Menü 1') + ' – Ausverkauft';
+      } else { c1.style.opacity = ''; c1.style.pointerEvents = ''; }
+      if (menus.verfuegbar2 === false) {
+        c2.style.opacity = '0.4'; c2.style.pointerEvents = 'none';
+        d2.textContent = (menus.menu2 || 'Menü 2') + ' – Ausverkauft';
+      } else { c2.style.opacity = ''; c2.style.pointerEvents = ''; }
       p1.textContent = menus.preis1 ? formatPreis(menus.preis1) : '';
       p2.textContent = menus.preis2 ? formatPreis(menus.preis2) : '';
     }
