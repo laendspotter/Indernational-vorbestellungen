@@ -32,7 +32,7 @@
     .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar-left { display: flex; align-items: center; gap: 12px; }
     .topbar h1 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; }
-    .topbar h1 span { color: var(--accent); }
+    .topbar h1 span { color: #f2efeb; }
     .live-badge { background: rgba(76,175,125,0.15); color: var(--success); border: 1px solid rgba(76,175,125,0.3); border-radius: 50px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
     .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
@@ -222,7 +222,7 @@
   <div id="adminPanel">
     <div class="topbar">
       <div class="topbar-left">
-        <h1>🚚 <span>Truck</span> Verwaltung</h1>
+        <h1>🚚 Truck Verwaltung</h1>
         <div class="live-badge"><div class="live-dot"></div> Live</div>
       </div>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
