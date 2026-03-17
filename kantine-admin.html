@@ -197,6 +197,7 @@
         <button class="tab-btn active" id="tabBestellungen" onclick="showTab('bestellungen')">📋 Bestellungen</button>
         <button class="tab-btn" id="tabMenu" onclick="showTab('menu')">🍴 Wochenmenü</button>
         <button class="tab-btn" id="tabGetraenke" onclick="showTab('getraenke')">🥤 Getränke</button>
+        <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
       </div>
 
       <!-- TAB: BESTELLUNGEN -->
@@ -281,6 +282,43 @@
     </div>
   </div>
 
+      <!-- TAB: EINSTELLUNGEN -->
+      <div id="tabContentEinstellungen" style="display:none;">
+        <div class="menu-editor">
+          <div class="menu-editor-header">
+            <h3>Bestellschluss</h3>
+          </div>
+          <div style="padding: 28px 24px; display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div>
+                <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px;">Uhrzeit</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <input type="number" id="settingStunde" min="0" max="23" style="width:64px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;text-align:center;" />
+                  <span style="color:var(--muted);font-weight:600;">:</span>
+                  <input type="number" id="settingMinute" min="0" max="59" style="width:64px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;text-align:center;" />
+                  <span style="color:var(--muted);font-size:0.88rem;">Uhr</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px;">Bezugstag</div>
+                <div style="display:flex;gap:8px;">
+                  <button id="btnSelberTag" onclick="setVortag(false)" class="filter-btn">Selber Tag</button>
+                  <button id="btnVortag" onclick="setVortag(true)" class="filter-btn">Vortag</button>
+                </div>
+              </div>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:0.85rem;color:var(--muted);" id="settingPreview">
+              Vorschau wird geladen…
+            </div>
+            <div>
+              <button class="save-btn" onclick="saveSettings()">Speichern</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -338,10 +376,13 @@
       document.getElementById('tabContentBestellungen').style.display = tab === 'bestellungen' ? 'block' : 'none';
       document.getElementById('tabContentMenu').style.display = tab === 'menu' ? 'block' : 'none';
       document.getElementById('tabContentGetraenke').style.display = tab === 'getraenke' ? 'block' : 'none';
+      document.getElementById('tabContentEinstellungen').style.display = tab === 'einstellungen' ? 'block' : 'none';
       document.getElementById('tabBestellungen').classList.toggle('active', tab === 'bestellungen');
       document.getElementById('tabMenu').classList.toggle('active', tab === 'menu');
       document.getElementById('tabGetraenke').classList.toggle('active', tab === 'getraenke');
+      document.getElementById('tabEinstellungen').classList.toggle('active', tab === 'einstellungen');
       if (tab === 'getraenke') loadDrinkList();
+      if (tab === 'einstellungen') loadSettings();
     }
 
     // ── BESTELLUNGEN ──
@@ -687,6 +728,47 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       }
       showToast('✓ Getränke gespeichert!');
       loadDrinkList();
+    }
+
+    // ── EINSTELLUNGEN ──
+    let currentVortag = true;
+
+    async function loadSettings() {
+      const { data } = await db.from('einstellungen').select('*').eq('typ', 'kantine').single();
+      if (!data) return;
+      document.getElementById('settingStunde').value = data.bestellschluss_stunde;
+      document.getElementById('settingMinute').value = String(data.bestellschluss_minute).padStart(2,'0');
+      currentVortag = data.vortag;
+      updateSettingBtns();
+      updateSettingPreview();
+    }
+
+    function setVortag(val) {
+      currentVortag = val;
+      updateSettingBtns();
+      updateSettingPreview();
+    }
+
+    function updateSettingBtns() {
+      document.getElementById('btnSelberTag').classList.toggle('active', !currentVortag);
+      document.getElementById('btnVortag').classList.toggle('active', currentVortag);
+    }
+
+    function updateSettingPreview() {
+      const h = document.getElementById('settingStunde')?.value || '?';
+      const m = String(document.getElementById('settingMinute')?.value || '0').padStart(2,'0');
+      const when = currentVortag ? `am Vortag bis ${h}:${m} Uhr` : `am selben Tag bis ${h}:${m} Uhr`;
+      const el = document.getElementById('settingPreview');
+      if (el) el.textContent = `⏰ Bestellschluss: ${when}`;
+    }
+
+    async function saveSettings() {
+      const stunde = parseInt(document.getElementById('settingStunde').value) || 0;
+      const minute = parseInt(document.getElementById('settingMinute').value) || 0;
+      const { error } = await db.from('einstellungen')
+        .upsert({ typ: 'kantine', bestellschluss_stunde: stunde, bestellschluss_minute: minute, vortag: currentVortag }, { onConflict: 'typ' });
+      if (error) showToast('Fehler beim Speichern.');
+      else { showToast('✓ Einstellungen gespeichert!'); updateSettingPreview(); }
     }
 
     function showToast(msg) {

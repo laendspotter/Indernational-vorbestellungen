@@ -167,6 +167,7 @@
       <div class="summary-row"><span>Gesamt</span><span id="sumTotal">–</span></div>
     </div>
 
+    <div id="bestellschlussNotice" style="display:none;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#e05c5c;margin-bottom:12px;"></div>
     <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
   </div>
 
@@ -222,6 +223,7 @@
 
     loadDrinks();
     loadMenuForDate();
+    checkBestellschluss();
 
     function getWeekStart(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
@@ -428,6 +430,56 @@
           document.querySelector('.none-card').classList.add('selected');
           document.getElementById('summary').style.display = 'none';
         }
+      }
+    }
+
+    async function checkBestellschluss() {
+      const { data } = await db.from('einstellungen').select('*').eq('typ', 'kantine').single();
+      if (!data) return;
+
+      const now = new Date();
+      const dateInput = document.getElementById('date');
+
+      // disable dates that are past bestellschluss
+      dateInput.removeEventListener('change', checkDateBestellschluss);
+      dateInput._settings = data;
+      dateInput.addEventListener('change', checkDateBestellschluss);
+      checkDateBestellschluss();
+    }
+
+    function checkDateBestellschluss() {
+      const dateInput = document.getElementById('date');
+      const data = dateInput._settings;
+      if (!data) return;
+
+      const selected = new Date(dateInput.value + 'T00:00:00');
+      const now = new Date();
+      const deadline = new Date(selected);
+
+      if (data.vortag) {
+        // deadline = vortag um HH:MM
+        deadline.setDate(deadline.getDate() - 1);
+      }
+      deadline.setHours(data.bestellschluss_stunde, data.bestellschluss_minute, 0, 0);
+
+      const closed = now > deadline;
+      const btn = document.getElementById('submitBtn');
+      const notice = document.getElementById('bestellschlussNotice');
+
+      if (closed) {
+        btn.disabled = true;
+        btn.textContent = 'Bestellschluss erreicht';
+        if (notice) {
+          const pad = n => String(n).padStart(2,'0');
+          const timeStr = pad(data.bestellschluss_stunde) + ':' + pad(data.bestellschluss_minute);
+          const when = data.vortag ? `am Vortag bis ${timeStr} Uhr` : `bis ${timeStr} Uhr`;
+          notice.textContent = `⏰ Bestellschluss für diesen Tag war ${when}.`;
+          notice.style.display = 'block';
+        }
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Jetzt vorbestellen';
+        if (notice) notice.style.display = 'none';
       }
     }
 
