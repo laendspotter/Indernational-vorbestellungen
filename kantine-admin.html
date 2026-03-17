@@ -178,7 +178,50 @@
     .period-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .period-btn.active { background: var(--accent); color: #0b0e1a; border-color: var(--accent); }
 
+    /* MODE SLIDER */
+    .mode-switcher { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 50px; padding: 3px; gap: 2px; }
+    .mode-btn { padding: 7px 18px; border-radius: 50px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .mode-btn.active { background: var(--accent); color: #0b0e1a; }
+
+    /* KÜCHENMODUS */
+    .kueche-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .kueche-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+    .kueche-tab { padding: 8px 18px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .kueche-tab.active { background: var(--accent); color: #0b0e1a; }
+    .kueche-list { display: flex; flex-direction: column; gap: 8px; }
+    .kueche-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: opacity 0.3s; }
+    .kueche-item.done { opacity: 0.35; }
+    .kueche-item.done .kueche-name { text-decoration: line-through; }
+    .kueche-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(245,166,35,0.12); color: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; }
+    .kueche-info { flex: 1; }
+    .kueche-name { font-weight: 600; font-size: 0.95rem; }
+    .kueche-sub { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .kueche-badge { padding: 4px 12px; border-radius: 50px; font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 800; flex-shrink: 0; }
+    .kueche-badge.m1 { background: rgba(245,166,35,0.15); color: var(--accent); }
+    .kueche-badge.m2 { background: rgba(62,207,142,0.15); color: #3ecf8e; }
+    .kueche-check { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: all 0.2s; flex-shrink: 0; }
+    .kueche-check:hover { border-color: var(--success); color: var(--success); }
+    .kueche-item.done .kueche-check { background: rgba(76,175,125,0.15); border-color: var(--success); color: var(--success); }
+    .kueche-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+    .kueche-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 0.82rem; }
+    .kueche-stat strong { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--accent); font-size: 1.1rem; display: block; }
+
+    /* KASSENMODUS */
+    .kasse-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .kasse-layout { grid-template-columns: 1fr; } }
+    .kasse-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .kasse-panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .kasse-orders { padding: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
+    .kasse-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.2s; }
+    .kasse-item:hover { border-color: var(--accent); }
+    .kasse-item.done { opacity: 0.35; }
+    .kasse-item-name { flex: 1; font-weight: 600; font-size: 0.88rem; }
+    .kasse-item-meta { font-size: 0.75rem; color: var(--muted); }
+    .kasse-item-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 50px; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* SCANNER */
     .scanner-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #000; aspect-ratio: 1; max-width: 360px; margin: 0 auto 20px; }
@@ -225,10 +268,74 @@
         <h1>🍽️ Kantine Verwaltung</h1>
         <div class="live-badge"><div class="live-dot"></div> Live</div>
       </div>
+      <div class="mode-switcher">
+        <button class="mode-btn active" id="modeVerwaltung" onclick="setMode('verwaltung')">⚙️ Verwaltung</button>
+        <button class="mode-btn" id="modeKueche" onclick="setMode('kueche')">🍳 Küche</button>
+        <button class="mode-btn" id="modeKasse" onclick="setMode('kasse')">🧾 Kasse</button>
+      </div>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
     </div>
 
     <div class="main">
+      <!-- KÜCHENMODUS -->
+      <div id="kuecheMode" style="display:none;">
+        <div class="kueche-header">
+          <div class="kueche-stats" id="kuecheStats"></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="date" class="filter-input" id="kuecheDatum" onchange="loadKueche()" />
+            <div class="kueche-tabs">
+              <button class="kueche-tab active" id="ktAlle" onclick="setKuecheFilter('alle')">Alle</button>
+              <button class="kueche-tab" id="ktOffen" onclick="setKuecheFilter('offen')">Offen</button>
+              <button class="kueche-tab" id="ktDone" onclick="setKuecheFilter('done')">Fertig</button>
+            </div>
+          </div>
+        </div>
+        <div class="kueche-list" id="kuecheList"></div>
+      </div>
+
+      <!-- KASSENMODUS -->
+      <div id="kasseMode" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <input type="date" class="filter-input" id="kasseDatum" onchange="loadKasse()" />
+          <div class="live-badge"><div class="live-dot"></div> Live</div>
+        </div>
+        <div class="kasse-layout">
+          <div class="kasse-panel">
+            <div class="kasse-panel-header">📋 Bestellungen</div>
+            <div class="kasse-orders" id="kasseOrders"></div>
+          </div>
+          <div class="kasse-panel">
+            <div class="kasse-panel-header">📷 QR Scanner</div>
+            <div style="padding:16px;">
+              <div id="kasseScanContainer">
+                <p style="color:var(--muted);font-size:0.85rem;text-align:center;margin-bottom:12px;">QR-Code scannen zum Abhaken</p>
+                <button class="scan-start-btn" onclick="startKasseScanner()">📷 Kamera starten</button>
+              </div>
+              <div id="kasseScanActive" style="display:none;">
+                <div class="scanner-wrap" style="max-width:100%;">
+                  <video id="kasseScanVideo" autoplay playsinline muted></video>
+                  <div class="scanner-overlay"><div class="scanner-frame"></div></div>
+                </div>
+                <button class="scan-start-btn" onclick="stopKasseScanner()" style="border-color:var(--error);color:var(--error);margin-top:8px;">✕ Stoppen</button>
+              </div>
+              <div id="kasseScanResult" style="display:none;margin-top:16px;">
+                <div class="scan-result">
+                  <div class="scan-result-name" id="ksrName">–</div>
+                  <div class="scan-result-meta" id="ksrMeta">–</div>
+                  <div class="scan-result-row"><span style="color:var(--muted)">Menü</span><span id="ksrMenu">–</span></div>
+                  <div class="scan-result-row" id="ksrDrinkRow"><span style="color:var(--muted)">Getränk</span><span id="ksrDrink">–</span></div>
+                  <div class="scan-result-row"><span style="color:var(--muted)">Zahlung</span><span id="ksrZahlung">–</span></div>
+                  <button class="ausgeben-btn" id="kasseAusgebenBtn" onclick="kasseAusgeben()">✓ Ausgegeben</button>
+                </div>
+                <button class="scan-start-btn" onclick="resetKasseScanner()" style="margin-top:10px;">← Erneut scannen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERWALTUNGSMODUS (original tabs) -->
+      <div id="verwaltungMode">
       <div class="tabs">
         <button class="tab-btn active" id="tabBestellungen" onclick="showTab('bestellungen')">📋 Bestellungen</button>
         <button class="tab-btn" id="tabMenu" onclick="showTab('menu')">🍴 Wochenmenü</button>
@@ -419,6 +526,8 @@
         </div>
       </div>
     </div>
+      </div><!-- /verwaltungMode -->
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -466,6 +575,8 @@
     async function initAdmin() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('filterDate').value = today;
+      document.getElementById('kuecheDatum').value = today;
+      document.getElementById('kasseDatum').value = today;
       currentWeekStart = getWeekStart(today);
       await loadOrders();
       subscribeRealtime();
@@ -1115,6 +1226,192 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
         .upsert({ typ: 'kantine', bestellschluss_stunde: stunde, bestellschluss_minute: minute, vortag: currentVortag }, { onConflict: 'typ' });
       if (error) showToast('Fehler beim Speichern.');
       else { showToast('✓ Einstellungen gespeichert!'); updateSettingPreview(); }
+    }
+
+    // ── MODI ──
+    let currentMode = 'verwaltung';
+
+    function setMode(mode) {
+      currentMode = mode;
+      ['verwaltung','kueche','kasse'].forEach(m => {
+        document.getElementById('mode' + m.charAt(0).toUpperCase() + m.slice(1)).classList.toggle('active', m === mode);
+        const el = document.getElementById(m + 'Mode');
+        if (el) el.style.display = m === mode ? 'block' : 'none';
+      });
+      if (mode === 'kueche') loadKueche();
+      if (mode === 'kasse') loadKasse();
+    }
+
+    // ── KÜCHENMODUS ──
+    let kuecheFilter = 'alle';
+    let kuecheOrders = [];
+    let kuecheChannel = null;
+
+    async function loadKueche() {
+      const datum = document.getElementById('kuecheDatum').value;
+      const { data } = await db.from('vorbestellungen').select('*')
+        .eq('typ', 'kantine').eq('datum', datum).order('created_at', { ascending: true });
+      kuecheOrders = data || [];
+      renderKueche();
+
+      // realtime
+      if (kuecheChannel) db.removeChannel(kuecheChannel);
+      kuecheChannel = db.channel('kueche-kantine')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen', filter: 'typ=eq.kantine' }, () => loadKueche())
+        .subscribe();
+    }
+
+    function setKuecheFilter(f) {
+      kuecheFilter = f;
+      ['ktAlle','ktOffen','ktDone'].forEach(id => document.getElementById(id).classList.remove('active'));
+      document.getElementById(f === 'alle' ? 'ktAlle' : f === 'offen' ? 'ktOffen' : 'ktDone').classList.add('active');
+      renderKueche();
+    }
+
+    function renderKueche() {
+      const filtered = kuecheOrders.filter(o =>
+        kuecheFilter === 'alle' || (kuecheFilter === 'offen' && !o.erledigt) || (kuecheFilter === 'done' && o.erledigt));
+
+      const m1 = kuecheOrders.filter(o => o.menu === 'menu1').length;
+      const m2 = kuecheOrders.filter(o => o.menu === 'menu2').length;
+      const done = kuecheOrders.filter(o => o.erledigt).length;
+      document.getElementById('kuecheStats').innerHTML = `
+        <div class="kueche-stat"><strong>${kuecheOrders.length}</strong>Gesamt</div>
+        <div class="kueche-stat"><strong style="color:var(--accent)">${m1}</strong>Menü 1</div>
+        <div class="kueche-stat"><strong style="color:#3ecf8e">${m2}</strong>Menü 2</div>
+        <div class="kueche-stat"><strong style="color:var(--success)">${done}</strong>Fertig</div>`;
+
+      const list = document.getElementById('kuecheList');
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>Keine Bestellungen.</p></div>';
+        return;
+      }
+      list.innerHTML = filtered.map(o => {
+        const drink = o.getraenk ? ` · ${esc(o.getraenk)}` : '';
+        return `<div class="kueche-item ${o.erledigt ? 'done' : ''}" id="ki-${o.id}">
+          <div class="kueche-avatar">${o.name.charAt(0).toUpperCase()}</div>
+          <div class="kueche-info">
+            <div class="kueche-name">${esc(o.name)}</div>
+            <div class="kueche-sub">${formatTime(o.created_at)}${drink}</div>
+          </div>
+          <span class="kueche-badge ${o.menu === 'menu1' ? 'm1' : 'm2'}">${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'}</span>
+          <div class="kueche-check" onclick="toggleKuecheItem('${o.id}', ${o.erledigt})">${o.erledigt ? '✓' : ''}</div>
+        </div>`;
+      }).join('');
+    }
+
+    async function toggleKuecheItem(id, current) {
+      await db.from('vorbestellungen').update({ erledigt: !current }).eq('id', id);
+    }
+
+    // ── KASSENMODUS ──
+    let kasseOrders = [];
+    let kasseStream = null, kasseInterval = null, kasseScanId = null;
+
+    async function loadKasse() {
+      const datum = document.getElementById('kasseDatum').value;
+      const { data } = await db.from('vorbestellungen').select('*')
+        .eq('typ', 'kantine').eq('datum', datum).order('created_at', { ascending: true });
+      kasseOrders = data || [];
+      renderKasse();
+    }
+
+    function renderKasse() {
+      const list = document.getElementById('kasseOrders');
+      if (kasseOrders.length === 0) {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.88rem;">Keine Bestellungen</div>';
+        return;
+      }
+      list.innerHTML = kasseOrders.map(o => {
+        const zahlung = o.zahlung === 'online' ? (o.bezahlt ? '💳' : '⏳') : '💵';
+        const badge = o.erledigt ? '<span class="kasse-item-badge" style="background:rgba(76,175,125,0.15);color:var(--success)">✓</span>' : '';
+        return `<div class="kasse-item ${o.erledigt ? 'done' : ''}" onclick="kasseSelectOrder('${o.id}')">
+          <div style="flex:1;">
+            <div class="kasse-item-name">${esc(o.name)}</div>
+            <div class="kasse-item-meta">${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'}${o.getraenk ? ' · ' + esc(o.getraenk) : ''} ${zahlung}</div>
+          </div>
+          ${badge}
+        </div>`;
+      }).join('');
+    }
+
+    async function kasseSelectOrder(id) {
+      const o = kasseOrders.find(x => x.id === id);
+      if (!o) return;
+      kasseScanId = id;
+      document.getElementById('ksrName').textContent = o.name;
+      document.getElementById('ksrMeta').textContent = formatDate(o.datum) + ' · ' + (o.typ === 'truck' ? '🚚 Truck' : '🍽️ Kantine');
+      document.getElementById('ksrMenu').textContent = o.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
+      const drinkRow = document.getElementById('ksrDrinkRow');
+      if (o.getraenk) { drinkRow.style.display = 'flex'; document.getElementById('ksrDrink').textContent = o.getraenk; }
+      else drinkRow.style.display = 'none';
+      document.getElementById('ksrZahlung').textContent = o.zahlung === 'online' ? (o.bezahlt ? '💳 Bezahlt' : '⏳ Ausstehend') : '💵 Bar';
+      const btn = document.getElementById('kasseAusgebenBtn');
+      btn.disabled = o.erledigt; btn.textContent = o.erledigt ? '✓ Bereits ausgegeben' : '✓ Ausgegeben';
+      document.getElementById('kasseScanResult').style.display = 'block';
+      document.getElementById('kasseScanContainer').style.display = 'none';
+    }
+
+    async function kasseAusgeben() {
+      if (!kasseScanId) return;
+      await db.from('vorbestellungen').update({ erledigt: true }).eq('id', kasseScanId);
+      showToast('✓ Ausgegeben!');
+      document.getElementById('kasseAusgebenBtn').disabled = true;
+      document.getElementById('kasseAusgebenBtn').textContent = '✓ Ausgegeben';
+      await loadKasse();
+    }
+
+    async function startKasseScanner() {
+      try {
+        kasseStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('kasseScanVideo').srcObject = kasseStream;
+        document.getElementById('kasseScanContainer').style.display = 'none';
+        document.getElementById('kasseScanActive').style.display = 'block';
+        document.getElementById('kasseScanResult').style.display = 'none';
+
+        if (!window.jsQR) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+
+        const video = document.getElementById('kasseScanVideo');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        kasseInterval = setInterval(() => {
+          if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+          canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0);
+          const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(img.data, img.width, img.height);
+          if (code) { stopKasseScanner(); handleKasseQR(code.data); }
+        }, 300);
+      } catch(e) { showToast('Kamera-Zugriff verweigert.'); }
+    }
+
+    function stopKasseScanner() {
+      if (kasseStream) { kasseStream.getTracks().forEach(t => t.stop()); kasseStream = null; }
+      if (kasseInterval) { clearInterval(kasseInterval); kasseInterval = null; }
+      document.getElementById('kasseScanActive').style.display = 'none';
+      document.getElementById('kasseScanContainer').style.display = 'block';
+    }
+
+    async function handleKasseQR(data) {
+      try {
+        const parsed = JSON.parse(data);
+        const id = parsed.id;
+        if (id) await kasseSelectOrder(id);
+        else showToast('Bestellung nicht gefunden.');
+      } catch(e) { showToast('Ungültiger QR-Code.'); }
+    }
+
+    function resetKasseScanner() {
+      kasseScanId = null;
+      document.getElementById('kasseScanResult').style.display = 'none';
+      document.getElementById('kasseScanContainer').style.display = 'block';
     }
 
     function showToast(msg) {

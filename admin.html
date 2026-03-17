@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Indernational</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0e1a; --surface: #131726; --surface2: #191d30; --border: #1e2236;
+      --truck: #f5a623; --kantine: #3ecf8e;
+      --text: #f0ede6; --muted: #7a7468;
+      --success: #4caf7d; --error: #e05c5c;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(62,207,142,0.05) 0%, transparent 55%); pointer-events: none; }
+
+    /* LOGIN */
+    #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 380px; text-align: center; position: relative; overflow: hidden; }
+    .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--truck), var(--kantine)); }
+    .login-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
+    .login-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s; }
+    .login-input:focus { outline: none; border-color: var(--truck); }
+    .login-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, var(--truck), var(--kantine)); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem; cursor: pointer; }
+    .login-error { color: var(--error); font-size: 0.82rem; margin-top: 10px; display: none; }
+
+    #dashboard { display: none; }
+
+    /* TOPBAR */
+    .topbar { padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(11,14,26,0.92); backdrop-filter: blur(12px); z-index: 50; }
+    .topbar-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; color: #f2efeb; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-date { font-size: 0.8rem; color: var(--muted); }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    .main { padding: 28px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* GREETING */
+    .greeting { margin-bottom: 32px; }
+    .greeting-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+    .greeting h1 { font-family: 'Syne', sans-serif; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+    .greeting h1 .highlight { background: linear-gradient(90deg, var(--truck), var(--kantine)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* LIVE BADGE */
+    .live-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+    .live-text { font-size: 0.8rem; color: var(--success); font-weight: 600; }
+
+    /* QUICK STATS */
+    .quick-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .qs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
+    .qs-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .qs-card.truck::after { background: var(--truck); }
+    .qs-card.kantine::after { background: var(--kantine); }
+    .qs-card.both::after { background: linear-gradient(90deg, var(--truck), var(--kantine)); }
+    .qs-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 900; }
+    .qs-card.truck .qs-num { color: var(--truck); }
+    .qs-card.kantine .qs-num { color: var(--kantine); }
+    .qs-card.both .qs-num { color: var(--text); }
+    .qs-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+    .qs-sub { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+
+    /* SECTION TITLE */
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* BEREICH CARDS */
+    .bereich-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    @media (max-width: 600px) { .bereich-grid { grid-template-columns: 1fr; } }
+    .bereich-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
+    .bereich-card.truck:hover { border-color: rgba(245,166,35,0.4); }
+    .bereich-card.kantine:hover { border-color: rgba(62,207,142,0.4); }
+    .bereich-card-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .bereich-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .bereich-card.truck .bereich-title { color: var(--truck); }
+    .bereich-card.kantine .bereich-title { color: var(--kantine); }
+    .bereich-open-btn { padding: 7px 14px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.2s; }
+    .bereich-card.truck .bereich-open-btn { background: rgba(245,166,35,0.15); color: var(--truck); }
+    .bereich-card.kantine .bereich-open-btn { background: rgba(62,207,142,0.15); color: var(--kantine); }
+    .bereich-open-btn:hover { opacity: 0.8; }
+    .bereich-stats { padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .bs { text-align: center; }
+    .bs-num { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; }
+    .bereich-card.truck .bs-num { color: var(--truck); }
+    .bereich-card.kantine .bs-num { color: var(--kantine); }
+    .bs-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+    .bereich-orders { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .bo-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+    .bo-item.done { opacity: 0.4; }
+    .bo-name { flex: 1; font-weight: 600; }
+    .bo-meta { font-size: 0.75rem; color: var(--muted); }
+    .bo-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 50px; }
+
+    /* RECENT ACTIVITY */
+    .activity-list { display: flex; flex-direction: column; gap: 8px; }
+    .activity-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-size: 0.88rem; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .activity-dot.truck { background: var(--truck); }
+    .activity-dot.kantine { background: var(--kantine); }
+    .activity-text { flex: 1; }
+    .activity-time { font-size: 0.75rem; color: var(--muted); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 200; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="login-icon">🧑‍💼</div>
+      <h2>Admin Dashboard</h2>
+      <p>nur für dich bestimmt fr fr 🔒</p>
+      <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
+      <button class="login-btn" onclick="login()">rein da →</button>
+      <div class="login-error" id="loginError">wrong password bro 💀</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <div class="topbar">
+      <div class="topbar-logo">Indernational</div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbarDate"></span>
+        <button class="logout-btn" onclick="logout()">logout</button>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="greeting" style="animation:fadeUp 0.6s ease both">
+        <div class="greeting-sub" id="greetingSub">gm bestimmt wieder voll heute</div>
+        <h1>was geht <span class="highlight" id="greetingName">bro</span> 👋</h1>
+        <div class="live-row">
+          <div class="live-dot"></div>
+          <span class="live-text">live — wird automatisch aktualisiert</span>
+        </div>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="section-title">heute</div>
+      <div class="quick-stats" style="animation:fadeUp 0.6s ease 0.05s both">
+        <div class="qs-card both">
+          <div class="qs-num" id="qsTotal">–</div>
+          <div class="qs-label">Bestellungen gesamt</div>
+          <div class="qs-sub" id="qsTotalSub">–</div>
+        </div>
+        <div class="qs-card truck">
+          <div class="qs-num" id="qsTruck">–</div>
+          <div class="qs-label">🚚 Food Truck</div>
+          <div class="qs-sub" id="qsTruckSub">–</div>
+        </div>
+        <div class="qs-card kantine">
+          <div class="qs-num" id="qsKantine">–</div>
+          <div class="qs-label">🍽️ Kantine</div>
+          <div class="qs-sub" id="qsKantineSub">–</div>
+        </div>
+        <div class="qs-card both">
+          <div class="qs-num" id="qsRevenue">–</div>
+          <div class="qs-label">Umsatz heute</div>
+          <div class="qs-sub" id="qsRevenueSub">–</div>
+        </div>
+      </div>
+
+      <!-- BEREICHE -->
+      <div class="section-title">bereiche</div>
+      <div class="bereich-grid" style="animation:fadeUp 0.6s ease 0.1s both">
+
+        <!-- TRUCK -->
+        <div class="bereich-card truck">
+          <div class="bereich-card-header">
+            <div class="bereich-title">🚚 Food Truck</div>
+            <a href="truck-admin.html" class="bereich-open-btn">öffnen →</a>
+          </div>
+          <div class="bereich-stats">
+            <div class="bs"><div class="bs-num" id="btTotal">–</div><div class="bs-label">Heute</div></div>
+            <div class="bs"><div class="bs-num" id="btOffen">–</div><div class="bs-label">Offen</div></div>
+            <div class="bs"><div class="bs-num" id="btRevenue">–</div><div class="bs-label">€</div></div>
+          </div>
+          <div class="bereich-orders" id="truckOrders"></div>
+        </div>
+
+        <!-- KANTINE -->
+        <div class="bereich-card kantine">
+          <div class="bereich-card-header">
+            <div class="bereich-title">🍽️ Kantine</div>
+            <a href="kantine-admin.html" class="bereich-open-btn">öffnen →</a>
+          </div>
+          <div class="bereich-stats">
+            <div class="bs"><div class="bs-num" id="bkTotal">–</div><div class="bs-label">Heute</div></div>
+            <div class="bs"><div class="bs-num" id="bkOffen">–</div><div class="bs-label">Offen</div></div>
+            <div class="bs"><div class="bs-num" id="bkRevenue">–</div><div class="bs-label">€</div></div>
+          </div>
+          <div class="bereich-orders" id="kantineOrders"></div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY -->
+      <div class="section-title">letzte aktivität</div>
+      <div class="activity-list" id="activityList" style="animation:fadeUp 0.6s ease 0.15s both">
+        <div style="color:var(--muted);font-size:0.88rem;text-align:center;padding:20px;">laden…</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ADMIN_PW = '1296'; // change this!
+
+    function login() {
+      const pw = document.getElementById('pwInput').value;
+      if (pw === ADMIN_PW) {
+        sessionStorage.setItem('main_admin', '1');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        initDashboard();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('main_admin');
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('pwInput').value = '';
+    }
+
+    if (sessionStorage.getItem('main_admin')) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      initDashboard();
+    }
+
+    async function initDashboard() {
+      // date
+      const now = new Date();
+      document.getElementById('topbarDate').textContent = now.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
+
+      // greeting
+      const h = now.getHours();
+      const greet = h < 11 ? 'gm bestimmt wieder voll heute ☀️' : h < 14 ? 'mittagszeit, läufts? 🍴' : h < 18 ? 'nachmittag check-in 📊' : 'feierabend soon? 🌙';
+      document.getElementById('greetingSub').textContent = greet;
+
+      await loadStats();
+      subscribeRealtime();
+    }
+
+    async function loadStats() {
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data: all } = await db.from('vorbestellungen').select('*').eq('datum', today).order('created_at', { ascending: false });
+      const orders = all || [];
+
+      const truck = orders.filter(o => o.typ === 'truck');
+      const kantine = orders.filter(o => o.typ === 'kantine');
+      const revenue = orders.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
+      const erledigt = orders.filter(o => o.erledigt).length;
+
+      // quick stats
+      document.getElementById('qsTotal').textContent = orders.length;
+      document.getElementById('qsTotalSub').textContent = `${erledigt} abgeholt · ${orders.length - erledigt} offen`;
+      document.getElementById('qsTruck').textContent = truck.length;
+      document.getElementById('qsTruckSub').textContent = `${truck.filter(o => !o.erledigt).length} offen`;
+      document.getElementById('qsKantine').textContent = kantine.length;
+      document.getElementById('qsKantineSub').textContent = `${kantine.filter(o => !o.erledigt).length} offen`;
+      document.getElementById('qsRevenue').textContent = revenue.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('qsRevenueSub').textContent = `${orders.filter(o => o.zahlung === 'online' && o.bezahlt).length} online bezahlt`;
+
+      // truck bereich
+      const tRevenue = truck.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
+      document.getElementById('btTotal').textContent = truck.length;
+      document.getElementById('btOffen').textContent = truck.filter(o => !o.erledigt).length;
+      document.getElementById('btRevenue').textContent = tRevenue.toFixed(2).replace('.', ',');
+      renderBereichOrders('truckOrders', truck.slice(0, 8), 'truck');
+
+      // kantine bereich
+      const kRevenue = kantine.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
+      document.getElementById('bkTotal').textContent = kantine.length;
+      document.getElementById('bkOffen').textContent = kantine.filter(o => !o.erledigt).length;
+      document.getElementById('bkRevenue').textContent = kRevenue.toFixed(2).replace('.', ',');
+      renderBereichOrders('kantineOrders', kantine.slice(0, 8), 'kantine');
+
+      // activity (last 10 overall)
+      renderActivity(orders.slice(0, 10));
+    }
+
+    function renderBereichOrders(containerId, orders, typ) {
+      const el = document.getElementById(containerId);
+      if (orders.length === 0) {
+        el.innerHTML = '<div style="padding:8px;color:var(--muted);font-size:0.82rem;text-align:center;">noch keine bestellungen heute</div>';
+        return;
+      }
+      el.innerHTML = orders.map(o => {
+        const zahlung = o.zahlung === 'online' ? (o.bezahlt ? '💳' : '⏳') : '💵';
+        const accentColor = typ === 'truck' ? 'rgba(245,166,35,0.15);color:#f5a623' : 'rgba(62,207,142,0.15);color:#3ecf8e';
+        return `<div class="bo-item ${o.erledigt ? 'done' : ''}">
+          <div>
+            <div class="bo-name">${esc(o.name)}</div>
+            <div class="bo-meta">${formatTime(o.created_at)} ${zahlung}</div>
+          </div>
+          <span class="bo-badge" style="background:${accentColor}">${o.menu === 'menu1' ? 'M1' : 'M2'}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderActivity(orders) {
+      const el = document.getElementById('activityList');
+      if (orders.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;text-align:center;padding:20px;">noch nix heute</div>';
+        return;
+      }
+      el.innerHTML = orders.map(o => `
+        <div class="activity-item">
+          <div class="activity-dot ${o.typ}"></div>
+          <div class="activity-text"><strong>${esc(o.name)}</strong> hat ${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'} bestellt ${o.typ === 'truck' ? '(Truck)' : '(Kantine)'}</div>
+          <div class="activity-time">${formatTime(o.created_at)}</div>
+        </div>`).join('');
+    }
+
+    function subscribeRealtime() {
+      db.channel('admin-dashboard')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
+        .subscribe();
+    }
+
+    function formatTime(ts) {
+      if (!ts) return '';
+      return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
