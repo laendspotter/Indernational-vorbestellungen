@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     const m = session.metadata;
     const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
     await db.from('vorbestellungen').insert({
-      name: m.name, datum: m.datum, menu: m.menu, typ: m.typ,
+      name: m.name, datum: m.datum, menu: m.menu, typ: m.typ, user_email: m.user_email || null,
       getraenk: m.getraenk, getraenk_preis: parseFloat(m.getraenk_preis),
       preis: parseFloat(m.preis), zahlung: 'online',
       bezahlt: true, erledigt: false, stripe_session_id: session.id,
