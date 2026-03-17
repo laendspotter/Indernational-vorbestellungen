@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mein Konto – Indernational</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0e1a; --surface: #131726; --border: #1e2236;
+      --accent: #f5a623; --accent-dark: #c47d0e;
+      --text: #f0ede6; --muted: #7a7468;
+      --success: #4caf7d; --error: #e05c5c; --radius: 14px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 60%); pointer-events: none; }
+
+    .topbar { width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
+    .logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; text-decoration: none; }
+    .logo span { color: var(--accent); }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    .profile { text-align: center; margin-bottom: 40px; width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.1s both; }
+    .avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(245,166,35,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; margin: 0 auto 14px; border: 2px solid rgba(245,166,35,0.3); }
+    .profile-name { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
+    .profile-email { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    .section { width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.2s both; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+
+    .order-list { display: flex; flex-direction: column; gap: 10px; }
+    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
+    .order-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .order-info { flex: 1; }
+    .order-title { font-weight: 600; font-size: 0.95rem; }
+    .order-meta { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+    .order-right { text-align: right; flex-shrink: 0; }
+    .order-preis { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+    .order-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 50px; margin-top: 4px; display: inline-block; }
+    .badge-ok { background: rgba(76,175,125,0.15); color: var(--success); }
+    .badge-bar { background: rgba(245,166,35,0.12); color: var(--accent); }
+    .badge-pending { background: rgba(122,116,104,0.15); color: var(--muted); }
+
+    .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty p { font-size: 0.92rem; margin-bottom: 20px; }
+    .order-now-btn { display: inline-block; padding: 12px 28px; background: var(--accent); color: #0b0e1a; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: background 0.2s; }
+    .order-now-btn:hover { background: #f0b83a; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="index.html" class="logo">Inder<span>national</span></a>
+    <button class="logout-btn" onclick="logout()">Abmelden</button>
+  </div>
+
+  <div class="profile" id="profile">
+    <div class="avatar" id="avatarInitial">?</div>
+    <div class="profile-name" id="profileName">–</div>
+    <div class="profile-email" id="profileEmail">–</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Meine Bestellungen</div>
+    <div class="order-list" id="orderList">
+      <div class="empty"><div class="icon">📋</div><p>Lade Bestellungen…</p></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function init() {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+
+      const user = session.user;
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      const email = user.email;
+
+      document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('profileEmail').textContent = email;
+
+      // load orders by email
+      const { data: orders } = await db
+        .from('vorbestellungen')
+        .select('*')
+        .eq('user_email', email)
+        .order('created_at', { ascending: false });
+
+      renderOrders(orders || []);
+    }
+
+    function renderOrders(orders) {
+      const list = document.getElementById('orderList');
+      if (orders.length === 0) {
+        list.innerHTML = `<div class="empty">
+          <div class="icon">🍽️</div>
+          <p>Noch keine Bestellungen vorhanden.</p>
+          <a href="index.html" class="order-now-btn">Jetzt vorbestellen</a>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = orders.map(o => {
+        const icon = o.typ === 'truck' ? '🚚' : '🍽️';
+        const menuLabel = o.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
+        const drinkInfo = o.getraenk ? ` + ${esc(o.getraenk)}` : '';
+        const total = (parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0)).toFixed(2).replace('.', ',');
+        const hasPrice = parseFloat(o.preis || 0) > 0;
+
+        let badge = '';
+        if (o.zahlung === 'online') {
+          badge = `<span class="order-badge ${o.bezahlt ? 'badge-ok' : 'badge-pending'}">${o.bezahlt ? '✓ Bezahlt' : '⏳ Ausstehend'}</span>`;
+        } else {
+          badge = `<span class="order-badge badge-bar">Bar</span>`;
+        }
+
+        return `<div class="order-card">
+          <div class="order-icon">${icon}</div>
+          <div class="order-info">
+            <div class="order-title">${menuLabel}${drinkInfo}</div>
+            <div class="order-meta">${formatDate(o.datum)} · ${o.typ === 'truck' ? 'Food Truck' : 'Kantine'}</div>
+          </div>
+          <div class="order-right">
+            ${hasPrice ? `<div class="order-preis">${total} €</div>` : ''}
+            ${badge}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function logout() {
+      await db.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function formatDate(d) {
+      if (!d) return '';
+      return new Date(d + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    init();
+  </script>
+</body>
+</html>

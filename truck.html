@@ -91,6 +91,7 @@
   </style>
 </head>
 <body>
+  <div id="authNav" style="margin-bottom:16px;animation:fadeUp 0.6s ease both;"></div>
   <div class="header">
     <span class="header-icon">🚚</span>
     <h1>Food <span>Truck</span></h1>
@@ -184,6 +185,20 @@
     let selectedDrinkPreis = 0;
     let selectedPayment = 'bar';
     let menuData = null;
+
+    // auth check - autofill name
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const name = session.user.user_metadata?.full_name || '';
+        if (name) document.getElementById('name').value = name;
+        // show account link
+        const nav = document.getElementById('authNav');
+        if (nav) {
+          const displayName = name || session.user.email.split('@')[0];
+          nav.innerHTML = `<a href="account.html" style="color:var(--muted);font-size:0.82rem;text-decoration:none;">👤 ${displayName}</a>`;
+        }
+      }
+    });
 
     const dateInput = document.getElementById('date');
     const today = new Date().toISOString().split('T')[0];
@@ -381,7 +396,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               items,
-              bestellung: { name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin }
+              bestellung: { name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin, user_email: (await db.auth.getSession()).data.session?.user?.email || null }
             })
           });
           const data = await resp.json();
@@ -399,7 +414,8 @@
         const { error } = await db.from('vorbestellungen').insert({
           name, datum: date, menu: selectedMenu, typ: 'truck',
           getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
-          preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false
+          preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false,
+          user_email: (await db.auth.getSession()).data.session?.user?.email || null
         });
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
         if (error) { showToast('Fehler beim Senden.', true); }
