@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Indernational</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0e1a; --surface: #131726; --border: #1e2236;
+      --truck: #f5a623; --kantine: #3ecf8e;
+      --text: #f0ede6; --muted: #7a7468;
+      --error: #e05c5c;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 20%, rgba(245,166,35,0.06) 0%, transparent 55%), radial-gradient(ellipse at 70% 80%, rgba(62,207,142,0.05) 0%, transparent 55%); pointer-events: none; }
+
+    .back-btn { position: fixed; top: 16px; left: 16px; z-index: 200; background: rgba(19,23,38,0.85); backdrop-filter: blur(8px); border: 1px solid #1e2236; color: #f0ede6; padding: 8px 14px 8px 10px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; }
+    .back-btn:hover { border-color: var(--truck); }
+
+    /* LOGIN */
+    #loginScreen { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; animation: fadeUp 0.6s ease both; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; text-align: center; position: relative; overflow: hidden; }
+    .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--truck), var(--kantine)); }
+    .login-icon { font-size: 2.5rem; margin-bottom: 14px; }
+    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .login-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 28px; line-height: 1.5; }
+    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .login-input:focus { outline: none; border-color: var(--truck); box-shadow: 0 0 0 3px rgba(245,166,35,0.12); }
+    .login-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, var(--truck), var(--kantine)); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+    .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .login-error { color: var(--error); font-size: 0.85rem; margin-top: 12px; display: none; }
+
+    /* LINKS */
+    #adminLinks { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 400px; gap: 12px; animation: fadeUp 0.5s ease both; }
+    .admin-header { text-align: center; margin-bottom: 8px; }
+    .admin-header h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+    .admin-header p { color: var(--muted); font-size: 0.88rem; }
+
+    .admin-link { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 16px; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .admin-link::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; }
+    .admin-link.dashboard::before { background: linear-gradient(180deg, var(--truck), var(--kantine)); }
+    .admin-link.truck::before { background: var(--truck); }
+    .admin-link.kantine::before { background: var(--kantine); }
+    .admin-link:hover { transform: translateX(4px); }
+    .admin-link.dashboard:hover { border-color: rgba(245,166,35,0.4); box-shadow: 0 4px 20px rgba(245,166,35,0.08); }
+    .admin-link.truck:hover { border-color: rgba(245,166,35,0.4); box-shadow: 0 4px 20px rgba(245,166,35,0.08); }
+    .admin-link.kantine:hover { border-color: rgba(62,207,142,0.4); box-shadow: 0 4px 20px rgba(62,207,142,0.08); }
+    .admin-link-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .admin-link-info { flex: 1; }
+    .admin-link-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 3px; }
+    .admin-link.dashboard .admin-link-title { background: linear-gradient(90deg, var(--truck), var(--kantine)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .admin-link.truck .admin-link-title { color: var(--truck); }
+    .admin-link.kantine .admin-link-title { color: var(--kantine); }
+    .admin-link-desc { font-size: 0.8rem; color: var(--muted); }
+    .admin-link-arrow { color: var(--muted); font-size: 1.1rem; transition: transform 0.2s; }
+    .admin-link:hover .admin-link-arrow { transform: translateX(3px); }
+
+    .logout-link { margin-top: 8px; color: var(--muted); font-size: 0.85rem; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; text-decoration: underline; }
+    .logout-link:hover { color: var(--error); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-btn">‹ Zurück</a>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h2>Admin-Bereich</h2>
+      <p>Nur für autorisierte Personen.<br>Bitte Passwort eingeben.</p>
+      <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
+      <button class="login-btn" onclick="login()">Anmelden</button>
+      <div class="login-error" id="loginError">Falsches Passwort.</div>
+    </div>
+  </div>
+
+  <!-- ADMIN LINKS -->
+  <div id="adminLinks">
+    <div class="admin-header">
+      <h2>Admin-Bereich</h2>
+      <p>Alle Verwaltungsseiten auf einen Blick.</p>
+    </div>
+
+    <a href="admin.html" class="admin-link dashboard">
+      <span class="admin-link-icon">📊</span>
+      <div class="admin-link-info">
+        <div class="admin-link-title">Haupt-Dashboard</div>
+        <div class="admin-link-desc">Überblick über beide Bereiche</div>
+      </div>
+      <span class="admin-link-arrow">→</span>
+    </a>
+
+    <a href="truck-admin.html" class="admin-link truck">
+      <span class="admin-link-icon">🚚</span>
+      <div class="admin-link-info">
+        <div class="admin-link-title">Food Truck Verwaltung</div>
+        <div class="admin-link-desc">Bestellungen, Menü, Scanner, Einstellungen</div>
+      </div>
+      <span class="admin-link-arrow">→</span>
+    </a>
+
+    <a href="kantine-admin.html" class="admin-link kantine">
+      <span class="admin-link-icon">🍽️</span>
+      <div class="admin-link-info">
+        <div class="admin-link-title">Kantine Verwaltung</div>
+        <div class="admin-link-desc">Bestellungen, Menü, Scanner, Einstellungen</div>
+      </div>
+      <span class="admin-link-arrow">→</span>
+    </a>
+
+    <button class="logout-link" onclick="logout()">Abmelden</button>
+  </div>
+
+  <script>
+    const PW = 'Indernational2026!';
+
+    function login() {
+      const pw = document.getElementById('pwInput').value;
+      if (pw === PW) {
+        sessionStorage.setItem('admin_gateway', '1');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminLinks').style.display = 'flex';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_gateway');
+      document.getElementById('adminLinks').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('pwInput').value = '';
+    }
+
+    if (sessionStorage.getItem('admin_gateway')) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminLinks').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
