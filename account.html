@@ -301,12 +301,14 @@
     async function executeCancel() {
       const btn = document.getElementById('confirmYes');
       btn.disabled = true; btn.textContent = 'Stornieren…';
+
+      const cancelId = pendingCancelId;  // save before closeConfirm clears it
       closeConfirm();
 
       const resp = await fetch('/api/cancel-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: pendingCancelId, user_email: userEmail })
+        body: JSON.stringify({ order_id: cancelId, user_email: userEmail })
       });
       const data = await resp.json();
 
