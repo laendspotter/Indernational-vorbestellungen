@@ -16,46 +16,90 @@
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px; }
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 60%); pointer-events: none; }
 
-    .topbar { width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
-    .logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; text-decoration: none; }
-    .logo span { color: #f2efeb; }
+    .back-btn { position: fixed; top: 16px; left: 16px; z-index: 200; background: rgba(19,23,38,0.85); backdrop-filter: blur(8px); border: 1px solid #1e2236; color: #f0ede6; padding: 8px 14px 8px 10px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; }
+    .back-btn:hover { border-color: var(--accent); }
+
+    .topbar { width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-end; margin-bottom: 32px; animation: fadeUp 0.6s ease both; }
     .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
     .logout-btn:hover { border-color: var(--error); color: var(--error); }
 
-    .profile { text-align: center; margin-bottom: 40px; width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.1s both; }
-    .avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(245,166,35,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; margin: 0 auto 14px; border: 2px solid rgba(245,166,35,0.3); }
-    .profile-name { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
-    .profile-email { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+    .profile { text-align: center; margin-bottom: 36px; width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.05s both; }
+    .avatar { width: 68px; height: 68px; border-radius: 50%; background: rgba(245,166,35,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; margin: 0 auto 12px; border: 2px solid rgba(245,166,35,0.3); }
+    .profile-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; }
+    .profile-email { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
 
-    .section { width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.2s both; }
-    .section-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+    .section { width: 100%; max-width: 600px; animation: fadeUp 0.6s ease 0.1s both; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px; }
 
     .order-list { display: flex; flex-direction: column; gap: 10px; }
-    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
-    .order-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
+    .order-card-main { padding: 16px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+    .order-card-main:hover { background: rgba(255,255,255,0.02); }
+    .order-icon { font-size: 1.5rem; flex-shrink: 0; }
     .order-info { flex: 1; }
-    .order-title { font-weight: 600; font-size: 0.95rem; }
-    .order-meta { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+    .order-title { font-weight: 600; font-size: 0.92rem; }
+    .order-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
     .order-right { text-align: right; flex-shrink: 0; }
-    .order-preis { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); font-size: 0.95rem; }
-    .order-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 50px; margin-top: 4px; display: inline-block; }
+    .order-preis { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+    .order-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 50px; margin-top: 3px; display: inline-block; }
     .badge-ok { background: rgba(76,175,125,0.15); color: var(--success); }
     .badge-bar { background: rgba(245,166,35,0.12); color: var(--accent); }
     .badge-pending { background: rgba(122,116,104,0.15); color: var(--muted); }
+    .badge-past { background: rgba(122,116,104,0.1); color: var(--muted); }
+    .chevron { color: var(--muted); font-size: 0.9rem; transition: transform 0.2s; flex-shrink: 0; }
+    .order-card.open .chevron { transform: rotate(90deg); }
+
+    /* Actions panel */
+    .order-actions { display: none; border-top: 1px solid var(--border); padding: 16px 18px; background: rgba(0,0,0,0.2); }
+    .order-card.open .order-actions { display: block; }
+
+    .action-section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 10px; }
+
+    .edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .edit-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; }
+    .edit-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; appearance: none; cursor: pointer; }
+    .edit-select:focus { outline: none; border-color: var(--accent); }
+
+    .action-btns { display: flex; gap: 8px; }
+    .save-change-btn { flex: 1; padding: 10px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; }
+    .save-change-btn:hover { background: #f0b83a; }
+    .save-change-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .cancel-btn { padding: 10px 16px; background: transparent; border: 1px solid rgba(224,92,92,0.4); color: var(--error); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .cancel-btn:hover { background: rgba(224,92,92,0.1); border-color: var(--error); }
+    .cancel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .past-note { font-size: 0.82rem; color: var(--muted); font-style: italic; }
 
     .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
     .empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
-    .empty p { font-size: 0.92rem; margin-bottom: 20px; }
-    .order-now-btn { display: inline-block; padding: 12px 28px; background: var(--accent); color: #0b0e1a; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: background 0.2s; }
+    .empty p { font-size: 0.9rem; margin-bottom: 20px; }
+    .order-now-btn { display: inline-block; padding: 12px 28px; background: var(--accent); color: #0b0e1a; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; text-decoration: none; }
     .order-now-btn:hover { background: #f0b83a; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
+    .toast.error { background: var(--error); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Confirm overlay */
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .confirm-overlay.show { opacity: 1; pointer-events: all; }
+    .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 340px; width: 100%; text-align: center; }
+    .confirm-box h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .confirm-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 8px; }
+    .confirm-yes { flex: 1; padding: 12px; background: var(--error); color: white; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
+    .confirm-no { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; }
+    .confirm-no:hover { border-color: var(--text); color: var(--text); }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
+  <a href="index.html" class="back-btn">‹ Zurück</a>
+
   <div class="topbar">
-    <a href="index.html" class="logo">Indernational</a>
     <button class="logout-btn" onclick="logout()">Abmelden</button>
   </div>
 
@@ -72,71 +116,206 @@
     </div>
   </div>
 
+  <!-- Confirm dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h3>Bestellung stornieren?</h3>
+      <p id="confirmText">Diese Bestellung wird storniert.</p>
+      <div class="confirm-btns">
+        <button class="confirm-yes" id="confirmYes">Ja, stornieren</button>
+        <button class="confirm-no" onclick="closeConfirm()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script>
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let userEmail = null;
+    let allOrders = [];
+    let drinks = [];
+
     async function init() {
       const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = 'login.html'; return; }
 
-      const user = session.user;
-      const name = user.user_metadata?.full_name || user.email.split('@')[0];
-      const email = user.email;
+      userEmail = session.user.email;
+      const name = session.user.user_metadata?.full_name || userEmail.split('@')[0];
 
       document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
       document.getElementById('profileName').textContent = name;
-      document.getElementById('profileEmail').textContent = email;
+      document.getElementById('profileEmail').textContent = userEmail;
 
-      // load orders by email
-      const { data: orders } = await db
-        .from('vorbestellungen')
-        .select('*')
-        .eq('user_email', email)
-        .order('created_at', { ascending: false });
-
-      renderOrders(orders || []);
+      await loadOrders();
     }
 
-    function renderOrders(orders) {
+    async function loadOrders() {
+      const { data } = await db.from('vorbestellungen').select('*').eq('user_email', userEmail).order('datum', { ascending: false });
+      allOrders = data || [];
+      renderOrders();
+    }
+
+    function renderOrders() {
       const list = document.getElementById('orderList');
-      if (orders.length === 0) {
-        list.innerHTML = `<div class="empty">
-          <div class="icon">🍽️</div>
-          <p>Noch keine Bestellungen vorhanden.</p>
-          <a href="index.html" class="order-now-btn">Jetzt vorbestellen</a>
-        </div>`;
+      const today = new Date().toISOString().split('T')[0];
+
+      if (allOrders.length === 0) {
+        list.innerHTML = `<div class="empty"><div class="icon">🍽️</div><p>Noch keine Bestellungen vorhanden.</p><a href="index.html" class="order-now-btn">Jetzt vorbestellen</a></div>`;
         return;
       }
 
-      list.innerHTML = orders.map(o => {
+      list.innerHTML = allOrders.map(o => {
         const icon = o.typ === 'truck' ? '🚚' : '🍽️';
         const menuLabel = o.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
         const drinkInfo = o.getraenk ? ` + ${esc(o.getraenk)}` : '';
         const total = (parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0)).toFixed(2).replace('.', ',');
         const hasPrice = parseFloat(o.preis || 0) > 0;
+        const isPast = o.datum < today;
+        const isErledigt = o.erledigt;
 
         let badge = '';
-        if (o.zahlung === 'online') {
-          badge = `<span class="order-badge ${o.bezahlt ? 'badge-ok' : 'badge-pending'}">${o.bezahlt ? '✓ Bezahlt' : '⏳ Ausstehend'}</span>`;
-        } else {
-          badge = `<span class="order-badge badge-bar">Bar</span>`;
-        }
+        if (isErledigt) badge = `<span class="order-badge badge-past">✓ Abgeholt</span>`;
+        else if (isPast) badge = `<span class="order-badge badge-past">Vergangen</span>`;
+        else if (o.zahlung === 'online') badge = `<span class="order-badge ${o.bezahlt ? 'badge-ok' : 'badge-pending'}">${o.bezahlt ? '💳 Bezahlt' : '⏳ Ausstehend'}</span>`;
+        else badge = `<span class="order-badge badge-bar">💵 Bar</span>`;
 
-        return `<div class="order-card">
-          <div class="order-icon">${icon}</div>
-          <div class="order-info">
-            <div class="order-title">${menuLabel}${drinkInfo}</div>
-            <div class="order-meta">${formatDate(o.datum)} · ${o.typ === 'truck' ? 'Food Truck' : 'Kantine'}</div>
+        const dateStr = new Date(o.datum + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+        const canEdit = !isPast && !isErledigt;
+
+        return `
+        <div class="order-card" id="card-${o.id}">
+          <div class="order-card-main" onclick="toggleCard('${o.id}')">
+            <div class="order-icon">${icon}</div>
+            <div class="order-info">
+              <div class="order-title">${menuLabel}${drinkInfo}</div>
+              <div class="order-meta">${dateStr} · ${o.typ === 'truck' ? 'Food Truck' : 'Kantine'}</div>
+            </div>
+            <div class="order-right">
+              ${hasPrice ? `<div class="order-preis">${total} €</div>` : ''}
+              ${badge}
+            </div>
+            <span class="chevron">›</span>
           </div>
-          <div class="order-right">
-            ${hasPrice ? `<div class="order-preis">${total} €</div>` : ''}
-            ${badge}
+          <div class="order-actions">
+            ${canEdit ? `
+              <div class="action-section-title">Bestellung ändern</div>
+              <div class="edit-row">
+                <div>
+                  <div class="edit-label">Menü</div>
+                  <select class="edit-select" id="edit-menu-${o.id}">
+                    <option value="menu1" ${o.menu === 'menu1' ? 'selected' : ''}>Menü 1</option>
+                    <option value="menu2" ${o.menu === 'menu2' ? 'selected' : ''}>Menü 2</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="edit-label">Getränk</div>
+                  <select class="edit-select" id="edit-drink-${o.id}">
+                    <option value="">Kein Getränk</option>
+                  </select>
+                </div>
+              </div>
+              <div class="action-btns">
+                <button class="save-change-btn" onclick="saveChange('${o.id}', '${o.typ}')">Änderung speichern</button>
+                <button class="cancel-btn" onclick="confirmCancel('${o.id}', ${o.zahlung === 'online' && o.bezahlt})">Stornieren</button>
+              </div>
+            ` : `<p class="past-note">Diese Bestellung kann nicht mehr geändert werden.</p>`}
           </div>
         </div>`;
       }).join('');
+
+      // load drinks for each order's select
+      allOrders.filter(o => {
+        const today = new Date().toISOString().split('T')[0];
+        return o.datum >= today && !o.erledigt;
+      }).forEach(o => loadDrinksForOrder(o));
+    }
+
+    async function loadDrinksForOrder(order) {
+      const sel = document.getElementById(`edit-drink-${order.id}`);
+      if (!sel) return;
+      const { data } = await db.from('getraenke').select('*').eq('typ', order.typ).eq('verfuegbar', true).order('reihenfolge');
+      if (!data) return;
+      data.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.name;
+        opt.dataset.preis = d.preis;
+        opt.textContent = `${d.name} (${parseFloat(d.preis).toFixed(2).replace('.', ',')} €)`;
+        if (d.name === order.getraenk) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function toggleCard(id) {
+      const card = document.getElementById('card-' + id);
+      card.classList.toggle('open');
+    }
+
+    async function saveChange(orderId, typ) {
+      const menuSel = document.getElementById(`edit-menu-${orderId}`);
+      const drinkSel = document.getElementById(`edit-drink-${orderId}`);
+      const btn = menuSel.closest('.order-actions').querySelector('.save-change-btn');
+
+      btn.disabled = true; btn.textContent = 'Speichern…';
+
+      const selectedOpt = drinkSel.options[drinkSel.selectedIndex];
+      const drinkName = drinkSel.value;
+      const drinkPreis = drinkName ? parseFloat(selectedOpt.dataset.preis || 0) : 0;
+
+      const resp = await fetch('/api/update-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, user_email: userEmail, menu: menuSel.value, getraenk: drinkName, getraenk_preis: drinkPreis })
+      });
+      const data = await resp.json();
+
+      btn.disabled = false; btn.textContent = 'Änderung speichern';
+
+      if (data.ok) { showToast('✓ Bestellung aktualisiert!'); await loadOrders(); }
+      else showToast(data.error || 'Fehler', true);
+    }
+
+    let pendingCancelId = null;
+    let pendingCancelRefund = false;
+
+    function confirmCancel(orderId, hasRefund) {
+      pendingCancelId = orderId;
+      pendingCancelRefund = hasRefund;
+      const text = hasRefund
+        ? 'Die Bestellung wird storniert und der bezahlte Betrag automatisch zurückerstattet.'
+        : 'Die Bestellung wird unwiderruflich storniert.';
+      document.getElementById('confirmText').textContent = text;
+      document.getElementById('confirmOverlay').classList.add('show');
+      document.getElementById('confirmYes').onclick = executeCancel;
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      pendingCancelId = null;
+    }
+
+    async function executeCancel() {
+      const btn = document.getElementById('confirmYes');
+      btn.disabled = true; btn.textContent = 'Stornieren…';
+      closeConfirm();
+
+      const resp = await fetch('/api/cancel-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: pendingCancelId, user_email: userEmail })
+      });
+      const data = await resp.json();
+
+      btn.disabled = false; btn.textContent = 'Ja, stornieren';
+
+      if (data.ok) {
+        showToast(data.refunded ? '✓ Storniert & Betrag wird erstattet' : '✓ Bestellung storniert');
+        await loadOrders();
+      } else showToast(data.error || 'Fehler', true);
     }
 
     async function logout() {
@@ -144,9 +323,10 @@
       window.location.href = 'index.html';
     }
 
-    function formatDate(d) {
-      if (!d) return '';
-      return new Date(d + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
+      setTimeout(() => t.classList.remove('show'), 3500);
     }
 
     function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
