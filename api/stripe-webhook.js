@@ -33,6 +33,21 @@ module.exports = async (req, res) => {
       preis: parseFloat(m.preis), zahlung: 'online',
       bezahlt: true, erledigt: false, stripe_session_id: session.id,
     });
+
+    // send confirmation email
+    if (m.user_email) {
+      const qrData = JSON.stringify({ id: session.id, name: m.name, datum: m.datum, menu: m.menu, typ: m.typ });
+      const baseUrl = process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000';
+      await fetch(`${baseUrl}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: m.user_email,
+          bestellung: { name: m.name, datum: m.datum, menu: m.menu, typ: m.typ, getraenk: m.getraenk, getraenk_preis: m.getraenk_preis, preis: m.preis, zahlung: 'online' },
+          qrData
+        })
+      }).catch(console.error);
+    }
   }
 
   res.status(200).json({ received: true });
