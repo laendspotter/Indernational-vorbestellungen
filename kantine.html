@@ -435,14 +435,23 @@
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
         if (error) { showToast('Fehler beim Senden.', true); }
         else {
-          showToast('✓ Vorbestellung erfolgreich!');
-          document.getElementById('name').value = '';
-          selectedMenu = null; selectedDrink = null; selectedDrinkPreis = 0;
-          document.getElementById('card1').classList.remove('selected');
-          document.getElementById('card2').classList.remove('selected');
-          document.querySelectorAll('.drink-card').forEach(c => c.classList.remove('selected'));
-          document.querySelector('.none-card').classList.add('selected');
-          document.getElementById('summary').style.display = 'none';
+          // send email if user is logged in
+          const { data: { session } } = await db.auth.getSession();
+          if (session?.user?.email) {
+            const qrData = JSON.stringify({ name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '' });
+            fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: session.user.email,
+                bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' },
+                qrData
+              })
+            }).catch(console.error);
+          }
+          // redirect to success page
+          const orderData = { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
+          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData));
         }
       }
     }

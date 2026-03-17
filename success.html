@@ -3,20 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zahlung erfolgreich</title>
+  <title>Vorbestellung bestätigt – Indernational</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --accent: #4caf7d; --text: #f0ede6; --muted: #7a7468; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(76,175,125,0.1) 0%, transparent 60%); pointer-events: none; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; max-width: 440px; width: 100%; text-align: center; position: relative; overflow: hidden; animation: fadeUp 0.6s ease both; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px 36px; max-width: 420px; width: 100%; text-align: center; position: relative; overflow: hidden; animation: fadeUp 0.6s ease both; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #4caf7d, #52d99e); }
-    .check { font-size: 4rem; margin-bottom: 20px; display: block; animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
-    h1 { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; }
-    p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px; }
-    .btn { display: inline-block; padding: 14px 32px; background: #4caf7d; color: #0b0e1a; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: background 0.2s, transform 0.15s; }
-    .btn:hover { background: #52d99e; transform: translateY(-1px); }
+
+    .check { font-size: 3.6rem; margin-bottom: 16px; display: block; animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both; }
+    h1 { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; line-height: 1.5; }
+
+    .order-details { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; text-align: left; }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.88rem; }
+    .detail-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .detail-label { color: var(--muted); }
+    .detail-value { font-weight: 600; }
+
+    .qr-section { margin-bottom: 28px; }
+    .qr-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+    .qr-wrap { background: white; border-radius: 12px; padding: 14px; display: inline-block; }
+    .qr-wrap img { display: block; width: 160px; height: 160px; }
+
+    .btn { display: inline-block; padding: 13px 28px; background: #4caf7d; color: #0b0e1a; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: background 0.2s; border: none; cursor: pointer; width: 100%; }
+    .btn:hover { background: #52d99e; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
   </style>
@@ -24,9 +39,78 @@
 <body>
   <div class="card">
     <span class="check">✅</span>
-    <h1>Zahlung erfolgreich!</h1>
-    <p>Ihre Vorbestellung wurde bestätigt und bezahlt. Wir freuen uns auf Ihren Besuch!</p>
+    <h1 id="title">Vorbestellung bestätigt!</h1>
+    <p class="subtitle" id="subtitle">Zeigen Sie den QR-Code bei der Abholung vor.</p>
+
+    <div class="order-details" id="orderDetails" style="display:none;">
+      <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value" id="dName">–</span></div>
+      <div class="detail-row"><span class="detail-label">Datum</span><span class="detail-value" id="dDate">–</span></div>
+      <div class="detail-row"><span class="detail-label">Menü</span><span class="detail-value" id="dMenu">–</span></div>
+      <div class="detail-row" id="dDrinkRow" style="display:none;"><span class="detail-label">Getränk</span><span class="detail-value" id="dDrink">–</span></div>
+      <div class="detail-row"><span class="detail-label">Zahlung</span><span class="detail-value" id="dZahlung">–</span></div>
+    </div>
+
+    <div class="qr-section" id="qrSection" style="display:none;">
+      <div class="qr-label">QR-Code zur Abholung</div>
+      <div class="qr-wrap">
+        <img id="qrImg" src="" alt="QR Code" />
+      </div>
+    </div>
+
     <a href="index.html" class="btn">Zurück zur Startseite</a>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get('session_id');
+    const orderJson = params.get('order'); // for bar orders
+
+    async function init() {
+      let bestellung = null;
+
+      if (orderJson) {
+        // bar order passed via URL
+        try { bestellung = JSON.parse(decodeURIComponent(orderJson)); } catch(e) {}
+      } else if (sessionId) {
+        // stripe order - fetch from supabase
+        const { data } = await db.from('vorbestellungen').select('*').eq('stripe_session_id', sessionId).single();
+        bestellung = data;
+      }
+
+      if (!bestellung) return;
+
+      // show order details
+      document.getElementById('orderDetails').style.display = 'block';
+      document.getElementById('dName').textContent = bestellung.name;
+      document.getElementById('dDate').textContent = new Date(bestellung.datum + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      document.getElementById('dMenu').textContent = bestellung.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
+      document.getElementById('dZahlung').textContent = bestellung.zahlung === 'online' ? '💳 Bezahlt' : '💵 Bar bei Abholung';
+
+      if (bestellung.getraenk) {
+        document.getElementById('dDrinkRow').style.display = 'flex';
+        document.getElementById('dDrink').textContent = bestellung.getraenk;
+      }
+
+      // generate QR code
+      const qrData = JSON.stringify({
+        id: bestellung.id || sessionId,
+        name: bestellung.name,
+        datum: bestellung.datum,
+        menu: bestellung.menu,
+        typ: bestellung.typ,
+        getraenk: bestellung.getraenk || ''
+      });
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+      document.getElementById('qrImg').src = qrUrl;
+      document.getElementById('qrSection').style.display = 'block';
+    }
+
+    init();
+  </script>
 </body>
 </html>

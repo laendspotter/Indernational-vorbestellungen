@@ -159,6 +159,22 @@
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* SCANNER */
+    .scanner-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #000; aspect-ratio: 1; max-width: 360px; margin: 0 auto 20px; }
+    .scanner-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .scanner-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .scanner-frame { width: 60%; aspect-ratio: 1; border: 3px solid var(--accent); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); }
+    .scan-result { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; max-width: 360px; margin: 0 auto; }
+    .scan-result-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+    .scan-result-meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .scan-result-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .scan-result-row:last-of-type { border-bottom: none; }
+    .ausgeben-btn { width: 100%; padding: 14px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 16px; }
+    .ausgeben-btn:hover { filter: brightness(1.1); }
+    .ausgeben-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .scan-start-btn { width: 100%; max-width: 360px; margin: 0 auto; display: block; padding: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: border-color 0.2s; }
+    .scan-start-btn:hover { border-color: var(--accent); }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 600px) {
@@ -198,6 +214,7 @@
         <button class="tab-btn" id="tabMenu" onclick="showTab('menu')">🍴 Wochenmenü</button>
         <button class="tab-btn" id="tabGetraenke" onclick="showTab('getraenke')">🥤 Getränke</button>
         <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
+        <button class="tab-btn" id="tabScanner" onclick="showTab('scanner')">📷 Scanner</button>
       </div>
 
       <!-- TAB: BESTELLUNGEN -->
@@ -281,6 +298,38 @@
       </div>
     </div>
   </div>
+
+      <!-- TAB: SCANNER -->
+      <div id="tabContentScanner" style="display:none;">
+        <div class="menu-editor">
+          <div class="menu-editor-header"><h3>QR-Code Scanner</h3></div>
+          <div style="padding:24px;">
+            <div id="scannerContainer">
+              <p style="color:var(--muted);font-size:0.88rem;text-align:center;margin-bottom:16px;">Kamera starten und QR-Code der Bestellung scannen.</p>
+              <button class="scan-start-btn" onclick="startScanner()">📷 Kamera starten</button>
+            </div>
+            <div id="scannerActive" style="display:none;">
+              <div class="scanner-wrap">
+                <video id="scannerVideo" autoplay playsinline muted></video>
+                <div class="scanner-overlay"><div class="scanner-frame"></div></div>
+              </div>
+              <button class="scan-start-btn" onclick="stopScanner()" style="border-color:var(--error);color:var(--error);">✕ Kamera stoppen</button>
+            </div>
+            <div id="scanResult" style="display:none;margin-top:20px;">
+              <div class="scan-result">
+                <div class="scan-result-name" id="srName">–</div>
+                <div class="scan-result-meta" id="srMeta">–</div>
+                <div class="scan-result-row"><span style="color:var(--muted)">Menü</span><span id="srMenu">–</span></div>
+                <div class="scan-result-row" id="srDrinkRow" style="display:none;"><span style="color:var(--muted)">Getränk</span><span id="srDrink">–</span></div>
+                <div class="scan-result-row"><span style="color:var(--muted)">Zahlung</span><span id="srZahlung">–</span></div>
+                <div class="scan-result-row"><span style="color:var(--muted)">Status</span><span id="srStatus">–</span></div>
+                <button class="ausgeben-btn" id="ausgebenBtn" onclick="ausgebenOrder()">✓ Als ausgegeben markieren</button>
+              </div>
+              <button class="scan-start-btn" onclick="resetScanner()" style="margin-top:12px;">← Erneut scannen</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- TAB: EINSTELLUNGEN -->
       <div id="tabContentEinstellungen" style="display:none;">
@@ -383,6 +432,9 @@
       document.getElementById('tabEinstellungen').classList.toggle('active', tab === 'einstellungen');
       if (tab === 'getraenke') loadDrinkList();
       if (tab === 'einstellungen') loadSettings();
+      document.getElementById('tabContentScanner').style.display = tab === 'scanner' ? 'block' : 'none';
+      document.getElementById('tabScanner').classList.toggle('active', tab === 'scanner');
+      if (tab !== 'scanner') stopScanner();
     }
 
     // ── BESTELLUNGEN ──
@@ -753,6 +805,120 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       }
       showToast('✓ Getränke gespeichert!');
       loadDrinkList();
+    }
+
+    // ── SCANNER ──
+    let scannerStream = null;
+    let scannerInterval = null;
+    let currentScanId = null;
+
+    async function startScanner() {
+      try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('scannerVideo').srcObject = scannerStream;
+        document.getElementById('scannerContainer').style.display = 'none';
+        document.getElementById('scannerActive').style.display = 'block';
+        document.getElementById('scanResult').style.display = 'none';
+
+        // load jsqr
+        if (!window.jsQR) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+
+        const video = document.getElementById('scannerVideo');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        scannerInterval = setInterval(() => {
+          if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0);
+          const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(img.data, img.width, img.height);
+          if (code) { handleQR(code.data); stopScanner(); }
+        }, 300);
+      } catch(e) {
+        showToast('Kamera-Zugriff verweigert.');
+      }
+    }
+
+    function stopScanner() {
+      if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+      if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
+      document.getElementById('scannerActive').style.display = 'none';
+      document.getElementById('scannerContainer').style.display = 'block';
+    }
+
+    async function handleQR(data) {
+      try {
+        const parsed = JSON.parse(data);
+        currentScanId = parsed.id;
+
+        // look up in supabase
+        let order = null;
+        if (currentScanId) {
+          const q1 = await db.from('vorbestellungen').select('*').eq('id', currentScanId).maybeSingle();
+          if (q1.data) order = q1.data;
+          if (!order) {
+            const q2 = await db.from('vorbestellungen').select('*').eq('stripe_session_id', currentScanId).maybeSingle();
+            if (q2.data) order = q2.data;
+          }
+        }
+
+        document.getElementById('srName').textContent = parsed.name || '–';
+        const date = parsed.datum ? new Date(parsed.datum + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}) : '–';
+        document.getElementById('srMeta').textContent = date + ' · ' + (parsed.typ === 'truck' ? '🚚 Food Truck' : '🍽️ Kantine');
+        document.getElementById('srMenu').textContent = parsed.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
+
+        if (parsed.getraenk) {
+          document.getElementById('srDrinkRow').style.display = 'flex';
+          document.getElementById('srDrink').textContent = parsed.getraenk;
+        } else {
+          document.getElementById('srDrinkRow').style.display = 'none';
+        }
+
+        if (order) {
+          document.getElementById('srZahlung').textContent = order.zahlung === 'online' ? (order.bezahlt ? '💳 Online bezahlt' : '⏳ Ausstehend') : '💵 Bar';
+          document.getElementById('srStatus').textContent = order.erledigt ? '✓ Bereits ausgegeben' : '⏳ Noch nicht ausgegeben';
+          const btn = document.getElementById('ausgebenBtn');
+          if (order.erledigt) { btn.textContent = '✓ Bereits ausgegeben'; btn.disabled = true; }
+          else { btn.textContent = '✓ Als ausgegeben markieren'; btn.disabled = false; }
+          currentScanId = order.id;
+        } else {
+          document.getElementById('srZahlung').textContent = '–';
+          document.getElementById('srStatus').textContent = '⚠️ Nicht in Datenbank gefunden';
+          document.getElementById('ausgebenBtn').disabled = true;
+        }
+
+        document.getElementById('scanResult').style.display = 'block';
+      } catch(e) {
+        showToast('Ungültiger QR-Code.');
+      }
+    }
+
+    async function ausgebenOrder() {
+      if (!currentScanId) return;
+      const btn = document.getElementById('ausgebenBtn');
+      btn.disabled = true; btn.textContent = 'Wird gespeichert…';
+      const { error } = await db.from('vorbestellungen').update({ erledigt: true }).eq('id', currentScanId);
+      if (error) { showToast('Fehler.'); btn.disabled = false; }
+      else {
+        btn.textContent = '✓ Ausgegeben!';
+        document.getElementById('srStatus').textContent = '✓ Ausgegeben';
+        showToast('✓ Als ausgegeben markiert!');
+      }
+    }
+
+    function resetScanner() {
+      currentScanId = null;
+      document.getElementById('scanResult').style.display = 'none';
+      document.getElementById('scannerContainer').style.display = 'block';
     }
 
     // ── EINSTELLUNGEN ──
