@@ -426,19 +426,20 @@
         }
       } else {
         // Bar zahlen → direkt in supabase
-        const { error } = await db.from('vorbestellungen').insert({
+        const { data: insertData, error } = await db.from('vorbestellungen').insert({
           name, datum: date, menu: selectedMenu, typ: 'kantine',
           getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
           preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false,
           user_email: (await db.auth.getSession()).data.session?.user?.email || null
-        });
+        }).select().single();
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
         if (error) { showToast('Fehler beim Senden.', true); }
         else {
+          const orderId = insertData?.id;
           // send email if user is logged in
           const { data: { session } } = await db.auth.getSession();
           if (session?.user?.email) {
-            const qrData = JSON.stringify({ name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '' });
+            const qrData = JSON.stringify({ id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '' });
             fetch('/api/send-email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -449,8 +450,8 @@
               })
             }).catch(console.error);
           }
-          // redirect to success page
-          const orderData = { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
+          // redirect to success page with real id
+          const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
           window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData));
         }
       }
