@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/create-checkout.js": {},
-    "api/stripe-webhook.js": {}
+    "api/create-checkout.js": { "maxDuration": 10 },
+    "api/stripe-webhook.js": { "maxDuration": 10 }
   }
 }
