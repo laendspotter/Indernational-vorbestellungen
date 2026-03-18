@@ -61,7 +61,47 @@
     .logout-link:hover { color: var(--error); }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #e2dfd8;
+        --text: #1a1816;
+        --muted: #8a8680;
+      }
+    }
+    [data-theme="light"] {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --border: #e2dfd8;
+      --text: #1a1816;
+      --muted: #8a8680;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0e1a;
+      --surface: #131726;
+      --border: #1e2236;
+      --text: #f0ede6;
+      --muted: #7a7468;
+    }
+
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
+  
+    body.light {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface2: #eeeae0;
+      --border: #ddd8cc;
+      --text: #1a1916;
+      --muted: #8a8070;
+    }
   </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
 
@@ -113,6 +153,15 @@
       <span class="admin-link-arrow">→</span>
     </a>
 
+    <a href="loyalty-admin.html" class="admin-link" style="border-color:rgba(167,139,250,0.3);">
+      <span class="admin-link-icon">⭐</span>
+      <div class="admin-link-info">
+        <div class="admin-link-title" style="background:linear-gradient(90deg,#a78bfa,#f5a623);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Loyalty Programm</div>
+        <div class="admin-link-desc">Kunden, Punkte, Belohnungen verwalten</div>
+      </div>
+      <span class="admin-link-arrow">→</span>
+    </a>
+
     <button class="logout-link" onclick="logout()">Abmelden</button>
   </div>
 
@@ -142,5 +191,24 @@
       document.getElementById('adminLinks').style.display = 'flex';
     }
   </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  </script>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+    })();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
 </body>
 </html>

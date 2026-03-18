@@ -183,6 +183,10 @@
       <label for="date">Gewünschter Tag</label>
       <input type="date" id="date" onchange="loadMenuForDate()" />
     </div>
+    <div id="loyaltyInfo" style="display:none;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:12px 16px;margin-bottom:24px;font-size:0.85rem;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.2rem;">⭐</span>
+      <span id="loyaltyText" style="flex:1;color:#a78bfa;"></span>
+    </div>
 
     <div class="menu-info" id="menuInfo">
       <span class="menu-info-icon">📋</span>
@@ -573,6 +577,11 @@
           }
           // redirect to success page with real id
           const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
+          // earn loyalty points
+          const emailForLoyalty = emailVal || session?.user?.email;
+          if (emailForLoyalty && selectedMenuPreis > 0) {
+            earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis);
+          }
           window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData));
         }
       }
@@ -650,6 +659,46 @@
         });
       }
     }
+
+    async function loadLoyaltyInfo() {
+      const emailEl = document.getElementById('email');
+      const email = emailEl?.value.trim();
+      if (!email) { document.getElementById('loyaltyInfo').style.display = 'none'; return; }
+      const { data } = await db.from('loyalty_punkte').select('punkte').eq('email', email).maybeSingle();
+      const pts = data?.punkte || 0;
+      const el = document.getElementById('loyaltyInfo');
+      el.style.display = 'flex';
+      document.getElementById('loyaltyText').textContent = pts > 0
+        ? `Du hast ${pts.toLocaleString('de-DE')} Punkte ⭐ — diese Bestellung bringt dir neue Punkte!`
+        : 'Neu hier? Diese Bestellung bringt dir deine ersten Punkte! ⭐';
+    }
+
+    async function earnLoyaltyPoints(email, preis, drinkPreis) {
+      // get settings
+      const { data: settings } = await db.from('einstellungen').select('*').eq('typ', 'loyalty').maybeSingle();
+      const ptsPerEuro = settings?.bestellschluss_stunde || 10;
+      const bonus = settings?.bestellschluss_minute || 0;
+      const total = parseFloat(preis) + parseFloat(drinkPreis || 0);
+      const earned = Math.floor(total * ptsPerEuro) + (drinkPreis > 0 ? bonus : 0);
+      if (earned <= 0) return;
+
+      const { data: existing } = await db.from('loyalty_punkte').select('*').eq('email', email).maybeSingle();
+      if (existing) {
+        await db.from('loyalty_punkte').update({
+          punkte: (existing.punkte || 0) + earned,
+          punkte_gesamt: (existing.punkte_gesamt || 0) + earned,
+          updated_at: new Date().toISOString()
+        }).eq('email', email);
+      } else {
+        await db.from('loyalty_punkte').insert({ email, punkte: earned, punkte_gesamt: earned });
+      }
+    }
+
+    // load loyalty info when email changes
+    document.addEventListener('DOMContentLoaded', () => {
+      const emailEl = document.getElementById('email');
+      if (emailEl) emailEl.addEventListener('blur', loadLoyaltyInfo);
+    });
 
     function formatPreis(p) { return parseFloat(p).toFixed(2).replace('.', ',') + ' €'; }
     function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

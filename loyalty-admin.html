@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loyalty – Indernational</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0e1a; --surface: #131726; --surface2: #191d30; --border: #1e2236;
+      --accent: #a78bfa; --accent2: #f5a623;
+      --text: #f0ede6; --muted: #7a7468;
+      --success: #4caf7d; --error: #e05c5c; --radius: 14px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(167,139,250,0.08) 0%, transparent 55%), radial-gradient(ellipse at 70% 100%, rgba(245,166,35,0.05) 0%, transparent 55%); pointer-events: none; }
+
+    /* LOGIN */
+    #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; width: 100%; max-width: 380px; text-align: center; position: relative; overflow: hidden; }
+    .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .login-icon { font-size: 2.5rem; margin-bottom: 14px; }
+    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .login-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s; }
+    .login-input:focus { outline: none; border-color: var(--accent); }
+    .login-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; }
+    .login-error { color: var(--error); font-size: 0.82rem; margin-top: 10px; display: none; }
+
+    #adminPanel { display: none; }
+
+    /* TOPBAR */
+    .topbar { background: rgba(11,14,26,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; }
+    .topbar-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .live-badge { background: rgba(167,139,250,0.12); color: var(--accent); border: 1px solid rgba(167,139,250,0.25); border-radius: 50px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    .main { padding: 28px; max-width: 1100px; margin: 0 auto; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; overflow-x: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+    .tab-btn.active { background: var(--accent); color: #0b0e1a; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
+    .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+    /* KUNDEN TABLE */
+    .search-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+    .filter-btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #0b0e1a; border-color: var(--accent); }
+
+    .kunden-table { width: 100%; border-collapse: collapse; }
+    .kunden-table th { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .kunden-table td { padding: 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .kunden-table tr:last-child td { border-bottom: none; }
+    .kunden-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .pt-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; width: 100%; max-width: 120px; }
+    .pt-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.6s ease; }
+    .pt-badge { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.92rem; color: var(--accent); }
+    .level-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 50px; }
+    .level-bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
+    .level-silver { background: rgba(170,176,192,0.15); color: #aab0c0; }
+    .level-gold { background: rgba(245,166,35,0.15); color: #f5a623; }
+    .level-platin { background: rgba(167,139,250,0.15); color: var(--accent); }
+
+    .action-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-right: 4px; }
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .action-btn.danger:hover { border-color: var(--error); color: var(--error); }
+
+    /* BELOHNUNGEN */
+    .belohnung-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .belohnung-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
+    .belohnung-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .belohnung-info { flex: 1; }
+    .belohnung-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 3px; }
+    .belohnung-desc { font-size: 0.82rem; color: var(--muted); }
+    .belohnung-pt { font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+    .belohnung-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .toggle-btn { padding: 6px 12px; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+    .toggle-btn.on { background: rgba(76,175,125,0.15); color: var(--success); }
+    .toggle-btn.off { background: rgba(224,92,92,0.15); color: var(--error); }
+
+    /* ADD BELOHNUNG FORM */
+    .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .add-form-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; display: block; }
+    .form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .save-btn { padding: 11px 24px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: filter 0.2s; }
+    .save-btn:hover { filter: brightness(1.1); }
+
+    /* EINSTELLUNGEN */
+    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+    .settings-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 16px; }
+    .pts-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .pts-label { flex: 1; font-size: 0.9rem; min-width: 160px; }
+    .pts-input { width: 80px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; text-align: center; }
+    .pts-input:focus { outline: none; border-color: var(--accent); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 400px; width: 100%; position: relative; overflow: hidden; }
+    .modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+    .modal-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+    .modal-row { margin-bottom: 14px; }
+    .modal-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; display: block; }
+    .modal-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+    .modal-input:focus { outline: none; border-color: var(--accent); }
+    .modal-btns { display: flex; gap: 8px; margin-top: 20px; }
+    .modal-submit { flex: 1; padding: 12px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
+    .modal-cancel { padding: 12px 16px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 400; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    body.light { --bg: #f4f2ec; --surface: #ffffff; --surface2: #eeeae0; --border: #ddd8cc; --text: #1a1916; --muted: #8a8070; }
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .theme-toggle:hover { transform: scale(1.1); }
+  </style>
+</head>
+<body>
+
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="login-icon">⭐</div>
+      <h2>Loyalty Admin</h2>
+      <p>Punkte, Belohnungen, Kunden</p>
+      <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
+      <button class="login-btn" onclick="login()">Anmelden</button>
+      <div class="login-error" id="loginError">Falsches Passwort.</div>
+    </div>
+  </div>
+
+  <div id="adminPanel">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">⭐ <span>Loyalty</span></div>
+        <div class="live-badge"><div class="live-dot"></div> Live</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Abmelden</button>
+    </div>
+
+    <div class="main">
+
+      <!-- STATS -->
+      <div class="stats-grid" id="statsGrid" style="animation:fadeUp 0.5s ease both;">
+        <div class="stat-card"><div class="stat-num" id="statKunden">–</div><div class="stat-label">Kunden</div></div>
+        <div class="stat-card"><div class="stat-num" id="statPunkte">–</div><div class="stat-label">Punkte vergeben</div></div>
+        <div class="stat-card"><div class="stat-num" id="statEinloesungen">–</div><div class="stat-label">Einlösungen</div></div>
+        <div class="stat-card"><div class="stat-num" id="statGold">–</div><div class="stat-label">Gold+ Kunden</div></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabKunden" onclick="showTab('kunden')">👥 Kunden</button>
+        <button class="tab-btn" id="tabBelohnungen" onclick="showTab('belohnungen')">🎁 Belohnungen</button>
+        <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
+      </div>
+
+      <!-- KUNDEN TAB -->
+      <div id="tabKunden">
+        <div class="search-row">
+          <input class="search-input" id="searchInput" placeholder="Nach Name oder E-Mail suchen…" oninput="renderKunden()" />
+          <button class="filter-btn active" id="sortPt" onclick="setKundenSort('punkte')">⭐ Punkte</button>
+          <button class="filter-btn" id="sortName" onclick="setKundenSort('name')">🔤 Name</button>
+          <button class="filter-btn" onclick="exportKundenCSV()">📥 CSV</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <table class="kunden-table">
+            <thead>
+              <tr>
+                <th>E-Mail</th>
+                <th>Punkte</th>
+                <th>Gesamt gesammelt</th>
+                <th>Level</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="kundenBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BELOHNUNGEN TAB -->
+      <div id="tabBelohnungen" style="display:none;">
+        <div class="section-title">Aktive Belohnungen</div>
+        <div class="belohnung-list" id="belohnungList"></div>
+
+        <div class="section-title">Neue Belohnung</div>
+        <div class="add-form">
+          <div class="form-grid">
+            <div>
+              <label class="form-label">Name</label>
+              <input class="form-input" id="bName" placeholder="z.B. Gratis Getränk" />
+            </div>
+            <div>
+              <label class="form-label">Benötigte Punkte</label>
+              <input class="form-input" id="bPunkte" type="number" placeholder="500" min="1" />
+            </div>
+            <div>
+              <label class="form-label">Typ</label>
+              <select class="form-input" id="bTyp">
+                <option value="getraenk">🥤 Getränk</option>
+                <option value="menue">🍽️ Menü</option>
+                <option value="frei">🎁 Freie Belohnung</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Beschreibung</label>
+              <input class="form-input" id="bDesc" placeholder="z.B. Ein Getränk deiner Wahl" />
+            </div>
+          </div>
+          <button class="save-btn" onclick="addBelohnung()">+ Belohnung hinzufügen</button>
+        </div>
+      </div>
+
+      <!-- EINSTELLUNGEN TAB -->
+      <div id="tabEinstellungen" style="display:none;">
+        <div class="settings-card">
+          <div class="settings-title">Punkte-Vergabe</div>
+          <div class="pts-row">
+            <span class="pts-label">Punkte pro Euro</span>
+            <input class="pts-input" id="setPtsPerEuro" type="number" value="10" min="1" />
+            <span style="color:var(--muted);font-size:0.85rem;">Punkte / €</span>
+          </div>
+          <div class="pts-row">
+            <span class="pts-label">Bonus bei Getränk-Bestellung</span>
+            <input class="pts-input" id="setPtsBonus" type="number" value="5" min="0" />
+            <span style="color:var(--muted);font-size:0.85rem;">Extra Punkte</span>
+          </div>
+          <button class="save-btn" onclick="saveSettings()" style="margin-top:8px;">Speichern</button>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-title">Level-System</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:0.88rem;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
+              <span class="level-badge level-bronze">Bronze</span>
+              <span style="flex:1;">0 – 499 Punkte</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
+              <span class="level-badge level-silver">Silber</span>
+              <span style="flex:1;">500 – 999 Punkte</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
+              <span class="level-badge level-gold">Gold</span>
+              <span style="flex:1;">1000 – 1999 Punkte</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
+              <span class="level-badge level-platin">Platin</span>
+              <span style="flex:1;">2000+ Punkte</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PUNKTE MODAL -->
+  <div class="modal-overlay" id="ptsModal">
+    <div class="modal-box">
+      <div class="modal-title">⭐ Punkte anpassen</div>
+      <div class="modal-sub" id="ptsModalSub">–</div>
+      <div class="modal-row">
+        <label class="modal-label">Punkte ändern</label>
+        <input class="modal-input" id="ptsChange" type="number" placeholder="z.B. +50 oder -50" />
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Grund (optional)</label>
+        <input class="modal-input" id="ptsReason" placeholder="z.B. Bonus für treue Stammkunde" />
+      </div>
+      <div class="modal-btns">
+        <button class="modal-submit" onclick="savePtsChange()">Speichern</button>
+        <button class="modal-cancel" onclick="closeModal('ptsModal')">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RABATT MODAL -->
+  <div class="modal-overlay" id="rabattModal">
+    <div class="modal-box">
+      <div class="modal-title">🎟️ Rabatt vergeben</div>
+      <div class="modal-sub" id="rabattModalSub">–</div>
+      <div class="modal-row">
+        <label class="modal-label">Belohnung wählen</label>
+        <select class="modal-input" id="rabattBelohnung"></select>
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Notiz (optional)</label>
+        <input class="modal-input" id="rabattNotiz" placeholder="z.B. Entschädigung für Wartezeit" />
+      </div>
+      <div class="modal-btns">
+        <button class="modal-submit" onclick="saveRabatt()">Vergeben</button>
+        <button class="modal-cancel" onclick="closeModal('rabattModal')">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const PW = 'Indernational2026!';
+    let kunden = [], belohnungen = [], kundenSort = 'punkte';
+    let currentEmail = null;
+
+    // ── AUTH ──
+    function login() {
+      if (document.getElementById('pwInput').value === PW) {
+        sessionStorage.setItem('loyalty_auth', '1');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        init();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('loyalty_auth');
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+
+    if (sessionStorage.getItem('loyalty_auth')) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      init();
+    }
+
+    // ── INIT ──
+    async function init() {
+      await Promise.all([loadKunden(), loadBelohnungen(), loadStats()]);
+      subscribeRealtime();
+    }
+
+    async function loadStats() {
+      const { data: kd } = await db.from('loyalty_punkte').select('punkte, punkte_gesamt');
+      const { data: ed } = await db.from('loyalty_einloesungen').select('id');
+      const total = kd?.reduce((s, k) => s + (k.punkte_gesamt || 0), 0) || 0;
+      const gold = kd?.filter(k => k.punkte_gesamt >= 1000).length || 0;
+      document.getElementById('statKunden').textContent = kd?.length || 0;
+      document.getElementById('statPunkte').textContent = total.toLocaleString('de-DE');
+      document.getElementById('statEinloesungen').textContent = ed?.length || 0;
+      document.getElementById('statGold').textContent = gold;
+    }
+
+    // ── KUNDEN ──
+    async function loadKunden() {
+      const { data } = await db.from('loyalty_punkte').select('*').order('punkte', { ascending: false });
+      kunden = data || [];
+      renderKunden();
+    }
+
+    function setKundenSort(s) {
+      kundenSort = s;
+      document.getElementById('sortPt').classList.toggle('active', s === 'punkte');
+      document.getElementById('sortName').classList.toggle('active', s === 'name');
+      renderKunden();
+    }
+
+    function getLevel(pts) {
+      if (pts >= 2000) return { label: 'Platin', cls: 'level-platin' };
+      if (pts >= 1000) return { label: 'Gold', cls: 'level-gold' };
+      if (pts >= 500) return { label: 'Silber', cls: 'level-silver' };
+      return { label: 'Bronze', cls: 'level-bronze' };
+    }
+
+    function renderKunden() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      let filtered = kunden.filter(k => !search || k.email.toLowerCase().includes(search));
+      if (kundenSort === 'name') filtered.sort((a, b) => a.email.localeCompare(b.email));
+      const maxPts = Math.max(...filtered.map(k => k.punkte_gesamt || 0), 1);
+
+      const body = document.getElementById('kundenBody');
+      if (filtered.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted);">Keine Kunden gefunden.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = filtered.map(k => {
+        const level = getLevel(k.punkte_gesamt || 0);
+        const pct = ((k.punkte_gesamt || 0) / maxPts * 100).toFixed(0);
+        return `<tr>
+          <td>${esc(k.email)}</td>
+          <td>
+            <span class="pt-badge">${(k.punkte || 0).toLocaleString('de-DE')} ⭐</span>
+            <div class="pt-bar"><div class="pt-bar-fill" style="width:${pct}%"></div></div>
+          </td>
+          <td style="color:var(--muted);">${(k.punkte_gesamt || 0).toLocaleString('de-DE')} gesamt</td>
+          <td><span class="level-badge ${level.cls}">${level.label}</span></td>
+          <td>
+            <button class="action-btn" onclick="openPtsModal('${k.email}', ${k.punkte || 0})">⭐ Punkte</button>
+            <button class="action-btn" onclick="openRabattModal('${k.email}')">🎟️ Rabatt</button>
+            <button class="action-btn danger" onclick="resetKunde('${k.email}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function exportKundenCSV() {
+      const header = 'E-Mail,Punkte,Gesamt gesammelt,Level';
+      const rows = kunden.map(k => {
+        const level = getLevel(k.punkte_gesamt || 0);
+        return `"${k.email}",${k.punkte || 0},${k.punkte_gesamt || 0},"${level.label}"`;
+      });
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `loyalty-kunden-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    // ── PUNKTE MODAL ──
+    function openPtsModal(email, currentPts) {
+      currentEmail = email;
+      document.getElementById('ptsModalSub').textContent = `${email} · aktuell ${currentPts.toLocaleString('de-DE')} Punkte`;
+      document.getElementById('ptsChange').value = '';
+      document.getElementById('ptsReason').value = '';
+      document.getElementById('ptsModal').classList.add('show');
+    }
+
+    async function savePtsChange() {
+      const change = parseInt(document.getElementById('ptsChange').value);
+      if (isNaN(change)) return showToast('Bitte Zahl eingeben.', true);
+      const k = kunden.find(x => x.email === currentEmail);
+      if (!k) return;
+      const newPts = Math.max(0, (k.punkte || 0) + change);
+      const newGesamt = change > 0 ? (k.punkte_gesamt || 0) + change : (k.punkte_gesamt || 0);
+      await db.from('loyalty_punkte').update({ punkte: newPts, punkte_gesamt: newGesamt, updated_at: new Date().toISOString() }).eq('email', currentEmail);
+      showToast(`✓ Punkte angepasst: ${change > 0 ? '+' : ''}${change}`);
+      closeModal('ptsModal');
+      loadKunden(); loadStats();
+    }
+
+    // ── RABATT MODAL ──
+    function openRabattModal(email) {
+      currentEmail = email;
+      document.getElementById('rabattModalSub').textContent = email;
+      document.getElementById('rabattNotiz').value = '';
+      const sel = document.getElementById('rabattBelohnung');
+      sel.innerHTML = belohnungen.filter(b => b.aktiv).map(b =>
+        `<option value="${b.id}">${b.name} (${b.punkte_benoetigt} Punkte)</option>`
+      ).join('');
+      document.getElementById('rabattModal').classList.add('show');
+    }
+
+    async function saveRabatt() {
+      const belohnungId = document.getElementById('rabattBelohnung').value;
+      const b = belohnungen.find(x => x.id === belohnungId);
+      if (!b) return;
+      const notiz = document.getElementById('rabattNotiz').value.trim();
+      // insert einloesung without deducting points (admin gift)
+      await db.from('loyalty_einloesungen').insert({
+        email: currentEmail, belohnung_id: belohnungId,
+        belohnung_name: b.name + (notiz ? ` (${notiz})` : ''),
+        punkte_verwendet: 0, used: false
+      });
+      showToast(`✓ ${b.name} für ${currentEmail} vergeben!`);
+      closeModal('rabattModal');
+    }
+
+    async function resetKunde(email) {
+      if (!confirm(`Punkte von ${email} wirklich auf 0 zurücksetzen?`)) return;
+      await db.from('loyalty_punkte').update({ punkte: 0 }).eq('email', email);
+      showToast('✓ Punkte zurückgesetzt');
+      loadKunden(); loadStats();
+    }
+
+    // ── BELOHNUNGEN ──
+    async function loadBelohnungen() {
+      const { data } = await db.from('loyalty_belohnungen').select('*').order('punkte_benoetigt');
+      belohnungen = data || [];
+      renderBelohnungen();
+    }
+
+    function getBelohnungIcon(typ) {
+      return typ === 'getraenk' ? '🥤' : typ === 'menue' ? '🍽️' : '🎁';
+    }
+
+    function renderBelohnungen() {
+      const list = document.getElementById('belohnungList');
+      if (belohnungen.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:12px;">Keine Belohnungen angelegt.</div>';
+        return;
+      }
+      list.innerHTML = belohnungen.map(b => `
+        <div class="belohnung-item" style="${!b.aktiv ? 'opacity:0.5' : ''}">
+          <span class="belohnung-icon">${getBelohnungIcon(b.typ)}</span>
+          <div class="belohnung-info">
+            <div class="belohnung-name">${esc(b.name)}</div>
+            <div class="belohnung-desc">${esc(b.beschreibung || '')}</div>
+          </div>
+          <div class="belohnung-pt">${b.punkte_benoetigt.toLocaleString('de-DE')} ⭐</div>
+          <div class="belohnung-actions">
+            <button class="action-btn" onclick="editBelohnung('${b.id}', ${b.punkte_benoetigt})">✏️</button>
+            <button class="toggle-btn ${b.aktiv ? 'on' : 'off'}" onclick="toggleBelohnung('${b.id}', ${b.aktiv})">${b.aktiv ? 'Aktiv' : 'Inaktiv'}</button>
+            <button class="action-btn danger" onclick="deleteBelohnung('${b.id}')">✕</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function addBelohnung() {
+      const name = document.getElementById('bName').value.trim();
+      const punkte = parseInt(document.getElementById('bPunkte').value);
+      if (!name || !punkte) return showToast('Name und Punkte sind Pflicht.', true);
+      await db.from('loyalty_belohnungen').insert({
+        name, punkte_benoetigt: punkte,
+        typ: document.getElementById('bTyp').value,
+        beschreibung: document.getElementById('bDesc').value.trim(),
+        aktiv: true
+      });
+      document.getElementById('bName').value = '';
+      document.getElementById('bPunkte').value = '';
+      document.getElementById('bDesc').value = '';
+      showToast('✓ Belohnung hinzugefügt!');
+      loadBelohnungen();
+    }
+
+    async function editBelohnung(id, currentPts) {
+      const newPts = prompt('Neue Punktzahl:', currentPts);
+      if (!newPts) return;
+      await db.from('loyalty_belohnungen').update({ punkte_benoetigt: parseInt(newPts) }).eq('id', id);
+      showToast('✓ Gespeichert!');
+      loadBelohnungen();
+    }
+
+    async function toggleBelohnung(id, current) {
+      await db.from('loyalty_belohnungen').update({ aktiv: !current }).eq('id', id);
+      loadBelohnungen();
+    }
+
+    async function deleteBelohnung(id) {
+      if (!confirm('Belohnung wirklich löschen?')) return;
+      await db.from('loyalty_belohnungen').delete().eq('id', id);
+      loadBelohnungen();
+    }
+
+    // ── EINSTELLUNGEN ──
+    async function saveSettings() {
+      const ptsPerEuro = parseInt(document.getElementById('setPtsPerEuro').value) || 10;
+      const bonus = parseInt(document.getElementById('setPtsBonus').value) || 0;
+      await db.from('einstellungen').upsert({ typ: 'loyalty', bestellschluss_stunde: ptsPerEuro, bestellschluss_minute: bonus }, { onConflict: 'typ' });
+      showToast('✓ Einstellungen gespeichert!');
+    }
+
+    // ── TABS ──
+    function showTab(tab) {
+      ['kunden','belohnungen','einstellungen'].forEach(t => {
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList?.toggle('active', t === tab);
+      });
+      // fix tab buttons
+      document.getElementById('tabKunden').classList.toggle('active', tab === 'kunden');
+      document.getElementById('tabBelohnungen').classList.toggle('active', tab === 'belohnungen');
+      document.getElementById('tabEinstellungen').classList.toggle('active', tab === 'einstellungen');
+    }
+
+    function subscribeRealtime() {
+      db.channel('loyalty-admin')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_punkte' }, () => { loadKunden(); loadStats(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_einloesungen' }, () => loadStats())
+        .subscribe();
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); }
+  </script>
+</body>
+</html>

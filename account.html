@@ -93,7 +93,47 @@
     .confirm-no:hover { border-color: var(--text); color: var(--text); }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #e2dfd8;
+        --text: #1a1816;
+        --muted: #8a8680;
+      }
+    }
+    [data-theme="light"] {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --border: #e2dfd8;
+      --text: #1a1816;
+      --muted: #8a8680;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0e1a;
+      --surface: #131726;
+      --border: #1e2236;
+      --text: #f0ede6;
+      --muted: #7a7468;
+    }
+
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
+  
+    body.light {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface2: #eeeae0;
+      --border: #ddd8cc;
+      --text: #1a1916;
+      --muted: #8a8070;
+    }
   </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
 
@@ -152,6 +192,46 @@
       document.getElementById('profileEmail').textContent = userEmail;
 
       await loadOrders();
+      await loadLoyalty();
+    }
+
+    async function loadLoyalty() {
+      const { data } = await db.from('loyalty_punkte').select('*').eq('email', userEmail).maybeSingle();
+      if (!data) return;
+      const card = document.getElementById('loyaltyCard');
+      card.style.display = 'block';
+      document.getElementById('loyaltyPts').textContent = (data.punkte || 0).toLocaleString('de-DE') + ' Punkte';
+      document.getElementById('loyaltyGesamt').textContent = (data.punkte_gesamt || 0).toLocaleString('de-DE');
+      const pts = data.punkte_gesamt || 0;
+      const level = pts >= 2000 ? 'Platin ✨' : pts >= 1000 ? 'Gold 🥇' : pts >= 500 ? 'Silber 🥈' : 'Bronze 🥉';
+      document.getElementById('loyaltyLevel').textContent = level;
+
+      // load available rewards
+      const { data: belohnungen } = await db.from('loyalty_belohnungen').select('*').eq('aktiv', true).order('punkte_benoetigt');
+      const container = document.getElementById('loyaltyBelohnungen');
+      if (belohnungen && belohnungen.length > 0) {
+        container.innerHTML = '<div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.07em;">Belohnungen</div>' +
+          belohnungen.map(b => {
+            const canRedeem = (data.punkte || 0) >= b.punkte_benoetigt;
+            const icon = b.typ === 'getraenk' ? '🥤' : b.typ === 'menue' ? '🍽️' : '🎁';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.85rem;">
+              <span>${icon}</span>
+              <span style="flex:1;">${esc(b.name)}</span>
+              <span style="color:#a78bfa;font-weight:700;">${b.punkte_benoetigt.toLocaleString('de-DE')} ⭐</span>
+              ${canRedeem ? `<button onclick="redeemReward('${b.id}','${b.name}',${b.punkte_benoetigt})" style="padding:5px 12px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.4);color:#a78bfa;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:'DM Sans',sans-serif;">Einlösen</button>` : '<span style="color:var(--muted);font-size:0.75rem;">Noch ' + (b.punkte_benoetigt - (data.punkte||0)) + ' Pkt fehlen</span>'}
+            </div>`;
+          }).join('');
+      }
+    }
+
+    async function redeemReward(belohnungId, name, punkte) {
+      if (!confirm(`"${name}" für ${punkte} Punkte einlösen?`)) return;
+      const { data: kd } = await db.from('loyalty_punkte').select('punkte').eq('email', userEmail).single();
+      if (!kd || kd.punkte < punkte) return showToast('Nicht genug Punkte.', true);
+      await db.from('loyalty_punkte').update({ punkte: kd.punkte - punkte }).eq('email', userEmail);
+      await db.from('loyalty_einloesungen').insert({ email: userEmail, belohnung_id: belohnungId, belohnung_name: name, punkte_verwendet: punkte, used: false });
+      showToast(`✓ ${name} eingelöst! Zeig das beim Abholen vor.`);
+      loadLoyalty();
     }
 
     async function loadOrders() {
@@ -335,5 +415,24 @@
 
     init();
   </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  </script>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+    })();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
 </body>
 </html>
