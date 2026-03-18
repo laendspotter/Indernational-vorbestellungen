@@ -183,7 +183,7 @@
       </div>
 
       <!-- KUNDEN TAB -->
-      <div id="tabKunden">
+      <div id="contentKunden">
         <div class="search-row">
           <input class="search-input" id="searchInput" placeholder="Nach Name oder E-Mail suchen…" oninput="renderKunden()" />
           <button class="filter-btn active" id="sortPt" onclick="setKundenSort('punkte')">⭐ Punkte</button>
@@ -207,7 +207,7 @@
       </div>
 
       <!-- BELOHNUNGEN TAB -->
-      <div id="tabBelohnungen" style="display:none;">
+      <div id="contentBelohnungen" style="display:none;">
         <div class="section-title">Aktive Belohnungen</div>
         <div class="belohnung-list" id="belohnungList"></div>
 
@@ -240,7 +240,7 @@
       </div>
 
       <!-- EINSTELLUNGEN TAB -->
-      <div id="tabEinstellungen" style="display:none;">
+      <div id="contentEinstellungen" style="display:none;">
         <div class="settings-card">
           <div class="settings-title">Punkte-Vergabe</div>
           <div class="pts-row">
@@ -579,13 +579,12 @@
     // ── TABS ──
     function showTab(tab) {
       ['kunden','belohnungen','einstellungen'].forEach(t => {
-        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
-        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList?.toggle('active', t === tab);
+        const cap = t.charAt(0).toUpperCase() + t.slice(1);
+        const content = document.getElementById('content' + cap);
+        if (content) content.style.display = t === tab ? 'block' : 'none';
+        const btn = document.getElementById('tab' + cap);
+        if (btn) btn.classList.toggle('active', t === tab);
       });
-      // fix tab buttons
-      document.getElementById('tabKunden').classList.toggle('active', tab === 'kunden');
-      document.getElementById('tabBelohnungen').classList.toggle('active', tab === 'belohnungen');
-      document.getElementById('tabEinstellungen').classList.toggle('active', tab === 'einstellungen');
     }
 
     function subscribeRealtime() {
