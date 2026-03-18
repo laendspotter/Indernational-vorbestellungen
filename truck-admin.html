@@ -595,6 +595,57 @@
             <div>
               <button class="save-btn" onclick="saveSettings()">Speichern</button>
             </div>
+
+            <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:24px;">
+              <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:14px;">Öffnungszeiten (Mo–Fr)</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Von</div>
+                  <input type="time" id="oeffnungVon" class="filter-input" value="09:00" />
+                </div>
+                <span style="color:var(--muted);">–</span>
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Bis</div>
+                  <input type="time" id="oeffnungBis" class="filter-input" value="15:00" />
+                </div>
+              </div>
+              <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:10px;">Abholzeiten</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Von</div>
+                  <input type="time" id="abholungVon" class="filter-input" value="11:30" />
+                </div>
+                <span style="color:var(--muted);">–</span>
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Bis</div>
+                  <input type="time" id="abholungBis" class="filter-input" value="13:30" />
+                </div>
+              </div>
+              <button class="save-btn" onclick="saveZeiten()" style="padding:10px 20px;font-size:0.88rem;">Speichern</button>
+            </div>
+
+            <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:24px;">
+              <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:14px;">Betriebsferien / Geschlossen</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Von</div>
+                  <input type="date" id="settingVon" class="filter-input" />
+                </div>
+                <div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Bis</div>
+                  <input type="date" id="settingBis" class="filter-input" />
+                </div>
+                <div style="flex:1;min-width:160px;">
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Grund (optional)</div>
+                  <input type="text" id="settingGrund" class="menu-input" placeholder="z.B. Betriebsferien" />
+                </div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="save-btn" onclick="saveGeschlossen()" style="padding:10px 20px;font-size:0.88rem;">Speichern</button>
+                <button onclick="clearGeschlossen()" style="padding:10px 20px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;">Zurücksetzen</button>
+              </div>
+              <div id="geschlossenPreview" style="margin-top:10px;font-size:0.82rem;color:var(--muted);"></div>
+            </div>
           </div>
         </div>
       </div>
