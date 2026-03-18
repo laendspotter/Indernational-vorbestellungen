@@ -136,6 +136,10 @@
       <input type="text" id="name" placeholder="Max Mustermann" autocomplete="name" />
     </div>
     <div class="form-group">
+      <label for="email">E-Mail <span style="color:var(--muted);font-size:0.78rem;text-transform:none;letter-spacing:0;">(für QR-Code Bestätigung)</span></label>
+      <input type="email" id="email" placeholder="max@beispiel.de" autocomplete="email" />
+    </div>
+    <div class="form-group">
       <label for="date">Gewünschter Tag</label>
       <input type="date" id="date" onchange="loadMenuForDate()" />
     </div>
@@ -246,6 +250,8 @@
       if (session) {
         const name = session.user.user_metadata?.full_name || '';
         if (name) document.getElementById('name').value = name;
+        const emailEl = document.getElementById('email');
+        if (emailEl && session.user.email) emailEl.value = session.user.email;
         // show account link
         const nav = document.getElementById('authNav');
         if (nav) {
@@ -449,6 +455,8 @@
       const name = document.getElementById('name').value.trim();
       const date = dateInput.value;
       if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
+      const emailInput = document.getElementById('email')?.value.trim();
+      if (!emailInput) return showToast('Bitte geben Sie Ihre E-Mail ein.', true);
       if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
       if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
 
@@ -474,7 +482,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               items,
-              bestellung: { name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin, user_email: (await db.auth.getSession()).data.session?.user?.email || null }
+              bestellung: { name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin, user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null }
             })
           });
           const data = await resp.json();
@@ -493,21 +501,23 @@
           name, datum: date, menu: selectedMenu, typ: 'truck',
           getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
           preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false,
-          user_email: (await db.auth.getSession()).data.session?.user?.email || null
+          user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
         }).select().single();
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
         if (error) { showToast('Fehler beim Senden.', true); }
         else {
           const orderId = insertData?.id;
           // send email if user is logged in
+          const emailVal = document.getElementById('email')?.value.trim();
           const { data: { session } } = await db.auth.getSession();
-          if (session?.user?.email) {
+          const sendTo = emailVal || session?.user?.email;
+          if (sendTo) {
             const qrData = JSON.stringify({ id: orderId, name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '' });
             fetch('/api/send-email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                to: session.user.email,
+                to: sendTo,
                 bestellung: { name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' },
                 qrData
               })
