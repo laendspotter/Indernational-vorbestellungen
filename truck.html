@@ -594,12 +594,11 @@
           const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
           // earn loyalty points
           const emailForLoyalty = emailVal || session?.user?.email;
+          let loyaltyPts = 0;
           if (emailForLoyalty && selectedMenuPreis > 0) {
-            earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis);
+            loyaltyPts = await earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis) || 0;
           }
-          const emailForLoyalty2 = document.getElementById('email')?.value.trim();
-          const loyaltyEarned = emailForLoyalty2 && selectedMenuPreis > 0 ? Math.floor((selectedMenuPreis + selectedDrinkPreis) * 10) : 0;
-          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarned > 0 ? '&pts=' + loyaltyEarned + '&email=' + encodeURIComponent(emailForLoyalty2) : '');
+          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyPts > 0 ? '&pts=' + loyaltyPts + '&email=' + encodeURIComponent(emailForLoyalty) : '');
         }
       }
     }
@@ -712,7 +711,7 @@
       } else {
         await db.from('loyalty_punkte').insert({ email, punkte: earned, punkte_gesamt: earned });
       }
-
+      return earned;
     }
 
     // load loyalty info when email changes
