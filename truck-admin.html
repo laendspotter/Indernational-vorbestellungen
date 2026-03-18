@@ -1198,6 +1198,50 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       currentVortag = data.vortag;
       updateSettingBtns();
       updateSettingPreview();
+      // load betriebsferien
+      if (data.geschlossen_von) document.getElementById('settingVon').value = data.geschlossen_von;
+      if (data.geschlossen_bis) document.getElementById('settingBis').value = data.geschlossen_bis;
+      if (data.geschlossen_grund) document.getElementById('settingGrund').value = data.geschlossen_grund;
+      updateGeschlossenPreview(data);
+    }
+
+    function updateGeschlossenPreview(data) {
+      const el = document.getElementById('geschlossenPreview');
+      if (!el) return;
+      const today = new Date().toISOString().split('T')[0];
+      if (data?.geschlossen_von && data?.geschlossen_bis) {
+        const isActive = today >= data.geschlossen_von && today <= data.geschlossen_bis;
+        const von = new Date(data.geschlossen_von + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit'});
+        const bis = new Date(data.geschlossen_bis + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit'});
+        el.textContent = isActive ? `⚠️ Aktuell geschlossen (${von}–${bis})` : `📅 Geschlossen: ${von}–${bis}`;
+        el.style.color = isActive ? 'var(--error)' : 'var(--muted)';
+      } else {
+        el.textContent = 'Keine Betriebsferien eingetragen.';
+      }
+    }
+
+    async function saveGeschlossen() {
+      const von = document.getElementById('settingVon').value;
+      const bis = document.getElementById('settingBis').value;
+      const grund = document.getElementById('settingGrund').value.trim();
+      const { error } = await db.from('einstellungen').upsert(
+        { typ: 'truck', geschlossen_von: von || null, geschlossen_bis: bis || null, geschlossen_grund: grund },
+        { onConflict: 'typ' }
+      );
+      if (error) showToast('Fehler beim Speichern.');
+      else { showToast('✓ Betriebsferien gespeichert!'); updateGeschlossenPreview({ geschlossen_von: von, geschlossen_bis: bis }); }
+    }
+
+    async function clearGeschlossen() {
+      await db.from('einstellungen').upsert(
+        { typ: 'truck', geschlossen_von: null, geschlossen_bis: null, geschlossen_grund: '' },
+        { onConflict: 'typ' }
+      );
+      document.getElementById('settingVon').value = '';
+      document.getElementById('settingBis').value = '';
+      document.getElementById('settingGrund').value = '';
+      document.getElementById('geschlossenPreview').textContent = 'Keine Betriebsferien eingetragen.';
+      showToast('✓ Zurückgesetzt!');
     }
 
     function setVortag(val) {

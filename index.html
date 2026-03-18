@@ -309,11 +309,24 @@
     .popup-register { text-align: center; margin-top: 16px; font-size: 0.82rem; color: var(--muted); }
     .popup-register a { color: var(--accent); text-decoration: none; font-weight: 600; }
 
+    .ankuendigung-banner { width: 100%; max-width: 780px; border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; animation: fadeUp 0.5s ease both; }
+    .ankuendigung-banner.info { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: #f5a623; }
+    .ankuendigung-banner.warning { background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.25); color: #e05c5c; }
+    .ankuendigung-banner.success { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.25); color: #4caf7d; }
+
+    .geschlossen-banner { width: 100%; max-width: 780px; background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3); border-radius: 14px; padding: 20px 24px; text-align: center; animation: fadeUp 0.5s ease both; }
+    .geschlossen-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: #e05c5c; margin-bottom: 6px; }
+    .geschlossen-banner p { font-size: 0.88rem; color: #7a7468; }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
 
@@ -330,6 +343,9 @@
         <a href="register.html" class="auth-link primary">Registrieren</a>
       </div>
     </div>
+
+    <!-- Ankündigungen + Geschlossen Banner -->
+    <div id="bannerContainer" style="width:100%;max-width:780px;display:flex;flex-direction:column;gap:8px;"></div>
 
     <!-- Cards -->
     <div class="cards">
@@ -419,6 +435,43 @@
       }
     });
 
+    // ── BANNERS ──
+    async function loadBanners() {
+      const today = new Date().toISOString().split('T')[0];
+      const container = document.getElementById('bannerContainer');
+      container.innerHTML = '';
+
+      // check if geschlossen (either truck or kantine)
+      const { data: settings } = await db.from('einstellungen').select('*');
+      if (settings) {
+        const closed = settings.filter(s =>
+          s.geschlossen_von && s.geschlossen_bis &&
+          today >= s.geschlossen_von && today <= s.geschlossen_bis
+        );
+        closed.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'geschlossen-banner';
+          const label = s.typ === 'truck' ? '🚚 Food Truck' : '🍽️ Kantine';
+          const grund = s.geschlossen_grund ? ` – ${s.geschlossen_grund}` : '';
+          div.innerHTML = `<h3>⚠️ ${label} heute geschlossen${grund}</h3><p>Vorbestellungen für diesen Zeitraum nicht möglich.</p>`;
+          container.appendChild(div);
+        });
+      }
+
+      // load ankuendigungen
+      const { data: anks } = await db.from('ankuendigungen').select('*').eq('aktiv', true).order('created_at', { ascending: false });
+      if (anks) {
+        anks.forEach(a => {
+          const div = document.createElement('div');
+          div.className = `ankuendigung-banner ${a.typ}`;
+          div.textContent = a.text;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    loadBanners();
+
     async function signOut(e) {
       e.preventDefault();
       await db.auth.signOut();
@@ -466,6 +519,9 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closePopupBtn();
     });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
 </body>
 </html>

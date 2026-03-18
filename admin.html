@@ -109,9 +109,57 @@
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 200; white-space: nowrap; }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
+    .ankuendigung { border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+    .ankuendigung.info { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: var(--truck); }
+    .ankuendigung.warning { background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.25); color: var(--error); }
+    .ankuendigung.success { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.25); color: var(--success); }
+    .ankuendigung-text { flex: 1; }
+    .ankuendigung-del { background: transparent; border: none; cursor: pointer; opacity: 0.6; font-size: 1rem; transition: opacity 0.2s; }
+    .ankuendigung-del:hover { opacity: 1; }
+    .ankuendigung-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .ankuendigung-input { flex: 1; min-width: 200px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
+    .ankuendigung-input:focus { outline: none; border-color: var(--truck); }
+    .ankuendigung-type { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; }
+    .ankuendigung-add { padding: 10px 18px; background: var(--truck); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap; }
+    .ankuendigung-add:hover { filter: brightness(1.1); }
+
+    /* RUNDE 2 */
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .chart-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .chart-wrap { position: relative; height: 180px; }
+
+    .bestellschluss-widget { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 28px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .bs-item { flex: 1; min-width: 140px; }
+    .bs-item-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .bs-item-time { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; }
+    .bs-item-time.open { color: var(--success); }
+    .bs-item-time.closing { color: var(--truck); }
+    .bs-item-time.closed { color: var(--error); }
+    .bs-item-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+
+    .top-kunden { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+    .tk-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .tk-rank { font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem; color: var(--muted); min-width: 24px; }
+    .tk-rank.gold { color: #f5a623; }
+    .tk-rank.silver { color: #aab0c0; }
+    .tk-rank.bronze { color: #cd7f32; }
+    .tk-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+    .tk-count { font-size: 0.82rem; color: var(--muted); }
+    .tk-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .tk-bar-fill { height: 100%; background: linear-gradient(90deg, var(--truck), var(--kantine)); border-radius: 2px; transition: width 0.6s ease; }
+
+    .live-counter { display: inline-flex; align-items: center; gap: 6px; }
+    .live-counter-num { font-family: 'Syne', sans-serif; font-weight: 900; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s; }
+    .live-counter-num.bump { transform: scale(1.3); color: var(--truck); }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -148,11 +196,25 @@
         </div>
       </div>
 
+      <!-- BESTELLSCHLUSS WIDGET -->
+      <div class="bestellschluss-widget" id="bestellschlussWidget" style="animation:fadeUp 0.6s ease both;">
+        <div class="bs-item">
+          <div class="bs-item-label">🚚 Truck schließt</div>
+          <div class="bs-item-time" id="bsTimeTruck">–</div>
+          <div class="bs-item-sub" id="bsSubTruck">–</div>
+        </div>
+        <div class="bs-item">
+          <div class="bs-item-label">🍽️ Kantine schließt</div>
+          <div class="bs-item-time" id="bsTimeKantine">–</div>
+          <div class="bs-item-sub" id="bsSubKantine">–</div>
+        </div>
+      </div>
+
       <!-- QUICK STATS -->
       <div class="section-title">heute</div>
       <div class="quick-stats" style="animation:fadeUp 0.6s ease 0.05s both">
         <div class="qs-card both">
-          <div class="qs-num" id="qsTotal">–</div>
+          <div class="qs-num live-counter"><span class="live-counter-num" id="qsTotal">–</span></div>
           <div class="qs-label">Bestellungen gesamt</div>
           <div class="qs-sub" id="qsTotalSub">–</div>
         </div>
@@ -205,6 +267,38 @@
           <div class="bereich-orders" id="kantineOrders"></div>
         </div>
       </div>
+
+      <!-- ANKÜNDIGUNGEN -->
+      <div class="section-title">ankündigungen</div>
+      <div style="margin-bottom:28px;animation:fadeUp 0.6s ease 0.12s both;">
+        <div id="ankuendigungList"></div>
+        <div class="ankuendigung-form">
+          <input class="ankuendigung-input" id="ankuendigungText" placeholder="z.B. Morgen kein Food Truck 🚫" onkeydown="if(event.key==='Enter')addAnkuendigung()" />
+          <select class="ankuendigung-type" id="ankuendigungTyp">
+            <option value="info">ℹ️ Info</option>
+            <option value="warning">⚠️ Warnung</option>
+            <option value="success">✅ Positiv</option>
+          </select>
+          <button class="ankuendigung-add" onclick="addAnkuendigung()">+ posten</button>
+        </div>
+      </div>
+
+      <!-- WOCHENCHART -->
+      <div class="section-title">diese woche</div>
+      <div class="chart-card" style="animation:fadeUp 0.6s ease 0.12s both;margin-bottom:28px;">
+        <div class="chart-title">
+          <span>Bestellungen Mo–Fr</span>
+          <span style="display:flex;gap:10px;font-size:0.75rem;">
+            <span style="color:var(--truck)">■ Truck</span>
+            <span style="color:var(--kantine)">■ Kantine</span>
+          </span>
+        </div>
+        <div class="chart-wrap"><canvas id="wochenChart"></canvas></div>
+      </div>
+
+      <!-- TOP KUNDEN -->
+      <div class="section-title">top kunden (30 tage)</div>
+      <div class="top-kunden" id="topKunden" style="animation:fadeUp 0.6s ease 0.13s both;"></div>
 
       <!-- ACTIVITY -->
       <div class="section-title">letzte aktivität</div>
@@ -261,7 +355,13 @@
       document.getElementById('greetingSub').textContent = greet;
 
       await loadStats();
+      await loadAnkuendigungen();
+      await loadBestellschlussWidget();
+      await loadWochenChart();
+      await loadTopKunden();
       subscribeRealtime();
+      // refresh bestellschluss every minute
+      setInterval(loadBestellschlussWidget, 60000);
     }
 
     async function loadStats() {
@@ -277,6 +377,7 @@
 
       // quick stats
       document.getElementById('qsTotal').textContent = orders.length;
+      bumpCounter(orders.length);
       document.getElementById('qsTotalSub').textContent = `${erledigt} abgeholt · ${orders.length - erledigt} offen`;
       document.getElementById('qsTruck').textContent = truck.length;
       document.getElementById('qsTruckSub').textContent = `${truck.filter(o => !o.erledigt).length} offen`;
@@ -336,6 +437,168 @@
         </div>`).join('');
     }
 
+    // ── BESTELLSCHLUSS WIDGET ──
+    async function loadBestellschlussWidget() {
+      const { data } = await db.from('einstellungen').select('*');
+      if (!data) return;
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+
+      data.forEach(s => {
+        const isTruck = s.typ === 'truck';
+        const timeEl = document.getElementById(isTruck ? 'bsTimeTruck' : 'bsTimeKantine');
+        const subEl = document.getElementById(isTruck ? 'bsSubTruck' : 'bsSubKantine');
+        if (!timeEl) return;
+
+        const pad = n => String(n).padStart(2,'0');
+        const timeStr = pad(s.bestellschluss_stunde) + ':' + pad(s.bestellschluss_minute);
+
+        const deadline = new Date(today + 'T00:00:00');
+        if (s.vortag) deadline.setDate(deadline.getDate() - 1);
+        deadline.setHours(s.bestellschluss_stunde, s.bestellschluss_minute, 0, 0);
+
+        const diffMs = deadline - now;
+        const diffMin = Math.floor(diffMs / 60000);
+
+        if (diffMs < 0) {
+          timeEl.textContent = 'Geschlossen';
+          timeEl.className = 'bs-item-time closed';
+          subEl.textContent = `war ${s.vortag ? 'gestern' : 'heute'} um ${timeStr}`;
+        } else if (diffMin < 60) {
+          timeEl.textContent = `in ${diffMin} min`;
+          timeEl.className = 'bs-item-time closing';
+          subEl.textContent = `um ${timeStr} Uhr`;
+        } else {
+          const h = Math.floor(diffMin / 60);
+          timeEl.textContent = `in ${h}h ${diffMin % 60}min`;
+          timeEl.className = 'bs-item-time open';
+          subEl.textContent = s.vortag ? `Vortag bis ${timeStr}` : `heute bis ${timeStr}`;
+        }
+      });
+    }
+
+    // ── WOCHENCHART ──
+    let wochenChartInstance = null;
+
+    async function loadWochenChart() {
+      const now = new Date();
+      const day = now.getDay();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+
+      const weekDates = Array.from({length: 5}, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return d.toISOString().split('T')[0];
+      });
+
+      const { data } = await db.from('vorbestellungen').select('datum,typ').gte('datum', weekDates[0]).lte('datum', weekDates[4]);
+      const orders = data || [];
+
+      const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+      const truckData = weekDates.map(d => orders.filter(o => o.datum === d && o.typ === 'truck').length);
+      const kantineData = weekDates.map(d => orders.filter(o => o.datum === d && o.typ === 'kantine').length);
+
+      const ctx = document.getElementById('wochenChart');
+      if (!ctx) return;
+
+      if (wochenChartInstance) wochenChartInstance.destroy();
+
+      wochenChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Truck', data: truckData, backgroundColor: 'rgba(245,166,35,0.7)', borderRadius: 6, borderSkipped: false },
+            { label: 'Kantine', data: kantineData, backgroundColor: 'rgba(62,207,142,0.7)', borderRadius: 6, borderSkipped: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a7468' }, border: { display: false } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a7468', stepSize: 1 }, border: { display: false }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // ── TOP KUNDEN ──
+    async function loadTopKunden() {
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data } = await db.from('vorbestellungen').select('name,user_email').gte('created_at', since.toISOString());
+      if (!data) return;
+
+      const counts = {};
+      data.forEach(o => {
+        const key = o.name;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const max = sorted[0]?.[1] || 1;
+      const ranks = ['🥇', '🥈', '🥉', '4.', '5.'];
+
+      const el = document.getElementById('topKunden');
+      if (!el) return;
+      if (sorted.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:16px;">noch keine daten</div>';
+        return;
+      }
+      el.innerHTML = sorted.map(([name, count], i) => `
+        <div class="tk-item">
+          <div class="tk-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${ranks[i]}</div>
+          <div style="flex:1;">
+            <div class="tk-name">${esc(name)}</div>
+            <div class="tk-bar"><div class="tk-bar-fill" style="width:${(count/max*100).toFixed(0)}%"></div></div>
+          </div>
+          <div class="tk-count">${count}x</div>
+        </div>`).join('');
+    }
+
+    // live counter bump animation
+    let lastTotal = 0;
+    function bumpCounter(newVal) {
+      const el = document.getElementById('qsTotal');
+      if (!el) return;
+      if (newVal > lastTotal) {
+        el.classList.add('bump');
+        setTimeout(() => el.classList.remove('bump'), 400);
+      }
+      lastTotal = newVal;
+    }
+
+    // ── ANKÜNDIGUNGEN ──
+    async function loadAnkuendigungen() {
+      const { data } = await db.from('ankuendigungen').select('*').eq('aktiv', true).order('created_at', { ascending: false });
+      const list = document.getElementById('ankuendigungList');
+      if (!data || data.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">keine aktiven ankündigungen</div>';
+        return;
+      }
+      list.innerHTML = data.map(a => `
+        <div class="ankuendigung ${a.typ}">
+          <span class="ankuendigung-text">${esc(a.text)}</span>
+          <button class="ankuendigung-del" onclick="deleteAnkuendigung('${a.id}')">✕</button>
+        </div>`).join('');
+    }
+
+    async function addAnkuendigung() {
+      const text = document.getElementById('ankuendigungText').value.trim();
+      const typ = document.getElementById('ankuendigungTyp').value;
+      if (!text) return;
+      await db.from('ankuendigungen').insert({ text, typ, aktiv: true });
+      document.getElementById('ankuendigungText').value = '';
+      loadAnkuendigungen();
+    }
+
+    async function deleteAnkuendigung(id) {
+      await db.from('ankuendigungen').update({ aktiv: false }).eq('id', id);
+      loadAnkuendigungen();
+    }
+
     function subscribeRealtime() {
       db.channel('admin-dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
@@ -354,6 +617,9 @@
       t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
 </body>
 </html>
