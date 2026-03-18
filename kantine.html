@@ -119,7 +119,47 @@
     }
     .back-btn:hover { border-color: #f5a623; background: rgba(19,23,38,0.95); }
 
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #e2dfd8;
+        --text: #1a1816;
+        --muted: #8a8680;
+      }
+    }
+    [data-theme="light"] {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --border: #e2dfd8;
+      --text: #1a1816;
+      --muted: #8a8680;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0e1a;
+      --surface: #131726;
+      --border: #1e2236;
+      --text: #f0ede6;
+      --muted: #7a7468;
+    }
+
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
+  
+    body.light {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface2: #eeeae0;
+      --border: #ddd8cc;
+      --text: #1a1916;
+      --muted: #8a8070;
+    }
   </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
 <a href="index.html" class="back-btn">‹ Zurück</a>
@@ -205,6 +245,14 @@
       <div class="summary-row"><span>Gesamt</span><span id="sumTotal">–</span></div>
     </div>
 
+    <div class="form-group">
+      <label for="notiz">Hinweis <span style="color:var(--muted);font-size:0.78rem;text-transform:none;letter-spacing:0;">(optional, z.B. kein Fleisch)</span></label>
+      <input type="text" id="notiz" placeholder="z.B. ohne Zwiebeln, extra scharf…" maxlength="100" />
+    </div>
+    <div class="form-group">
+      <label for="notiz">Notiz <span style="color:var(--muted);font-size:0.78rem;text-transform:none;letter-spacing:0;">(optional, z.B. ohne Zwiebeln)</span></label>
+      <input type="text" id="notiz" placeholder="Besondere Wünsche..." maxlength="100" />
+    </div>
     <div id="bestellschlussNotice" style="display:none;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#e05c5c;margin-bottom:12px;"></div>
     <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
   </div>
@@ -481,7 +529,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               items,
-              bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, origin: location.origin, user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null }
+              bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, notiz: document.getElementById('notiz')?.value.trim() || '', origin: location.origin, notiz: document.getElementById('notiz')?.value.trim() || '', user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null }
             })
           });
           const data = await resp.json();
@@ -500,6 +548,7 @@
           name, datum: date, menu: selectedMenu, typ: 'kantine',
           getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
           preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false,
+          notiz: document.getElementById('notiz')?.value.trim() || '',
           user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
         }).select().single();
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
@@ -607,5 +656,24 @@
     function pad2(n) { return String(n).padStart(2,'0'); }
     function pad4(n) { return String(n).padStart(4,'0'); }
   </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  </script>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+    })();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
 </body>
 </html>

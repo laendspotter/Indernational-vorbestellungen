@@ -247,6 +247,42 @@
       .day-row { grid-template-columns: 60px 1fr 1fr; gap: 8px; padding: 12px 16px; }
       .ocr-zone { margin: 0 16px; }
     }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #e2dfd8;
+        --text: #1a1816;
+        --muted: #8a8680;
+      }
+    }
+    [data-theme="light"] {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --border: #e2dfd8;
+      --text: #1a1816;
+      --muted: #8a8680;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0e1a;
+      --surface: #131726;
+      --border: #1e2236;
+      --text: #f0ede6;
+      --muted: #7a7468;
+    }
+
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
+  
+    body.light {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface2: #eeeae0;
+      --border: #ddd8cc;
+      --text: #1a1916;
+      --muted: #8a8070;
+    }
   </style>
 </head>
 <body>
@@ -352,6 +388,9 @@
           <button class="filter-btn active" id="btnAlle" onclick="setFilter('alle')">Alle</button>
           <button class="filter-btn" id="btnOffen" onclick="setFilter('offen')">Offen</button>
           <button class="filter-btn" id="btnErledigt" onclick="setFilter('erledigt')">Erledigt</button>
+          <button class="filter-btn" id="btnSortTime" onclick="setSort('time')" title="Nach Uhrzeit sortieren">🕐</button>
+          <button class="filter-btn" id="btnSortName" onclick="setSort('name')" title="Nach Name sortieren">🔤</button>
+          <button class="filter-btn" onclick="exportCSV()" title="CSV Export">📥 CSV</button>
         </div>
         <div class="stats">
           <div class="stat-card"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Gesamt</div></div>
@@ -631,11 +670,48 @@
 
     function getFilteredOrders() {
       const dateVal = document.getElementById('filterDate').value;
-      return allOrders.filter(o => {
+      const filtered = allOrders.filter(o => {
         const dm = !dateVal || o.datum === dateVal;
         const sm = currentFilter === 'alle' || (currentFilter === 'offen' && !o.erledigt) || (currentFilter === 'erledigt' && o.erledigt);
         return dm && sm;
       });
+      if (currentSort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      return filtered;
+    }
+
+    let currentSort = 'time';
+
+    function setSort(s) {
+      currentSort = s;
+      document.getElementById('btnSortTime').classList.toggle('active', s === 'time');
+      document.getElementById('btnSortName').classList.toggle('active', s === 'name');
+      renderOrders();
+    }
+
+    function exportCSV() {
+      const dateVal = document.getElementById('filterDate').value;
+      const orders = allOrders.filter(o => !dateVal || o.datum === dateVal);
+      if (orders.length === 0) return showToast('Keine Daten zum Exportieren.');
+      const header = 'Name,Datum,Uhrzeit,Menü,Getränk,Preis,Zahlung,Bezahlt,Notiz,Erledigt';
+      const rows = orders.map(o => [
+        `"${o.name}"`,
+        o.datum,
+        o.created_at ? new Date(o.created_at).toLocaleTimeString('de-DE') : '',
+        o.menu === 'menu1' ? 'Menü 1' : 'Menü 2',
+        `"${o.getraenk || ''}"`,
+        (parseFloat(o.preis||0) + parseFloat(o.getraenk_preis||0)).toFixed(2).replace('.',','),
+        o.zahlung || 'bar',
+        o.bezahlt ? 'ja' : 'nein',
+        `"${o.notiz || ''}"`,
+        o.erledigt ? 'ja' : 'nein'
+      ].join(','));
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `bestellungen-${typ}-${dateVal || 'alle'}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+      showToast('✓ CSV exportiert!');
     }
 
     function renderOrders() {
@@ -659,7 +735,7 @@
           <div class="order-avatar">${o.name.charAt(0).toUpperCase()}</div>
           <div class="order-info">
             <div class="order-name">${esc(o.name)}${zahlungBadge}</div>
-            <div class="order-meta">${formatDate(o.datum)} · ${formatTime(o.created_at)}${drinkInfo}${preisInfo}</div>
+            <div class="order-meta">${formatDate(o.datum)} · ${formatTime(o.created_at)}${drinkInfo}${preisInfo}${o.notiz ? ' · <em style="color:var(--accent);font-style:normal;">📝 ' + esc(o.notiz) + '</em>' : ''}</div>
           </div>
           <span class="menu-badge">${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'}</span>
           <button class="done-btn" onclick="toggleDone('${o.id}', ${o.erledigt})">${o.erledigt ? '✓ Erledigt' : 'Als erledigt markieren'}</button>
@@ -1336,7 +1412,7 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
           <div class="kueche-avatar">${o.name.charAt(0).toUpperCase()}</div>
           <div class="kueche-info">
             <div class="kueche-name">${esc(o.name)}</div>
-            <div class="kueche-sub">${formatTime(o.created_at)}${drink}</div>
+            <div class="kueche-sub">${formatTime(o.created_at)}${drink}${o.notiz ? " · 📝 " + esc(o.notiz) : ""}</div>
           </div>
           <span class="kueche-badge ${o.menu === 'menu1' ? 'm1' : 'm2'}">${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'}</span>
           <div class="kueche-check" onclick="toggleKuecheItem('${o.id}', ${o.erledigt})">${o.erledigt ? '✓' : ''}</div>
@@ -1464,5 +1540,21 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       setTimeout(() => t.classList.remove('show'), 3000);
     }
   </script>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+    })();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
 </body>
 </html>
