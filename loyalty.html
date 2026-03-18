@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meine Punkte – Indernational</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e1a" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0e1a; --surface: #131726; --border: #1e2236;
+      --loyalty: #a78bfa; --loyalty2: #f5a623;
+      --text: #f0ede6; --muted: #7a7468;
+      --success: #4caf7d; --error: #e05c5c;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 10%, rgba(167,139,250,0.1) 0%, transparent 55%), radial-gradient(ellipse at 70% 90%, rgba(245,166,35,0.06) 0%, transparent 55%); pointer-events: none; }
+
+    .back-btn { position: fixed; top: 16px; left: 16px; z-index: 200; background: rgba(19,23,38,0.85); backdrop-filter: blur(8px); border: 1px solid #1e2236; color: #f0ede6; padding: 8px 14px 8px 10px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; }
+    .back-btn:hover { border-color: var(--loyalty); }
+
+    .page { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+
+    /* EMAIL GATE */
+    .email-gate { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; text-align: center; animation: fadeUp 0.6s ease both; position: relative; overflow: hidden; }
+    .email-gate::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); }
+    .gate-icon { font-size: 3rem; margin-bottom: 14px; display: block; }
+    .gate-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
+    .gate-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
+    .gate-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .gate-input:focus { outline: none; border-color: var(--loyalty); box-shadow: 0 0 0 3px rgba(167,139,250,0.12); }
+    .gate-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+    .gate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .gate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .gate-login { margin-top: 14px; font-size: 0.82rem; color: var(--muted); }
+    .gate-login a { color: var(--loyalty); text-decoration: none; font-weight: 600; }
+
+    /* HAUPTKARTE */
+    .main-card { background: var(--surface); border: 1px solid rgba(167,139,250,0.3); border-radius: 20px; padding: 28px; position: relative; overflow: hidden; animation: fadeUp 0.6s ease both; }
+    .main-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .card-email { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .card-pts { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 900; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+    .card-pts-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+    .level-badge-big { font-size: 0.82rem; font-weight: 700; padding: 5px 12px; border-radius: 50px; }
+    .lb-bronze { background: rgba(205,127,50,0.15); color: #cd7f32; border: 1px solid rgba(205,127,50,0.3); }
+    .lb-silver { background: rgba(170,176,192,0.15); color: #aab0c0; border: 1px solid rgba(170,176,192,0.3); }
+    .lb-gold { background: rgba(245,166,35,0.15); color: #f5a623; border: 1px solid rgba(245,166,35,0.3); }
+    .lb-platin { background: rgba(167,139,250,0.15); color: var(--loyalty); border: 1px solid rgba(167,139,250,0.3); }
+    .gesamt-row { font-size: 0.78rem; color: var(--muted); margin-top: 8px; }
+
+    /* PROGRESS ZUM ZIEL */
+    .ziel-section { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 4px; }
+    .ziel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .ziel-title { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .ziel-change { font-size: 0.75rem; color: var(--loyalty); cursor: pointer; font-weight: 600; }
+    .ziel-row { display: flex; align-items: center; gap: 10px; }
+    .ziel-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .ziel-info { flex: 1; }
+    .ziel-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+    .ziel-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .ziel-bar { height: 100%; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); border-radius: 4px; transition: width 0.8s ease; }
+    .ziel-pts { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .ziel-pts strong { color: var(--loyalty); }
+
+    /* BELOHNUNGEN */
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .belohnung-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s; }
+    .belohnung-card.erreichbar { border-color: rgba(167,139,250,0.4); }
+    .belohnung-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .belohnung-info { flex: 1; }
+    .belohnung-name { font-weight: 600; font-size: 0.92rem; margin-bottom: 3px; }
+    .belohnung-pts { font-size: 0.8rem; color: var(--muted); }
+    .belohnung-pts strong { color: var(--loyalty); }
+    .belohnung-progress { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .belohnung-progress-fill { height: 100%; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); border-radius: 2px; }
+    .einloesen-btn { padding: 8px 16px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
+    .einloesen-btn:hover { opacity: 0.9; }
+    .einloesen-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .ziel-btn { padding: 7px 14px; background: transparent; border: 1px solid rgba(167,139,250,0.3); color: var(--loyalty); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.78rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    .ziel-btn:hover { background: rgba(167,139,250,0.08); }
+
+    /* EINLÖSUNGEN */
+    .einloesung-item { background: var(--surface); border: 1px solid rgba(76,175,125,0.3); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+    .einloesung-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .einloesung-info { flex: 1; }
+    .einloesung-name { font-weight: 600; font-size: 0.88rem; }
+    .einloesung-date { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .einloesung-used { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 50px; }
+    .used-yes { background: rgba(122,116,104,0.15); color: var(--muted); }
+    .used-no { background: rgba(76,175,125,0.15); color: var(--success); }
+
+    /* ZIEL MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--surface); border: 1px solid rgba(167,139,250,0.3); border-radius: 16px; padding: 28px; max-width: 380px; width: 100%; position: relative; overflow: hidden; }
+    .modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+    .modal-option { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s; }
+    .modal-option:hover, .modal-option.selected { border-color: var(--loyalty); background: rgba(167,139,250,0.06); }
+    .modal-option-icon { font-size: 1.4rem; }
+    .modal-option-info { flex: 1; }
+    .modal-option-name { font-weight: 600; font-size: 0.9rem; }
+    .modal-option-pts { font-size: 0.78rem; color: var(--muted); }
+    .modal-cancel { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 400; white-space: nowrap; }
+    .toast.error { background: var(--error); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); pointer-events: none; z-index: 10; }
+
+    body.light { --bg: #f4f2ec; --surface: #ffffff; --border: #ddd8cc; --text: #1a1916; --muted: #8a8070; }
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-btn">‹ Zurück</a>
+
+  <div class="page">
+
+    <!-- EMAIL GATE (shown when not logged in and no email param) -->
+    <div id="emailGate" style="display:none;">
+      <div class="email-gate">
+        <span class="gate-icon">⭐</span>
+        <div class="gate-title">Meine Punkte</div>
+        <p class="gate-sub">Gib deine E-Mail ein um deine Punkte, Level und Belohnungen zu sehen.</p>
+        <input type="email" class="gate-input" id="gateEmail" placeholder="deine@email.de" onkeydown="if(event.key==='Enter')loadByEmail()" />
+        <button class="gate-btn" id="gateBtn" onclick="loadByEmail()">Punkte anzeigen →</button>
+        <div class="gate-login">Hast du einen Account? <a href="login.html">Anmelden</a></div>
+      </div>
+    </div>
+
+    <!-- HAUPTINHALT -->
+    <div id="mainContent" style="display:none;">
+
+      <!-- HAUPTKARTE -->
+      <div class="main-card" id="mainCard">
+        <div class="card-header">
+          <div>
+            <div class="card-email" id="cardEmail">–</div>
+            <div class="card-pts" id="cardPts">0</div>
+            <div class="card-pts-label">Punkte verfügbar</div>
+            <div class="gesamt-row" id="cardGesamt"></div>
+          </div>
+          <span class="level-badge-big" id="levelBadge">Bronze</span>
+        </div>
+
+        <!-- ZIEL -->
+        <div class="ziel-section">
+          <div class="ziel-header">
+            <span class="ziel-title">Mein Ziel</span>
+            <span class="ziel-change" onclick="openZielModal()">ändern ✏️</span>
+          </div>
+          <div class="ziel-row" id="zielRow">
+            <span style="color:var(--muted);font-size:0.85rem;">Kein Ziel gesetzt — wähle eine Belohnung!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BELOHNUNGEN -->
+      <div class="section-title">Belohnungen</div>
+      <div id="belohnungList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+      <!-- EINLÖSUNGEN -->
+      <div class="section-title" id="einloesungTitle" style="display:none;margin-top:8px;">Aktive Einlösungen</div>
+      <div id="einloesungList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+    </div>
+  </div>
+
+  <!-- ZIEL MODAL -->
+  <div class="modal-overlay" id="zielModal">
+    <div class="modal-box">
+      <div class="modal-title">🎯 Ziel setzen</div>
+      <div id="zielOptions"></div>
+      <button class="modal-cancel" onclick="closeModal()">Abbrechen</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+  <div class="version-footer">ver 1.4.2</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentEmail = null;
+    let currentPts = 0;
+    let belohnungen = [];
+    let zielBelohnungId = null;
+
+    async function init() {
+      // check logged in user
+      const { data: { session } } = await db.auth.getSession();
+      if (session?.user?.email) {
+        currentEmail = session.user.email;
+        await loadData();
+        return;
+      }
+
+      // check url param
+      const params = new URLSearchParams(location.search);
+      const emailParam = params.get('email');
+      if (emailParam) {
+        currentEmail = decodeURIComponent(emailParam);
+        await loadData();
+        return;
+      }
+
+      // show email gate
+      document.getElementById('emailGate').style.display = 'block';
+    }
+
+    async function loadByEmail() {
+      const email = document.getElementById('gateEmail').value.trim();
+      if (!email || !email.includes('@')) return showToast('Bitte gültige E-Mail eingeben.', true);
+      const btn = document.getElementById('gateBtn');
+      btn.disabled = true; btn.textContent = 'Laden…';
+      currentEmail = email;
+      await loadData();
+      btn.disabled = false; btn.textContent = 'Punkte anzeigen →';
+    }
+
+    async function loadData() {
+      // load punkte
+      const { data: kd } = await db.from('loyalty_punkte').select('*').eq('email', currentEmail).maybeSingle();
+
+      // load belohnungen
+      const { data: bd } = await db.from('loyalty_belohnungen').select('*').eq('aktiv', true).order('punkte_benoetigt');
+      belohnungen = bd || [];
+
+      // load einloesungen
+      const { data: ed } = await db.from('loyalty_einloesungen').select('*').eq('email', currentEmail).eq('used', false).order('created_at', { ascending: false });
+
+      currentPts = kd?.punkte || 0;
+      const gesamt = kd?.punkte_gesamt || 0;
+
+      document.getElementById('emailGate').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+
+      // fill main card
+      document.getElementById('cardEmail').textContent = currentEmail;
+      document.getElementById('cardPts').textContent = currentPts.toLocaleString('de-DE');
+      document.getElementById('cardGesamt').textContent = `${gesamt.toLocaleString('de-DE')} Punkte gesamt gesammelt`;
+
+      // level
+      const level = getLevel(gesamt);
+      const badge = document.getElementById('levelBadge');
+      badge.textContent = level.label;
+      badge.className = `level-badge-big ${level.cls}`;
+
+      // load saved ziel from localStorage
+      zielBelohnungId = localStorage.getItem(`ziel_${currentEmail}`);
+      renderZiel();
+
+      // belohnungen
+      renderBelohnungen();
+
+      // einlösungen
+      renderEinloesungen(ed || []);
+    }
+
+    function getLevel(pts) {
+      if (pts >= 2000) return { label: 'Platin ✨', cls: 'lb-platin' };
+      if (pts >= 1000) return { label: 'Gold 🥇', cls: 'lb-gold' };
+      if (pts >= 500)  return { label: 'Silber 🥈', cls: 'lb-silver' };
+      return { label: 'Bronze 🥉', cls: 'lb-bronze' };
+    }
+
+    function renderZiel() {
+      const ziel = belohnungen.find(b => b.id === zielBelohnungId) || belohnungen.find(b => b.punkte_benoetigt > currentPts) || belohnungen[0];
+      const row = document.getElementById('zielRow');
+      if (!ziel) { row.innerHTML = '<span style="color:var(--muted);font-size:0.85rem;">Alle Belohnungen freigeschaltet! 🏆</span>'; return; }
+      const icon = ziel.typ === 'getraenk' ? '🥤' : ziel.typ === 'menue' ? '🍽️' : '🎁';
+      const pct = Math.min(100, (currentPts / ziel.punkte_benoetigt * 100)).toFixed(0);
+      const fehlen = Math.max(0, ziel.punkte_benoetigt - currentPts);
+      row.innerHTML = `
+        <span class="ziel-icon">${icon}</span>
+        <div class="ziel-info">
+          <div class="ziel-name">${esc(ziel.name)}</div>
+          <div class="ziel-bar-wrap"><div class="ziel-bar" style="width:${pct}%"></div></div>
+          <div class="ziel-pts">${fehlen > 0 ? `Noch <strong>${fehlen.toLocaleString('de-DE')} Punkte</strong> bis zur Belohnung` : '<strong style="color:var(--success)">✓ Bereit zum Einlösen!</strong>'}</div>
+        </div>`;
+    }
+
+    function renderBelohnungen() {
+      const list = document.getElementById('belohnungList');
+      if (belohnungen.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px;">Keine Belohnungen verfügbar.</div>';
+        return;
+      }
+      list.innerHTML = belohnungen.map(b => {
+        const icon = b.typ === 'getraenk' ? '🥤' : b.typ === 'menue' ? '🍽️' : '🎁';
+        const canRedeem = currentPts >= b.punkte_benoetigt;
+        const pct = Math.min(100, (currentPts / b.punkte_benoetigt * 100)).toFixed(0);
+        const fehlen = Math.max(0, b.punkte_benoetigt - currentPts);
+        return `<div class="belohnung-card ${canRedeem ? 'erreichbar' : ''}">
+          <span class="belohnung-icon">${icon}</span>
+          <div class="belohnung-info">
+            <div class="belohnung-name">${esc(b.name)}</div>
+            <div class="belohnung-pts">${canRedeem ? '<strong style="color:var(--success)">✓ Einlösbar!</strong>' : `Noch <strong>${fehlen.toLocaleString('de-DE')}</strong> Punkte`} · ${b.punkte_benoetigt.toLocaleString('de-DE')} ⭐</div>
+            <div class="belohnung-progress"><div class="belohnung-progress-fill" style="width:${pct}%"></div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+            <button class="einloesen-btn" ${canRedeem ? '' : 'disabled'} onclick="einloesen('${b.id}','${esc(b.name)}',${b.punkte_benoetigt})">${canRedeem ? 'Einlösen' : '🔒'}</button>
+            <button class="ziel-btn" onclick="setZiel('${b.id}')">Ziel</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderEinloesungen(einloesungen) {
+      const title = document.getElementById('einloesungTitle');
+      const list = document.getElementById('einloesungList');
+      if (einloesungen.length === 0) { title.style.display = 'none'; list.innerHTML = ''; return; }
+      title.style.display = 'flex';
+      list.innerHTML = einloesungen.map(e => {
+        const date = new Date(e.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return `<div class="einloesung-item">
+          <span class="einloesung-icon">🎟️</span>
+          <div class="einloesung-info">
+            <div class="einloesung-name">${esc(e.belohnung_name || '–')}</div>
+            <div class="einloesung-date">Eingelöst am ${date} · Beim Abholen vorzeigen!</div>
+          </div>
+          <span class="einloesung-used used-no">Aktiv</span>
+        </div>`;
+      }).join('');
+    }
+
+    async function einloesen(belohnungId, name, punkte) {
+      if (currentPts < punkte) return showToast('Nicht genug Punkte.', true);
+      if (!confirm(`"${name}" für ${punkte} Punkte einlösen?`)) return;
+      await db.from('loyalty_punkte').update({ punkte: currentPts - punkte, updated_at: new Date().toISOString() }).eq('email', currentEmail);
+      await db.from('loyalty_einloesungen').insert({ email: currentEmail, belohnung_id: belohnungId, belohnung_name: name, punkte_verwendet: punkte, used: false });
+      showToast(`✓ ${name} eingelöst! Beim Abholen vorzeigen.`);
+      await loadData();
+    }
+
+    function setZiel(belohnungId) {
+      zielBelohnungId = belohnungId;
+      localStorage.setItem(`ziel_${currentEmail}`, belohnungId);
+      renderZiel();
+      showToast('✓ Ziel gesetzt!');
+    }
+
+    function openZielModal() {
+      const options = document.getElementById('zielOptions');
+      options.innerHTML = belohnungen.map(b => {
+        const icon = b.typ === 'getraenk' ? '🥤' : b.typ === 'menue' ? '🍽️' : '🎁';
+        return `<div class="modal-option ${b.id === zielBelohnungId ? 'selected' : ''}" onclick="setZielFromModal('${b.id}')">
+          <span class="modal-option-icon">${icon}</span>
+          <div class="modal-option-info">
+            <div class="modal-option-name">${esc(b.name)}</div>
+            <div class="modal-option-pts">${b.punkte_benoetigt.toLocaleString('de-DE')} ⭐</div>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('zielModal').classList.add('show');
+    }
+
+    function setZielFromModal(id) {
+      setZiel(id);
+      closeModal();
+    }
+
+    function closeModal() { document.getElementById('zielModal').classList.remove('show'); }
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
+
+    init();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  </script>
+</body>
+</html>
