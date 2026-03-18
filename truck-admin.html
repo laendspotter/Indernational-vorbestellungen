@@ -275,6 +275,21 @@
     .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
     .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
   
+    /* MANUAL ORDER MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 420px; width: 100%; position: relative; overflow: hidden; }
+    .modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent)); }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; }
+    .modal-row { margin-bottom: 14px; }
+    .modal-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; display: block; }
+    .modal-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+    .modal-input:focus { outline: none; border-color: var(--accent); }
+    .modal-btns { display: flex; gap: 8px; margin-top: 20px; }
+    .modal-submit { flex: 1; padding: 12px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; font-size: 0.95rem; }
+    .modal-submit:hover { filter: brightness(1.1); }
+    .modal-cancel { padding: 12px 18px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+
     body.light {
       --bg: #f4f2ec;
       --surface: #ffffff;
@@ -378,6 +393,7 @@
         <button class="tab-btn" id="tabGetraenke" onclick="showTab('getraenke')">🥤 Getränke</button>
         <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
         <button class="tab-btn" id="tabScanner" onclick="showTab('scanner')">📷 Scanner</button>
+        <button class="tab-btn" id="tabLog" onclick="showTab('log')">📜 Log</button>
         <button class="tab-btn" id="tabStats" onclick="showTab('stats')">📊 Statistiken</button>
       </div>
 
@@ -390,7 +406,9 @@
           <button class="filter-btn" id="btnErledigt" onclick="setFilter('erledigt')">Erledigt</button>
           <button class="filter-btn" id="btnSortTime" onclick="setSort('time')" title="Nach Uhrzeit sortieren">🕐</button>
           <button class="filter-btn" id="btnSortName" onclick="setSort('name')" title="Nach Name sortieren">🔤</button>
+          <button class="filter-btn" id="btnUnbezahlt" onclick="toggleUnbezahlt()" title="Unbezahlte anzeigen">💸</button>
           <button class="filter-btn" onclick="exportCSV()" title="CSV Export">📥 CSV</button>
+          <button class="filter-btn" onclick="openManualOrder()" title="Bestellung hinzufügen">➕</button>
         </div>
         <div class="stats">
           <div class="stat-card"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Gesamt</div></div>
@@ -498,6 +516,22 @@
         </div>
       </div>
 
+      <!-- TAB: LOG -->
+      <div id="tabContentLog" style="display:none;">
+        <div class="menu-editor">
+          <div class="menu-editor-header">
+            <h3>Admin Log</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="date" class="filter-input" id="logDate" onchange="loadLog()" style="font-size:0.85rem;padding:8px 12px;" />
+              <button class="filter-btn" onclick="clearLog()" style="color:var(--error);border-color:rgba(224,92,92,0.3);">Log leeren</button>
+            </div>
+          </div>
+          <div style="padding:16px;max-height:500px;overflow-y:auto;" id="logList">
+            <div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem;">Lade Log…</div>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB: SCANNER -->
       <div id="tabContentScanner" style="display:none;">
         <div class="menu-editor">
@@ -569,6 +603,47 @@
     </div>
   </div>
 
+  <!-- MANUAL ORDER MODAL -->
+  <div class="modal-overlay" id="manualOrderModal">
+    <div class="modal-box">
+      <div class="modal-title">➕ Bestellung hinzufügen</div>
+      <div class="modal-row">
+        <label class="modal-label">Name</label>
+        <input class="modal-input" id="moName" placeholder="Max Mustermann" />
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">E-Mail (optional)</label>
+        <input class="modal-input" id="moEmail" type="email" placeholder="max@beispiel.de" />
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Datum</label>
+        <input class="modal-input" id="moDate" type="date" />
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Menü</label>
+        <select class="modal-input" id="moMenu">
+          <option value="menu1">Menü 1</option>
+          <option value="menu2">Menü 2</option>
+        </select>
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Zahlung</label>
+        <select class="modal-input" id="moZahlung">
+          <option value="bar">💵 Bar</option>
+          <option value="online">💳 Online (bereits bezahlt)</option>
+        </select>
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Notiz (optional)</label>
+        <input class="modal-input" id="moNotiz" placeholder="Besondere Wünsche..." />
+      </div>
+      <div class="modal-btns">
+        <button class="modal-submit" onclick="submitManualOrder()">Speichern</button>
+        <button class="modal-cancel" onclick="closeManualOrder()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -616,6 +691,7 @@
       document.getElementById('filterDate').value = today;
       document.getElementById('kuecheDatum').value = today;
       document.getElementById('kasseDatum').value = today;
+      document.getElementById('logDate').value = today;
       currentWeekStart = getWeekStart(today);
       await loadOrders();
       subscribeRealtime();
@@ -638,6 +714,9 @@
       document.getElementById('tabContentScanner').style.display = tab === 'scanner' ? 'block' : 'none';
       document.getElementById('tabScanner').classList.toggle('active', tab === 'scanner');
       if (tab !== 'scanner') stopScanner();
+      document.getElementById('tabContentLog').style.display = tab === 'log' ? 'block' : 'none';
+      document.getElementById('tabLog').classList.toggle('active', tab === 'log');
+      if (tab === 'log') loadLog();
       document.getElementById('tabContentStats').style.display = tab === 'stats' ? 'block' : 'none';
       document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
       if (tab === 'stats') loadStats();
@@ -676,10 +755,18 @@
         return dm && sm;
       });
       if (currentSort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      if (showUnbezahlt) return filtered.filter(o => o.zahlung === 'online' && !o.bezahlt);
       return filtered;
     }
 
     let currentSort = 'time';
+    let showUnbezahlt = false;
+
+    function toggleUnbezahlt() {
+      showUnbezahlt = !showUnbezahlt;
+      document.getElementById('btnUnbezahlt').classList.toggle('active', showUnbezahlt);
+      renderOrders();
+    }
 
     function setSort(s) {
       currentSort = s;
@@ -745,6 +832,8 @@
 
     async function toggleDone(id, currentState) {
       await db.from('vorbestellungen').update({ erledigt: !currentState }).eq('id', id);
+      const o = allOrders.find(x => x.id === id);
+      if (o) writeLog(!currentState ? 'Als erledigt markiert' : 'Erledigt rückgängig', o.name);
     }
 
     // ── KW HELPER ──
@@ -1532,6 +1621,87 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       kasseScanId = null;
       document.getElementById('kasseScanResult').style.display = 'none';
       document.getElementById('kasseScanContainer').style.display = 'block';
+    }
+
+    // ── ADMIN LOG ──
+    async function writeLog(aktion, details) {
+      await db.from('admin_log').insert({
+        typ: 'truck',
+        aktion,
+        details,
+        created_at: new Date().toISOString()
+      }).catch(() => {});
+    }
+
+    async function loadLog() {
+      const date = document.getElementById('logDate').value;
+      let query = db.from('admin_log').select('*').eq('typ', 'truck').order('created_at', { ascending: false }).limit(100);
+      if (date) {
+        const from = date + 'T00:00:00.000Z';
+        const to = date + 'T23:59:59.999Z';
+        query = query.gte('created_at', from).lte('created_at', to);
+      }
+      const { data } = await query;
+      const el = document.getElementById('logList');
+      if (!data || data.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem;">Keine Einträge.</div>';
+        return;
+      }
+      el.innerHTML = data.map(l => {
+        const time = new Date(l.created_at).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const color = l.aktion.includes('gelöscht') || l.aktion.includes('storniert') ? 'var(--error)' : l.aktion.includes('hinzugefügt') || l.aktion.includes('gespeichert') ? 'var(--success)' : 'var(--muted)';
+        return `<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+          <span style="color:var(--muted);white-space:nowrap;flex-shrink:0;">${time}</span>
+          <span style="color:${color};font-weight:600;flex-shrink:0;">${l.aktion}</span>
+          <span style="color:var(--muted);">${l.details || ''}</span>
+        </div>`;
+      }).join('');
+    }
+
+    async function clearLog() {
+      if (!confirm('Admin Log wirklich leeren?')) return;
+      await db.from('admin_log').delete().eq('typ', 'truck');
+      loadLog();
+      showToast('✓ Log geleert');
+    }
+
+    // ── MANUELLE BESTELLUNG ──
+    function openManualOrder() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('moDate').value = today;
+      document.getElementById('moName').value = '';
+      document.getElementById('moEmail').value = '';
+      document.getElementById('moNotiz').value = '';
+      document.getElementById('manualOrderModal').classList.add('show');
+      document.getElementById('manualOrderModal').onclick = e => { if (e.target === document.getElementById('manualOrderModal')) closeManualOrder(); };
+    }
+
+    function closeManualOrder() {
+      document.getElementById('manualOrderModal').classList.remove('show');
+    }
+
+    async function submitManualOrder() {
+      const name = document.getElementById('moName').value.trim();
+      const date = document.getElementById('moDate').value;
+      if (!name || !date) return showToast('Name und Datum sind Pflichtfelder.');
+
+      const zahlung = document.getElementById('moZahlung').value;
+      const { error } = await db.from('vorbestellungen').insert({
+        name,
+        datum: date,
+        menu: document.getElementById('moMenu').value,
+        typ: 'truck',
+        zahlung,
+        bezahlt: zahlung === 'online',
+        erledigt: false,
+        notiz: document.getElementById('moNotiz').value.trim() || null,
+        user_email: document.getElementById('moEmail').value.trim() || null,
+      });
+
+      if (error) { showToast('Fehler: ' + error.message); return; }
+      showToast('✓ Bestellung hinzugefügt!');
+      writeLog('Bestellung hinzugefügt', `${document.getElementById('moName').value.trim()} – ${document.getElementById('moMenu').value === 'menu1' ? 'Menü 1' : 'Menü 2'}`);
+      closeManualOrder();
     }
 
     function showToast(msg) {
