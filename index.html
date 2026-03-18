@@ -505,6 +505,23 @@
         });
       }
 
+      // load zeiten for both
+      const { data: zeitenData } = await db.from('einstellungen').select('typ,oeffnung_von,oeffnung_bis,abholung_von,abholung_bis');
+      if (zeitenData) {
+        zeitenData.forEach(s => {
+          if (!s.oeffnung_von && !s.abholung_von) return;
+          const label = s.typ === 'truck' ? '🚚 Food Truck' : '🍽️ Kantine';
+          const div = document.createElement('div');
+          div.className = 'ankuendigung-banner info';
+          div.style.cssText = 'background:rgba(122,116,104,0.08);border-color:rgba(122,116,104,0.2);color:var(--muted);font-size:0.82rem;';
+          const parts = [];
+          if (s.oeffnung_von && s.oeffnung_bis) parts.push(`Geöffnet: ${s.oeffnung_von}–${s.oeffnung_bis}`);
+          if (s.abholung_von && s.abholung_bis) parts.push(`Abholung: ${s.abholung_von}–${s.abholung_bis}`);
+          div.textContent = `${label} · ${parts.join(' · ')} Uhr`;
+          container.appendChild(div);
+        });
+      }
+
       // load ankuendigungen
       const { data: anks } = await db.from('ankuendigungen').select('*').eq('aktiv', true).order('created_at', { ascending: false });
       if (anks) {

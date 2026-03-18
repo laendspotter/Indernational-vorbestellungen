@@ -167,6 +167,7 @@
   <div class="header">
     <span class="header-icon">🍽️</span>
     <h1><span>Kantine</span> Vorbestellung</h1>
+    <div id="zeitenInfo" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
     <p class="subtitle">Schnell und einfach vorbestellen</p>
   </div>
 
@@ -335,6 +336,19 @@
 
     loadDrinks();
     loadMenuForDate();
+    loadZeiten();
+
+    async function loadZeiten() {
+      const { data } = await db.from('einstellungen').select('*').eq('typ', 'kantine').maybeSingle();
+      if (!data) return;
+      const el = document.getElementById('zeitenInfo');
+      const parts = [];
+      if (data.oeffnung_von && data.oeffnung_bis)
+        parts.push(`<span style="background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:0.78rem;color:var(--muted);">🕐 Geöffnet: ${data.oeffnung_von}–${data.oeffnung_bis} Uhr</span>`);
+      if (data.abholung_von && data.abholung_bis)
+        parts.push(`<span style="background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:0.78rem;color:var(--muted);">📦 Abholung: ${data.abholung_von}–${data.abholung_bis} Uhr</span>`);
+      el.innerHTML = parts.join('');
+    }
     checkBestellschluss();
 
     function getWeekStart(dateStr) {

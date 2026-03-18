@@ -1352,6 +1352,18 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
         </div>`).join('');
     }
 
+    async function saveZeiten() {
+      const { error } = await db.from('einstellungen').upsert({
+        typ: 'truck',
+        oeffnung_von: document.getElementById('oeffnungVon').value,
+        oeffnung_bis: document.getElementById('oeffnungBis').value,
+        abholung_von: document.getElementById('abholungVon').value,
+        abholung_bis: document.getElementById('abholungBis').value,
+      }, { onConflict: 'typ' });
+      if (error) showToast('Fehler beim Speichern.');
+      else showToast('✓ Zeiten gespeichert!');
+    }
+
     // ── EINSTELLUNGEN ──
     let currentVortag = false;
 
@@ -1368,6 +1380,10 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       if (data.geschlossen_bis) document.getElementById('settingBis').value = data.geschlossen_bis;
       if (data.geschlossen_grund) document.getElementById('settingGrund').value = data.geschlossen_grund;
       updateGeschlossenPreview(data);
+      if (data.oeffnung_von) document.getElementById('oeffnungVon').value = data.oeffnung_von;
+      if (data.oeffnung_bis) document.getElementById('oeffnungBis').value = data.oeffnung_bis;
+      if (data.abholung_von) document.getElementById('abholungVon').value = data.abholung_von;
+      if (data.abholung_bis) document.getElementById('abholungBis').value = data.abholung_bis;
     }
 
     function updateGeschlossenPreview(data) {
