@@ -1,4 +1,4 @@
-const CACHE = 'indernational-v1';
+const CACHE = 'indernational-v144';
 const STATIC = [
   '/',
   '/index.html',
@@ -9,7 +9,6 @@ const STATIC = [
   '/account.html',
   '/logo.svg',
   '/supabase-config.js',
-  'https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap',
 ];
 
 self.addEventListener('install', e => {
@@ -25,11 +24,7 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // network first for api calls and supabase
-  if (e.request.url.includes('/api/') || e.request.url.includes('supabase.co') || e.request.url.includes('stripe.com')) {
-    return;
-  }
-  // cache first for static assets
+  if (e.request.url.includes('/api/') || e.request.url.includes('supabase.co') || e.request.url.includes('stripe.com')) return;
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('/index.html')))
   );
