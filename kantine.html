@@ -593,16 +593,13 @@
           }
           // redirect to success page with real id
           const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
-          // earn loyalty points
-          const emailForLoyalty = emailVal || session?.user?.email;
-          // earn loyalty points
-          const totalBetrag = selectedMenuPreis + selectedDrinkPreis;
-          const loyaltyPts = emailForLoyalty && totalBetrag > 0 ? Math.floor(totalBetrag * 10) : 0;
-          if (emailForLoyalty && totalBetrag > 0) {
-            // fire and forget — don't wait, redirect immediately after
-            earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
-          }
-          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyPts > 0 ? '&pts=' + loyaltyPts + '&email=' + encodeURIComponent(emailForLoyalty) : '');
+          // loyalty
+          const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
+          const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
+          const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
+          if (loyaltyEmail && loyaltyTotal > 0) earnLoyaltyPoints(loyaltyEmail, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
+          const successUrl = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarnedPts > 0 ? '&pts=' + loyaltyEarnedPts + '&email=' + encodeURIComponent(loyaltyEmail) : '');
+          window.location.href = successUrl;
         }
       }
     }
@@ -681,17 +678,19 @@
     }
 
     async function loadLoyaltyInfo() {
-      const emailEl = document.getElementById('email');
-      const email = emailEl?.value.trim();
-      if (!email) { document.getElementById('loyaltyInfo').style.display = 'none'; return; }
+      const email = (document.getElementById('email')?.value || '').trim();
+      const el = document.getElementById('loyaltyInfo');
+      if (!el) return;
+      if (!email || !email.includes('@')) { el.style.display = 'none'; return; }
       const { data } = await db.from('loyalty_punkte').select('punkte').eq('email', email).maybeSingle();
       const pts = data?.punkte || 0;
-      const el = document.getElementById('loyaltyInfo');
       el.style.display = 'flex';
+      const textEl = document.getElementById('loyaltyText');
+      if (!textEl) return;
       if (pts > 0) {
-        document.getElementById('loyaltyText').innerHTML = `👋 Willkommen zurück! Du hast <strong style="color:#a78bfa">${pts.toLocaleString('de-DE')} Punkte</strong> ⭐ — diese Bestellung bringt dir neue dazu!`;
+        textEl.innerHTML = `👋 Willkommen zurück! Du hast <strong style="color:#a78bfa">${pts.toLocaleString('de-DE')} Punkte</strong> ⭐`;
       } else {
-        document.getElementById('loyaltyText').textContent = '⭐ Neu hier? Diese Bestellung bringt dir deine ersten Punkte!';
+        textEl.textContent = '✨ Diese Bestellung bringt dir deine ersten Punkte!';
       }
     }
 
