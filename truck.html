@@ -147,6 +147,28 @@
     .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
     .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
   
+    /* CONFIRM POPUP */
+    .confirm-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
+    .confirm-popup.show { display: flex; }
+    .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 20px 20px; padding: 28px 24px; max-width: 420px; width: 100%; position: relative; overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .confirm-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f5a623, #f5a623aa); }
+    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .confirm-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+    .confirm-rows { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+    .confirm-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row-label { color: var(--muted); }
+    .confirm-row-val { font-weight: 600; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .confirm-ok { flex: 1; padding: 13px; background: #f5a623; color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+    .confirm-cancel { padding: 13px 18px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+
+    /* COUNTDOWN */
+    .countdown-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 50px; padding: 6px 12px; font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; }
+    .countdown-badge.urgent { border-color: rgba(224,92,92,0.4); color: var(--error); background: rgba(224,92,92,0.06); }
+    .countdown-badge.soon { border-color: rgba(245,166,35,0.4); color: var(--accent-dark, #f5a623); background: rgba(245,166,35,0.06); }
+    .countdown-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+
     body.light {
       --bg: #f4f2ec;
       --surface: #ffffff;
@@ -258,7 +280,7 @@
     </div>
 
     <div id="bestellschlussNotice" style="display:none;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#e05c5c;margin-bottom:12px;"></div>
-    <button class="btn" id="submitBtn" onclick="submitOrder()">Jetzt vorbestellen</button>
+    <button class="btn" id="submitBtn" onclick="showConfirm()">Jetzt vorbestellen</button>
   </div>
 
   <div class="allergen-legend" style="width:100%;max-width:480px;animation:fadeUp 0.6s ease 0.3s both;">
@@ -282,6 +304,18 @@
   </div>
 
   <div class="nav-link">Zur <a href="kantine.html">Kantine-Vorbestellung</a></div>
+  <!-- BESTELLBESTÄTIGUNG -->
+  <div class="confirm-popup" id="confirmPopup">
+    <div class="confirm-box">
+      <div class="confirm-title">✅ Bestellung bestätigen</div>
+      <div class="confirm-rows" id="confirmRows"></div>
+      <div class="confirm-btns">
+        <button class="confirm-ok" id="confirmOkBtn">Jetzt bestellen</button>
+        <button class="confirm-cancel" onclick="closeConfirm()">Ändern</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -517,6 +551,65 @@
       const t = document.getElementById('toast');
       t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
       setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function showConfirm() {
+      const name = document.getElementById('name').value.trim();
+      const emailInput = document.getElementById('email')?.value.trim();
+      const date = document.getElementById('date').value;
+      if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
+      if (!emailInput) return showToast('Bitte geben Sie Ihre E-Mail ein.', true);
+      if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
+      if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
+
+      const menuLabel = selectedMenu === 'menu1'
+        ? (document.getElementById('desc1').textContent || 'Menü 1')
+        : (document.getElementById('desc2').textContent || 'Menü 2');
+      const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('de-DE', {weekday:'long',day:'2-digit',month:'2-digit'});
+      const total = selectedMenuPreis + selectedDrinkPreis;
+      const rows = [
+        {label: 'Name', val: name},
+        {label: 'Datum', val: dateStr},
+        {label: 'Menü', val: menuLabel},
+        {label: 'Getränk', val: selectedDrink || 'Keins'},
+        {label: 'Zahlung', val: selectedPayment === 'online' ? '💳 Online' : '💵 Bar'},
+        {label: 'Gesamt', val: total > 0 ? formatPreis(total) : '–'},
+      ];
+      document.getElementById('confirmRows').innerHTML = rows.map(r =>
+        `<div class="confirm-row"><span class="confirm-row-label">${r.label}</span><span class="confirm-row-val">${r.val}</span></div>`
+      ).join('');
+      document.getElementById('confirmPopup').classList.add('show');
+      document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); submitOrder(); };
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirmPopup').classList.remove('show');
+    }
+
+    // countdown timer
+    function startCountdown(data) {
+      const badge = document.getElementById('countdownBadge');
+      if (!badge) return;
+      const tick = () => {
+        const now = new Date();
+        const dateVal = document.getElementById('date').value;
+        if (!dateVal) return;
+        const deadline = new Date(dateVal + 'T00:00:00');
+        if (data.vortag) deadline.setDate(deadline.getDate() - 1);
+        deadline.setHours(data.bestellschluss_stunde, data.bestellschluss_minute, 0, 0);
+        const diff = deadline - now;
+        if (diff <= 0) { badge.innerHTML = ''; badge.style.display = 'none'; return; }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        const urgent = diff < 30 * 60000;
+        const soon = diff < 60 * 60000;
+        badge.style.display = 'flex';
+        badge.className = 'countdown-badge' + (urgent ? ' urgent' : soon ? ' soon' : '');
+        badge.innerHTML = `<span class="countdown-dot"></span>Bestellschluss in ${h > 0 ? h + 'h ' : ''}${m}m ${s}s`;
+      };
+      tick();
+      setInterval(tick, 1000);
     }
 
     async function submitOrder() {
@@ -757,6 +850,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.3</div>
+  <div class="version-footer">ver 1.4.4</div>
 </body>
 </html>
