@@ -283,38 +283,6 @@
   </div>
 
   <div class="nav-link">Zur <a href="truck.html">Food Truck-Vorbestellung</a></div>
-  <!-- LOYALTY POPUP -->
-  <div id="loyaltyPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:20px;">
-    <div style="background:var(--surface);border:1px solid rgba(167,139,250,0.3);border-radius:20px 20px 20px 20px;padding:28px 24px;max-width:420px;width:100%;position:relative;overflow:hidden;transform:translateY(100px);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);" id="loyaltyPopupBox">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#a78bfa,#f5a623);"></div>
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:2.8rem;margin-bottom:8px;" id="lpEmoji">⭐</div>
-        <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:900;" id="lpTitle">Punkte gesammelt!</div>
-        <div style="color:var(--muted);font-size:0.88rem;margin-top:4px;" id="lpSub">–</div>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;" id="lpRewardBox">
-        <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">Nächste Belohnung</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span id="lpRewardIcon" style="font-size:1.4rem;">🎁</span>
-          <div style="flex:1;">
-            <div style="font-weight:600;font-size:0.9rem;" id="lpRewardName">–</div>
-            <div style="height:6px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden;">
-              <div id="lpRewardBar" style="height:100%;background:linear-gradient(90deg,#a78bfa,#f5a623);border-radius:3px;width:0%;transition:width 0.8s ease 0.3s;"></div>
-            </div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-family:'Syne',sans-serif;font-weight:900;color:#a78bfa;font-size:0.9rem;" id="lpRewardPts">–</div>
-            <div style="font-size:0.72rem;color:var(--muted);">benötigt</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <a href="account.html" style="flex:1;padding:13px;background:linear-gradient(90deg,#a78bfa,#f5a623);color:#0b0e1a;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;text-decoration:none;display:block;text-align:center;">Punkte ansehen ⭐</a>
-        <button onclick="closeLoyaltyPopup()" style="padding:13px 18px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'DM Sans',sans-serif;cursor:pointer;">Schließen</button>
-      </div>
-    </div>
-  </div>
-
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -628,7 +596,9 @@
           if (emailForLoyalty && selectedMenuPreis > 0) {
             earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis);
           }
-          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData));
+          const emailForLoyalty2 = document.getElementById('email')?.value.trim();
+          const loyaltyEarned = emailForLoyalty2 && selectedMenuPreis > 0 ? Math.floor((selectedMenuPreis + selectedDrinkPreis) * 10) : 0;
+          window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarned > 0 ? '&pts=' + loyaltyEarned + '&email=' + encodeURIComponent(emailForLoyalty2) : '');
         }
       }
     }
@@ -706,42 +676,6 @@
       }
     }
 
-    async function showLoyaltyPopup(email, earnedPts, totalPts) {
-      const popup = document.getElementById('loyaltyPopup');
-      const box = document.getElementById('loyaltyPopupBox');
-      popup.style.display = 'flex';
-      setTimeout(() => box.style.transform = 'translateY(0)', 50);
-
-      document.getElementById('lpTitle').textContent = `+${earnedPts} Punkte gesammelt!`;
-      document.getElementById('lpSub').textContent = `Du hast jetzt insgesamt ${totalPts.toLocaleString('de-DE')} Punkte ⭐`;
-
-      // find next reward
-      const { data: belohnungen } = await db.from('loyalty_belohnungen').select('*').eq('aktiv', true).order('punkte_benoetigt');
-      const next = belohnungen?.find(b => b.punkte_benoetigt > totalPts);
-      if (next) {
-        const icon = next.typ === 'getraenk' ? '🥤' : next.typ === 'menue' ? '🍽️' : '🎁';
-        document.getElementById('lpRewardIcon').textContent = icon;
-        document.getElementById('lpRewardName').textContent = next.name;
-        document.getElementById('lpRewardPts').textContent = next.punkte_benoetigt.toLocaleString('de-DE') + ' ⭐';
-        const pct = Math.min(100, (totalPts / next.punkte_benoetigt * 100)).toFixed(0);
-        setTimeout(() => document.getElementById('lpRewardBar').style.width = pct + '%', 100);
-        document.getElementById('lpEmoji').textContent = icon;
-      } else if (belohnungen?.length > 0) {
-        document.getElementById('lpRewardName').textContent = 'Alle Belohnungen freigeschaltet! 🎉';
-        document.getElementById('lpRewardPts').textContent = '';
-        document.getElementById('lpRewardBar').style.width = '100%';
-        document.getElementById('lpEmoji').textContent = '🏆';
-      } else {
-        document.getElementById('lpRewardBox').style.display = 'none';
-      }
-    }
-
-    function closeLoyaltyPopup() {
-      const box = document.getElementById('loyaltyPopupBox');
-      box.style.transform = 'translateY(100px)';
-      setTimeout(() => document.getElementById('loyaltyPopup').style.display = 'none', 400);
-    }
-
     async function loadLoyaltyInfo() {
       const emailEl = document.getElementById('email');
       const email = emailEl?.value.trim();
@@ -777,8 +711,7 @@
       } else {
         await db.from('loyalty_punkte').insert({ email, punkte: earned, punkte_gesamt: earned });
       }
-      // show popup
-      showLoyaltyPopup(email, earned, newTotal);
+
     }
 
     // load loyalty info when email changes
