@@ -364,6 +364,8 @@
       --text: #1a1916;
       --muted: #8a8070;
     }
+  
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b0e1a" />
@@ -626,5 +628,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
+  <div class="version-footer">ver 1.4.2</div>
 </body>
 </html>

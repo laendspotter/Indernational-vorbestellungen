@@ -155,6 +155,8 @@
       --text: #1a1916;
       --muted: #8a8070;
     }
+  
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b0e1a" />
@@ -594,9 +596,12 @@
           const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'truck', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
           // earn loyalty points
           const emailForLoyalty = emailVal || session?.user?.email;
-          let loyaltyPts = 0;
-          if (emailForLoyalty && selectedMenuPreis > 0) {
-            loyaltyPts = await earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis) || 0;
+          // earn loyalty points
+          const totalBetrag = selectedMenuPreis + selectedDrinkPreis;
+          const loyaltyPts = emailForLoyalty && totalBetrag > 0 ? Math.floor(totalBetrag * 10) : 0;
+          if (emailForLoyalty && totalBetrag > 0) {
+            // fire and forget — don't wait, redirect immediately after
+            earnLoyaltyPoints(emailForLoyalty, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
           }
           window.location.href = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyPts > 0 ? '&pts=' + loyaltyPts + '&email=' + encodeURIComponent(emailForLoyalty) : '');
         }
@@ -744,5 +749,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
+  <div class="version-footer">ver 1.4.2</div>
 </body>
 </html>

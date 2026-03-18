@@ -154,6 +154,44 @@
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #e2dfd8;
+        --text: #1a1816;
+        --muted: #8a8680;
+      }
+    }
+    [data-theme="light"] {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --border: #e2dfd8;
+      --text: #1a1816;
+      --muted: #8a8680;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0e1a;
+      --surface: #131726;
+      --border: #1e2236;
+      --text: #f0ede6;
+      --muted: #7a7468;
+    }
+
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
+  
+    body.light {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface2: #eeeae0;
+      --border: #ddd8cc;
+      --text: #1a1916;
+      --muted: #8a8070;
+    }
+  
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b0e1a" />
@@ -599,6 +637,19 @@
       loadAnkuendigungen();
     }
 
+    async function sendTagesbericht() {
+      const email = prompt('Tagesbericht senden an:', '');
+      if (!email) return;
+      const resp = await fetch('/api/daily-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await resp.json();
+      if (data.ok) showToast(`✓ Tagesbericht gesendet (${data.orders} Bestellungen)`);
+      else showToast('Fehler: ' + data.error, true);
+    }
+
     function subscribeRealtime() {
       db.channel('admin-dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
@@ -621,5 +672,22 @@
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+    })();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
+  <div class="version-footer">ver 1.4.2</div>
 </body>
 </html>

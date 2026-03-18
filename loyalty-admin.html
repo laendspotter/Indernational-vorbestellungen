@@ -141,6 +141,8 @@
     body.light { --bg: #f4f2ec; --surface: #ffffff; --surface2: #eeeae0; --border: #ddd8cc; --text: #1a1916; --muted: #8a8070; }
     .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
     .theme-toggle:hover { transform: scale(1.1); }
+  
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -611,5 +613,6 @@
     }
     if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); }
   </script>
+  <div class="version-footer">ver 1.4.2</div>
 </body>
 </html>
