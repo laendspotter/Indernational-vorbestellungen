@@ -879,7 +879,8 @@
 
           // mark coupon used
           if (appliedCoupon?.einloesungId) {
-            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
+            if (couponErr) console.error('Coupon update error:', couponErr);
           }
           const resp = await fetch('/api/create-checkout', {
             method: 'POST',
@@ -939,7 +940,8 @@
           // loyalty
           // mark coupon as used
           if (appliedCoupon?.einloesungId) {
-            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
+            if (couponErr) console.error('Coupon update error:', couponErr);
           }
           const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
           const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);

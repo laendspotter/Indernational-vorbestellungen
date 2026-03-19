@@ -115,21 +115,24 @@
 
     // ── ORDER DETAILS ──
     async function init() {
-      const params = new URLSearchParams(location.search);
-      // read from sessionStorage (new method) or URL params (stripe/old)
+      // read from sessionStorage (bar orders) or URL params (stripe)
       const storedOrder = sessionStorage.getItem('lastOrder');
+      let orderParam, sessionId, storedPts = 0, storedEmail = '';
       if (storedOrder) {
-        const storedPts = parseInt(sessionStorage.getItem('lastOrderPts') || '0');
-        const storedEmail = sessionStorage.getItem('lastOrderEmail') || '';
+        storedPts = parseInt(sessionStorage.getItem('lastOrderPts') || '0');
+        storedEmail = sessionStorage.getItem('lastOrderEmail') || '';
         sessionStorage.removeItem('lastOrder');
         sessionStorage.removeItem('lastOrderPts');
         sessionStorage.removeItem('lastOrderEmail');
-        // inject as URL params for rest of code
-        const o = JSON.parse(storedOrder);
-        history.replaceState(null, '', 'success.html?order=' + encodeURIComponent(JSON.stringify(o)) + (storedPts > 0 ? '&pts=' + storedPts + '&email=' + encodeURIComponent(storedEmail) : ''));
+        orderParam = encodeURIComponent(storedOrder);
+        sessionId = null;
+      } else {
+        const params = new URLSearchParams(location.search);
+        orderParam = params.get('order');
+        sessionId = params.get('session_id');
+        storedPts = parseInt(params.get('pts') || '0');
+        storedEmail = params.get('email') || '';
       }
-      const orderParam = params.get('order') || new URLSearchParams(location.search).get('order');
-      const sessionId = params.get('session_id');
 
       if (orderParam) {
         try {
@@ -147,8 +150,8 @@
       }
 
       // ── LOYALTY ──
-      const pts = parseInt(params.get('pts') || '0');
-      const emailRaw = params.get('email') || '';
+      const pts = storedPts || 0;
+      const emailRaw = storedEmail || '';
       const email = emailRaw ? decodeURIComponent(emailRaw) : '';
 
       if (pts > 0 && email) {
