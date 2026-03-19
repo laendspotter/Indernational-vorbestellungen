@@ -527,7 +527,7 @@
     db.auth.getSession().then(({ data: { session } }) => {
       const nav = document.getElementById('authNav');
       if (session) {
-        const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
         nav.innerHTML = `
           <span class="auth-user">👋 ${name}</span>
           <a href="account.html" class="auth-link">Mein Konto</a>
