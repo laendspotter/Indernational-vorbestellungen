@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Feedback – Indernational</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0e1a;--surface:#131726;--border:#1e2236;--accent:#f5a623;--text:#f0ede6;--muted:#7a7468}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:60px 20px 80px;display:flex;flex-direction:column;align-items:center}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(245,166,35,0.06) 0%,transparent 60%);pointer-events:none}
+    .back-btn{position:fixed;top:16px;left:16px;z-index:200;background:rgba(19,23,38,0.85);backdrop-filter:blur(8px);border:1px solid #1e2236;color:#f0ede6;padding:8px 14px 8px 10px;border-radius:50px;font-size:0.85rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:border-color 0.2s}
+    .back-btn:hover{border-color:var(--accent)}
+    .header{text-align:center;margin-bottom:32px;width:100%;max-width:680px;position:relative;z-index:1;animation:fadeUp 0.6s ease both}
+    .logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;color:#f2efeb;margin-bottom:12px}
+    h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:900;letter-spacing:-0.02em;margin-bottom:6px}
+    .subtitle{color:var(--muted);font-size:0.9rem}
+    .form-wrap{width:100%;max-width:640px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;z-index:1;animation:fadeUp 0.6s ease 0.1s both}
+    .form-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#3ecf8e)}
+    iframe{display:block;width:100%;border:none;background:white}
+    .version-footer{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:0.65rem;color:rgba(122,116,104,0.4);pointer-events:none}
+    body.light{--bg:#f4f2ec;--surface:#ffffff;--border:#ddd8cc;--text:#1a1916;--muted:#8a8070}
+    .theme-toggle{position:fixed;bottom:20px;right:20px;z-index:500;width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-btn">‹ Zurück</a>
+
+  <div class="header">
+    <div class="logo">⬡ Indernational</div>
+    <h1>Feedback</h1>
+    <p class="subtitle">Deine Meinung hilft uns besser zu werden 💬</p>
+  </div>
+
+  <div class="form-wrap">
+    <iframe
+      src="https://docs.google.com/forms/d/e/1FAIpQLSeUndebd3c6zXXZgRZ8d2vvWy389ffxxgBOK4EJEx7VOa7IyA/viewform?embedded=true"
+      height="1164"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0">Wird geladen…</iframe>
+  </div>
+
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+  <div class="version-footer">ver 1.5.0</div>
+
+  <script>
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light');
+      document.getElementById('themeToggle').textContent = '☀️';
+    }
+  </script>
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});</script>
+</body>
+</html>
