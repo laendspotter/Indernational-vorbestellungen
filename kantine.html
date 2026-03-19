@@ -147,6 +147,34 @@
     .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
     .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
   
+    /* COUPON */
+    .coupon-section { margin-bottom: 16px; }
+    .coupon-btn { width: 100%; padding: 11px; background: transparent; border: 1px dashed rgba(167,139,250,0.4); border-radius: 10px; color: #a78bfa; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .coupon-btn:hover { background: rgba(167,139,250,0.06); border-color: rgba(167,139,250,0.7); }
+    .coupon-applied { background: rgba(76,175,125,0.08); border: 1px solid rgba(76,175,125,0.3); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+    .coupon-applied-icon { font-size: 1.2rem; }
+    .coupon-applied-info { flex: 1; }
+    .coupon-applied-name { font-weight: 600; color: var(--success); }
+    .coupon-applied-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .coupon-remove { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 4px; }
+    .coupon-remove:hover { color: var(--error); }
+
+    /* COUPON MODAL */
+    .coupon-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 250; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
+    .coupon-modal.show { display: flex; }
+    .coupon-modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; position: relative; overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .coupon-modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #a78bfa, #f5a623); }
+    .coupon-modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+    .coupon-option { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s, background 0.2s; }
+    .coupon-option:hover { border-color: #a78bfa; background: rgba(167,139,250,0.05); }
+    .coupon-option-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .coupon-option-info { flex: 1; }
+    .coupon-option-name { font-weight: 600; font-size: 0.9rem; }
+    .coupon-option-pts { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .coupon-option-discount { font-size: 0.82rem; color: var(--success); font-weight: 600; flex-shrink: 0; }
+    .coupon-modal-cancel { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
+    .coupon-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.88rem; }
+
     /* CONFIRM POPUP */
     .confirm-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
     .confirm-popup.show { display: flex; }
@@ -251,6 +279,13 @@
       </div>
     </div>
 
+    <!-- COUPON -->
+    <div class="coupon-section" id="couponSection" style="display:none;">
+      <div id="couponDisplay">
+        <button class="coupon-btn" onclick="openCouponModal()">⭐ Coupon / Belohnung einlösen</button>
+      </div>
+    </div>
+
     <div class="form-group">
       <label>Zahlungsart</label>
       <div class="payment-cards">
@@ -305,6 +340,15 @@
   </div>
 
   <div class="nav-link">Zur <a href="truck.html">Food Truck-Vorbestellung</a></div>
+  <!-- COUPON MODAL -->
+  <div class="coupon-modal" id="couponModal">
+    <div class="coupon-modal-box">
+      <div class="coupon-modal-title">⭐ Coupon einlösen</div>
+      <div id="couponOptions"></div>
+      <button class="coupon-modal-cancel" onclick="closeCouponModal()">Abbrechen</button>
+    </div>
+  </div>
+
   <!-- BESTELLBESTÄTIGUNG -->
   <div class="confirm-popup" id="confirmPopup">
     <div class="confirm-box">
@@ -483,6 +527,7 @@
         selectedMenuPreis = 0;
       }
       updateSummary();
+      maybeShowCoupon();
     }
 
     function selectDrink(name, preis, el) {
@@ -503,7 +548,14 @@
 
     function updateSummary() {
       if (!selectedMenu) { document.getElementById('summary').style.display = 'none'; return; }
-      const subtotal = selectedMenuPreis + selectedDrinkPreis;
+      let baseMenuPreis = selectedMenuPreis;
+      let baseDrinkPreis = selectedDrinkPreis;
+      // apply coupon
+      if (appliedCoupon) {
+        if (appliedCoupon.typ === 'getraenk') baseDrinkPreis = 0;
+        if (appliedCoupon.typ === 'menue') baseMenuPreis = 0;
+      }
+      const subtotal = baseMenuPreis + baseDrinkPreis;
       const stripeFee = selectedPayment === 'online' && subtotal > 0 ? Math.round((subtotal * 0.015 + 0.25) * 100) / 100 : 0;
       const total = subtotal + stripeFee;
       document.getElementById('summary').style.display = 'block';
@@ -551,6 +603,80 @@
       const t = document.getElementById('toast');
       t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
       setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── COUPON ──
+    let appliedCoupon = null; // { id, name, typ, rabatt, einloesungId }
+
+    async function openCouponModal() {
+      const email = (document.getElementById('email')?.value || '').trim();
+      if (!email) { showToast('Bitte zuerst E-Mail eingeben.', true); return; }
+
+      // load active einloesungen for this email
+      const { data: einloesungen } = await db.from('loyalty_einloesungen')
+        .select('*, loyalty_belohnungen(*)').eq('email', email).eq('used', false);
+      
+      const modal = document.getElementById('couponModal');
+      const opts = document.getElementById('couponOptions');
+
+      if (!einloesungen || einloesungen.length === 0) {
+        opts.innerHTML = '<div class="coupon-empty">Keine einlösbaren Belohnungen.<br><small>Bestellungen sammeln = Punkte sammeln!</small></div>';
+      } else {
+        opts.innerHTML = einloesungen.map(e => {
+          const b = e.loyalty_belohnungen;
+          const icon = b?.typ === 'getraenk' ? '🥤' : b?.typ === 'menue' ? '🍽️' : '🎁';
+          const rabattText = b?.typ === 'getraenk' ? 'Getränk gratis' : b?.typ === 'menue' ? 'Menü gratis' : 'Rabatt';
+          return `<div class="coupon-option" onclick="applyCoupon('${e.id}','${e.belohnung_name}','${b?.typ}','${e.id}')">
+            <span class="coupon-option-icon">${icon}</span>
+            <div class="coupon-option-info">
+              <div class="coupon-option-name">${esc(e.belohnung_name || '')}</div>
+              <div class="coupon-option-pts">Eingelöst am ${new Date(e.created_at).toLocaleDateString('de-DE')}</div>
+            </div>
+            <span class="coupon-option-discount">${rabattText}</span>
+          </div>`;
+        }).join('');
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeCouponModal() {
+      document.getElementById('couponModal').classList.remove('show');
+    }
+
+    function applyCoupon(einloesungId, name, typ, id) {
+      appliedCoupon = { einloesungId, name, typ };
+      closeCouponModal();
+      
+      // update coupon display
+      const icon = typ === 'getraenk' ? '🥤' : typ === 'menue' ? '🍽️' : '🎁';
+      const rabattText = typ === 'getraenk' ? 'Getränk wird gratis' : typ === 'menue' ? 'Menü wird gratis' : 'Rabatt angewendet';
+      document.getElementById('couponDisplay').innerHTML = `
+        <div class="coupon-applied">
+          <span class="coupon-applied-icon">${icon}</span>
+          <div class="coupon-applied-info">
+            <div class="coupon-applied-name">✓ ${esc(name)}</div>
+            <div class="coupon-applied-sub">${rabattText}</div>
+          </div>
+          <button class="coupon-remove" onclick="removeCoupon()" title="Entfernen">✕</button>
+        </div>`;
+      
+      updateSummary();
+      showToast('✓ Coupon angewendet!');
+    }
+
+    function removeCoupon() {
+      appliedCoupon = null;
+      document.getElementById('couponDisplay').innerHTML = 
+        '<button class="coupon-btn" onclick="openCouponModal()">⭐ Coupon / Belohnung einlösen</button>';
+      updateSummary();
+    }
+
+    // show coupon section when menu is selected
+    function maybeShowCoupon() {
+      const email = (document.getElementById('email')?.value || '').trim();
+      const section = document.getElementById('couponSection');
+      if (section) section.style.display = selectedMenu && email ? 'block' : 'none';
     }
 
     function showConfirm() {
@@ -632,12 +758,25 @@
       if (selectedPayment === 'online' && selectedMenuPreis > 0) {
         // Stripe checkout
         try {
-          const subtotal = selectedMenuPreis + selectedDrinkPreis;
+          let baseMenuPreis = selectedMenuPreis;
+      let baseDrinkPreis = selectedDrinkPreis;
+      // apply coupon
+      if (appliedCoupon) {
+        if (appliedCoupon.typ === 'getraenk') baseDrinkPreis = 0;
+        if (appliedCoupon.typ === 'menue') baseMenuPreis = 0;
+      }
+      const subtotal = baseMenuPreis + baseDrinkPreis;
           const stripeFee = Math.round((subtotal * 0.015 + 0.25) * 100) / 100;
-          const items = [{ name: menuLabel, amount_cents: Math.round(selectedMenuPreis * 100) }];
-          if (selectedDrink) items.push({ name: selectedDrink, amount_cents: Math.round(selectedDrinkPreis * 100) });
+          const couponMenuPreis = appliedCoupon?.typ === 'menue' ? 0 : selectedMenuPreis;
+          const couponDrinkPreis = appliedCoupon?.typ === 'getraenk' ? 0 : selectedDrinkPreis;
+          const items = [{ name: menuLabel + (appliedCoupon?.typ === 'menue' ? ' (Coupon)' : ''), amount_cents: Math.round(couponMenuPreis * 100) }];
+          if (selectedDrink) items.push({ name: selectedDrink + (appliedCoupon?.typ === 'getraenk' ? ' (Coupon)' : ''), amount_cents: Math.round(couponDrinkPreis * 100) });
           items.push({ name: 'Zahlungsgebühr', amount_cents: Math.round(stripeFee * 100) });
 
+          // mark coupon used
+          if (appliedCoupon?.einloesungId) {
+            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+          }
           const resp = await fetch('/api/create-checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -661,7 +800,9 @@
         const { data: insertData, error } = await db.from('vorbestellungen').insert({
           name, datum: date, menu: selectedMenu, typ: 'kantine',
           getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
-          preis: selectedMenuPreis, zahlung: 'bar', bezahlt: false, erledigt: false,
+          preis: appliedCoupon?.typ === 'menue' ? 0 : selectedMenuPreis,
+          getraenk_preis: appliedCoupon?.typ === 'getraenk' ? 0 : selectedDrinkPreis,
+          zahlung: 'bar', bezahlt: false, erledigt: false,
           notiz: document.getElementById('notiz')?.value.trim() || '',
           user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
         }).select().single();
@@ -688,6 +829,10 @@
           // redirect to success page with real id
           const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
           // loyalty
+          // mark coupon as used
+          if (appliedCoupon?.einloesungId) {
+            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+          }
           const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
           const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
           const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
@@ -815,8 +960,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const emailEl = document.getElementById('email');
       if (emailEl) {
-        emailEl.addEventListener('blur', loadLoyaltyInfo);
-        emailEl.addEventListener('change', loadLoyaltyInfo);
+        emailEl.addEventListener('blur', () => { loadLoyaltyInfo(); maybeShowCoupon(); });
+        emailEl.addEventListener('change', () => { loadLoyaltyInfo(); maybeShowCoupon(); });
       }
       // also check if logged in user already has points
       const { data: { session } } = await db.auth.getSession();
@@ -850,6 +995,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.4</div>
+  <div class="version-footer">ver 1.4.5</div>
 </body>
 </html>
