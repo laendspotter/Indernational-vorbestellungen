@@ -1094,18 +1094,22 @@
         return `${DAY_NAMES_FULL[dk]} (${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })})`;
       }).join(', ');
 
-      const prompt = `Du siehst eine Speisekarte oder einen Wochenplan für die Woche mit KW ${getKW(currentWeekStart)}.
-Die Wochentage dieser Woche sind: ${dayDates}.
+      const allergenMap = {"1":"Gluten","2":"Krebstiere","3":"Ei","4":"Fisch","5":"Erdnüsse","6":"Soja","7":"Milch","8":"Schalenfrüchte","9":"Sellerie","10":"Senf","11":"Sesam","12":"Sulfite","13":"Lupine","14":"Weichtiere"};
+      const prompt = `Du siehst einen Speiseplan. Extrahiere für jeden Wochentag (Montag bis Freitag):
 
-Extrahiere für jeden Wochentag (Montag bis Freitag):
-- Menünamen (menu1, menu2)
-- Preise in Euro als Dezimalzahl (preis1, preis2)
-- Allergene als kommagetrennte Liste auf Deutsch (allergene1, allergene2) - z.B. "Gluten, Milch, Eier"
-- Hinweise/Zusatzinfos falls vorhanden (hinweis1, hinweis2) - z.B. "vegan", "scharf", "enthält Schweinefleisch"
+WICHTIG für dieses Format:
+- Menü 1 = Fleischgericht (linke Spalte)
+- Menü 2 = Vegetarisch/Vegan (rechte Spalte)
+- Der Preis steht direkt im Gerichtsnamen nach einem Gedankenstrich, z.B. "Hähnchen – 8,50 €" → preis = 8.50
+- Allergene stehen als Zahlen beim Gericht, z.B. "Allergene: 1,3,7" → übersetze in deutsche Namen mit dieser Tabelle: 1=Gluten, 2=Krebstiere, 3=Ei, 4=Fisch, 5=Erdnüsse, 6=Soja, 7=Milch, 8=Schalenfrüchte, 9=Sellerie, 10=Senf, 11=Sesam, 12=Sulfite, 13=Lupine, 14=Weichtiere
+- Wenn mehrere Gerichte an einem Tag (z.B. Freitag), nimm das erste als menu1 und zweite als menu2
+- Nur den Gerichtnamen ohne Beschreibung und ohne Preis in menu1/menu2
 
-Antworte NUR mit einem JSON-Objekt in diesem Format, ohne weitere Erklärungen oder Markdown:
+Die Wochentage dieser Woche sind: \${dayDates}.
+
+Antworte NUR mit einem JSON-Objekt ohne Markdown:
 {
-  "mo": { "menu1": "...", "menu2": "...", "preis1": 0.00, "preis2": 0.00, "allergene1": "...", "allergene2": "...", "hinweis1": "...", "hinweis2": "..." },
+  "mo": { "menu1": "...", "menu2": "...", "preis1": 0.00, "preis2": 0.00, "allergene1": "Gluten, Ei", "allergene2": "Milch", "hinweis1": "...", "hinweis2": "..." },
   "di": { "menu1": "...", "menu2": "..." },
   "mi": { "menu1": "...", "menu2": "..." },
   "do": { "menu1": "...", "menu2": "..." },
