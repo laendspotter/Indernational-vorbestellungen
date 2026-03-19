@@ -195,6 +195,26 @@
 
       await loadOrders();
       await loadLoyalty();
+      loadReminderPref();
+    }
+
+    function loadReminderPref() {
+      const pref = localStorage.getItem('reminder_' + userEmail) !== 'false';
+      const toggle = document.getElementById('reminderToggle');
+      const slider = document.getElementById('reminderSlider');
+      const knob = document.getElementById('reminderKnob');
+      if (toggle) toggle.checked = pref;
+      if (slider) slider.style.background = pref ? 'var(--accent, #f5a623)' : 'var(--border)';
+      if (knob) knob.style.transform = pref ? 'translateX(20px)' : 'none';
+    }
+
+    function saveReminderPref(val) {
+      localStorage.setItem('reminder_' + userEmail, val ? 'true' : 'false');
+      const slider = document.getElementById('reminderSlider');
+      const knob = document.getElementById('reminderKnob');
+      if (slider) slider.style.background = val ? 'var(--accent, #f5a623)' : 'var(--border)';
+      if (knob) knob.style.transform = val ? 'translateX(20px)' : 'none';
+      showToast(val ? '✓ Erinnerungen aktiviert' : 'Erinnerungen deaktiviert');
     }
 
     async function loadLoyalty() {
@@ -436,6 +456,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.4</div>
+  <div class="version-footer">ver 1.4.6</div>
 </body>
 </html>

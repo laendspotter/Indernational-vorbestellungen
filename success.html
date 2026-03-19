@@ -97,12 +97,15 @@
       <a href="loyalty.html" class="lp-btn" id="lpBtn">⭐ Meine Punkte ansehen</a>
     </div>
 
-    <a href="index.html" class="btn" style="margin-top:12px;">Zurück zur Startseite</a>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <a href="index.html" class="btn" style="flex:1;text-align:center;background:transparent;border:1px solid var(--border);color:var(--muted);">Startseite</a>
+      <a id="nochmalBtn" href="kantine.html" class="btn" style="flex:1;text-align:center;">Nochmal bestellen →</a>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-  <div class="version-footer">ver 1.4.4</div>
+  <div class="version-footer">ver 1.4.6</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -166,6 +169,19 @@
     }
 
     init();
+
+    // set nochmal bestellen link
+    (function() {
+      const params = new URLSearchParams(location.search);
+      const orderParam = params.get('order');
+      if (orderParam) {
+        try {
+          const o = JSON.parse(decodeURIComponent(orderParam));
+          const btn = document.getElementById('nochmalBtn');
+          if (btn) btn.href = o.typ === 'truck' ? 'truck.html' : 'kantine.html';
+        } catch(e) {}
+      }
+    })();
 
     function toggleTheme() {
       const isLight = document.body.classList.toggle('light');

@@ -175,6 +175,16 @@
     .coupon-modal-cancel { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
     .coupon-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.88rem; }
 
+    /* ABHOLZEIT */
+    .abholzeit-section { margin-bottom: 20px; display: none; }
+    .abholzeit-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; display: block; }
+    .abholzeit-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .abholzeit-select { flex: 1; min-width: 140px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; appearance: none; cursor: pointer; }
+    .abholzeit-select:focus { outline: none; border-color: #3ecf8e; }
+    .eat-toggle { display: flex; gap: 8px; }
+    .eat-btn { flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .eat-btn.selected { border-color: #3ecf8e; background: rgba(62,207,142,0.07); color: var(--text); }
+
     /* CONFIRM POPUP */
     .confirm-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
     .confirm-popup.show { display: flex; }
@@ -196,6 +206,13 @@
     .countdown-badge.urgent { border-color: rgba(224,92,92,0.4); color: var(--error); background: rgba(224,92,92,0.06); }
     .countdown-badge.soon { border-color: rgba(245,166,35,0.4); color: var(--accent-dark, #f5a623); background: rgba(245,166,35,0.06); }
     .countdown-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(19,23,38,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); z-index: 100; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+    .bottom-nav-inner { display: flex; justify-content: space-around; max-width: 480px; margin: 0 auto; }
+    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; text-decoration: none; color: var(--muted); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.2s; }
+    .bottom-nav-item.active, .bottom-nav-item:hover { color: var(--accent); }
+    .bottom-nav-icon { font-size: 1.3rem; }
+    @media (max-width: 600px) { .bottom-nav { display: block; } body { padding-bottom: 70px; } }
 
     body.light {
       --bg: #f4f2ec;
@@ -276,6 +293,20 @@
           <div class="drink-name">Kein Getränk</div>
           <div class="drink-preis">–</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ABHOLZEIT -->
+    <div class="abholzeit-section" id="abholzeitSection">
+      <label class="abholzeit-label">Abholzeit & Art <span style="color:var(--muted);font-size:0.75rem;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
+      <div class="abholzeit-row">
+        <select class="abholzeit-select" id="abholzeitSelect">
+          <option value="">Uhrzeit wählen…</option>
+        </select>
+      </div>
+      <div class="eat-toggle" style="margin-top:8px;" id="eatToggle">
+        <button class="eat-btn" id="eatVorOrt" onclick="setEatType('vor-ort')">🍽️ Vor Ort essen</button>
+        <button class="eat-btn" id="eatMitnehmen" onclick="setEatType('mitnehmen')">🥡 Mitnehmen</button>
       </div>
     </div>
 
@@ -499,6 +530,10 @@
       renderAllergenTags('tags1', menus.allergene1 || '', menus.hinweis1 || '');
       renderAllergenTags('tags2', menus.allergene2 || '', menus.hinweis2 || '');
 
+      // autofill fav menu
+      const fav = localStorage.getItem('fav_menu_kantine');
+      if (fav && !selectedMenu) { setTimeout(() => { const card = document.getElementById('card' + (fav === 'menu1' ? '1' : '2')); if (card && !card.style.pointerEvents?.includes('none')) card.click(); }, 100); }
+
       // ausverkauft handling
       const c1 = document.getElementById('card1');
       const c2 = document.getElementById('card2');
@@ -516,6 +551,7 @@
 
     function selectMenu(val) {
       selectedMenu = val;
+      try { localStorage.setItem('fav_menu_kantine', val); } catch(e) {}
       document.getElementById('card1').classList.toggle('selected', val === 'menu1');
       document.getElementById('card2').classList.toggle('selected', val === 'menu2');
 
@@ -604,6 +640,68 @@
       t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
       setTimeout(() => t.classList.remove('show'), 3000);
     }
+
+    // ── ABHOLZEIT ──
+    let selectedAbholzeit = '';
+    let selectedEatType = '';
+
+    function setEatType(type) {
+      selectedEatType = selectedEatType === type ? '' : type;
+      document.getElementById('eatVorOrt').classList.toggle('selected', selectedEatType === 'vor-ort');
+      document.getElementById('eatMitnehmen').classList.toggle('selected', selectedEatType === 'mitnehmen');
+    }
+
+    async function loadAbholzeiten() {
+      const { data } = await db.from('einstellungen').select('abholung_von,abholung_bis').eq('typ', 'kantine').maybeSingle();
+      if (!data?.abholung_von || !data?.abholung_bis) return;
+
+      const now = new Date();
+      const [fromH, fromM] = data.abholung_von.split(':').map(Number);
+      const [toH, toM] = data.abholung_bis.split(':').map(Number);
+
+      // show section 2.5h before abholung starts
+      const abholStart = new Date();
+      abholStart.setHours(fromH, fromM, 0, 0);
+      const showFrom = new Date(abholStart.getTime() - 2.5 * 60 * 60000);
+      const abholEnd = new Date();
+      abholEnd.setHours(toH, toM, 0, 0);
+
+      // only show for today's orders
+      const dateVal = document.getElementById('date')?.value;
+      const today = new Date().toISOString().split('T')[0];
+      if (dateVal !== today) return;
+      if (now < showFrom || now > abholEnd) return;
+
+      const sel = document.getElementById('abholzeitSelect');
+      sel.innerHTML = '<option value="">Uhrzeit wählen…</option>';
+
+      let cur = new Date(abholStart);
+      while (cur <= abholEnd) {
+        // skip past times
+        if (cur > now) {
+          const h = String(cur.getHours()).padStart(2,'0');
+          const m = String(cur.getMinutes()).padStart(2,'0');
+          const opt = document.createElement('option');
+          opt.value = h + ':' + m;
+          opt.textContent = h + ':' + m + ' Uhr';
+          sel.appendChild(opt);
+        }
+        cur = new Date(cur.getTime() + 15 * 60000);
+      }
+
+      if (sel.options.length > 1) {
+        document.getElementById('abholzeitSection').style.display = 'block';
+        sel.addEventListener('change', () => { selectedAbholzeit = sel.value; });
+      }
+    }
+
+    // reload abholzeiten when date changes
+    const origLoadMenu = loadMenuForDate;
+    loadMenuForDate = async function() {
+      await origLoadMenu();
+      loadAbholzeiten();
+    };
+    loadAbholzeiten();
 
     // ── COUPON ──
     let appliedCoupon = null; // { id, name, typ, rabatt, einloesungId }
@@ -699,6 +797,7 @@
         {label: 'Menü', val: menuLabel},
         {label: 'Getränk', val: selectedDrink || 'Keins'},
         {label: 'Zahlung', val: selectedPayment === 'online' ? '💳 Online' : '💵 Bar'},
+        ...(selectedAbholzeit ? [{label: 'Abholzeit', val: selectedAbholzeit + ' Uhr' + (selectedEatType === 'vor-ort' ? ' · Vor Ort' : selectedEatType === 'mitnehmen' ? ' · Mitnehmen' : '')}] : []),
         {label: 'Gesamt', val: total > 0 ? formatPreis(total) : '–'},
       ];
       document.getElementById('confirmRows').innerHTML = rows.map(r =>
@@ -803,7 +902,7 @@
           preis: appliedCoupon?.typ === 'menue' ? 0 : selectedMenuPreis,
           getraenk_preis: appliedCoupon?.typ === 'getraenk' ? 0 : selectedDrinkPreis,
           zahlung: 'bar', bezahlt: false, erledigt: false,
-          notiz: document.getElementById('notiz')?.value.trim() || '',
+          notiz: (document.getElementById('notiz')?.value.trim() || '') + (selectedAbholzeit ? ` | Abholung: ${selectedAbholzeit}${selectedEatType ? ' ('+selectedEatType+')' : ''}` : ''),
           user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
         }).select().single();
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
@@ -976,6 +1075,17 @@
     function pad2(n) { return String(n).padStart(2,'0'); }
     function pad4(n) { return String(n).padStart(4,'0'); }
   </script>
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span><span>Start</span></a>
+      <a href="truck.html" class="bottom-nav-item "><span class="bottom-nav-icon">🚚</span><span>Truck</span></a>
+      <a href="kantine.html" class="bottom-nav-item active"><span class="bottom-nav-icon">🍽️</span><span>Kantine</span></a>
+      <a href="loyalty.html" class="bottom-nav-item"><span class="bottom-nav-icon">⭐</span><span>Punkte</span></a>
+      <a href="account.html" class="bottom-nav-item"><span class="bottom-nav-icon">👤</span><span>Konto</span></a>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
@@ -995,6 +1105,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.5</div>
+  <div class="version-footer">ver 1.4.6</div>
 </body>
 </html>

@@ -650,6 +650,29 @@
       else showToast('Fehler: ' + data.error, true);
     }
 
+    async function notfallSchliessen() {
+      if (!confirm('BEIDE Bereiche sofort schließen?')) return;
+      const today = new Date().toISOString().split('T')[0];
+      await Promise.all([
+        db.from('einstellungen').upsert({ typ: 'truck', geschlossen_von: today, geschlossen_bis: today, geschlossen_grund: 'Notfall-Schließung' }, { onConflict: 'typ' }),
+        db.from('einstellungen').upsert({ typ: 'kantine', geschlossen_von: today, geschlossen_bis: today, geschlossen_grund: 'Notfall-Schließung' }, { onConflict: 'typ' })
+      ]);
+      showToast('🚨 Beide Bereiche geschlossen!');
+    }
+
+    async function sendWochenbericht() {
+      const email = prompt('Wochenbericht senden an:', '');
+      if (!email) return;
+      const resp = await fetch('/api/weekly-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await resp.json();
+      if (data.ok) showToast(`✓ Wochenbericht gesendet (${data.orders} Bestellungen)`);
+      else showToast('Fehler: ' + data.error, true);
+    }
+
     function subscribeRealtime() {
       db.channel('admin-dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
@@ -688,6 +711,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.4</div>
+  <div class="version-footer">ver 1.4.6</div>
 </body>
 </html>

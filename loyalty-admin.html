@@ -135,6 +135,19 @@
     .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
     .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
+    .sk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+    .sk-card:hover { border-color: rgba(167,139,250,0.4); }
+    .sk-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); }
+    .sk-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(167,139,250,0.15); color: var(--loyalty); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1.1rem; margin-bottom: 10px; }
+    .sk-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; margin-bottom: 2px; }
+    .sk-email { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+    .sk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .sk-stat { background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+    .sk-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--loyalty); }
+    .sk-stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+    .sk-fav { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+    .sk-streak { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2); border-radius: 50px; padding: 3px 8px; font-size: 0.72rem; color: var(--loyalty2); font-weight: 600; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
@@ -180,6 +193,7 @@
       <!-- TABS -->
       <div class="tabs">
         <button class="tab-btn active" id="tabKunden" onclick="showTab('kunden')">👥 Kunden</button>
+        <button class="tab-btn" id="tabStammkunden" onclick="showTab('stammkunden')">⭐ Stammkunden</button>
         <button class="tab-btn" id="tabBelohnungen" onclick="showTab('belohnungen')">🎁 Belohnungen</button>
         <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
       </div>
@@ -205,6 +219,13 @@
             </thead>
             <tbody id="kundenBody"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- STAMMKUNDEN TAB -->
+      <div id="contentStammkunden" style="display:none;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;" id="stammkundenGrid">
+          <div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Lade Stammkunden…</div>
         </div>
       </div>
 
@@ -579,14 +600,75 @@
     }
 
     // ── TABS ──
+    // ── STAMMKUNDEN ──
+    async function loadStammkunden() {
+      const grid = document.getElementById('stammkundenGrid');
+      if (!grid) return;
+      grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Lade…</div>';
+
+      // get all orders
+      const { data: orders } = await db.from('vorbestellungen').select('name,user_email,menu,typ,preis,getraenk_preis,datum,created_at').order('created_at', { ascending: false });
+      if (!orders || orders.length === 0) {
+        grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Keine Daten.</div>';
+        return;
+      }
+
+      // group by email or name
+      const byEmail = {};
+      orders.forEach(o => {
+        const key = o.user_email || o.name;
+        if (!byEmail[key]) byEmail[key] = { name: o.name, email: o.user_email, orders: [] };
+        byEmail[key].orders.push(o);
+      });
+
+      // sort by order count
+      const sorted = Object.values(byEmail).sort((a,b) => b.orders.length - a.orders.length).slice(0, 20);
+
+      grid.innerHTML = sorted.map(k => {
+        const count = k.orders.length;
+        const revenue = k.orders.reduce((s,o) => s + parseFloat(o.preis||0) + parseFloat(o.getraenk_preis||0), 0);
+        const m1 = k.orders.filter(o => o.menu === 'menu1').length;
+        const m2 = k.orders.filter(o => o.menu === 'menu2').length;
+        const favMenu = m1 >= m2 ? 'Menü 1' : 'Menü 2';
+        const truckCount = k.orders.filter(o => o.typ === 'truck').length;
+        const kantineCount = k.orders.filter(o => o.typ === 'kantine').length;
+        const favTyp = truckCount >= kantineCount ? '🚚 Truck' : '🍽️ Kantine';
+        const initial = (k.name || k.email || '?').charAt(0).toUpperCase();
+
+        // streak: consecutive weeks
+        const weeks = new Set(k.orders.map(o => {
+          const d = new Date(o.datum + 'T00:00:00');
+          const day = d.getDay();
+          d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+          return d.toISOString().split('T')[0];
+        }));
+        const streak = weeks.size;
+
+        return `<div class="sk-card">
+          <div class="sk-avatar">${initial}</div>
+          <div class="sk-name">${esc(k.name || '–')}</div>
+          <div class="sk-email">${esc(k.email || 'Gast')}</div>
+          <div class="sk-stats">
+            <div class="sk-stat"><div class="sk-stat-num">${count}</div><div class="sk-stat-label">Bestellungen</div></div>
+            <div class="sk-stat"><div class="sk-stat-num">${revenue.toFixed(2).replace('.',',')} €</div><div class="sk-stat-label">Umsatz</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <div class="sk-fav">⭐ ${favMenu} · ${favTyp}</div>
+            <div class="sk-streak">🔥 ${streak} Wochen</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     function showTab(tab) {
-      ['kunden','belohnungen','einstellungen'].forEach(t => {
+      ['kunden','stammkunden','belohnungen','einstellungen'].forEach(t => {
         const cap = t.charAt(0).toUpperCase() + t.slice(1);
         const content = document.getElementById('content' + cap);
         if (content) content.style.display = t === tab ? 'block' : 'none';
         const btn = document.getElementById('tab' + cap);
         if (btn) btn.classList.toggle('active', t === tab);
       });
+      if (tab === 'stammkunden') loadStammkunden();
     }
 
     function subscribeRealtime() {
@@ -613,6 +695,6 @@
     }
     if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); }
   </script>
-  <div class="version-footer">ver 1.4.4</div>
+  <div class="version-footer">ver 1.4.6</div>
 </body>
 </html>

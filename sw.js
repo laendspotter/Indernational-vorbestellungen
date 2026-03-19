@@ -1,4 +1,4 @@
-const CACHE = 'indernational-v144';
+const CACHE = 'indernational-v146';
 const STATIC = [
   '/',
   '/index.html',
@@ -7,6 +7,9 @@ const STATIC = [
   '/login.html',
   '/register.html',
   '/account.html',
+  '/success.html',
+  '/loyalty.html',
+  '/offline.html',
   '/logo.svg',
   '/supabase-config.js',
 ];
@@ -26,6 +29,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('/api/') || e.request.url.includes('supabase.co') || e.request.url.includes('stripe.com')) return;
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('/index.html')))
+    fetch(e.request)
+      .then(resp => {
+        // cache fresh responses
+        if (resp.ok && e.request.method === 'GET') {
+          const clone = resp.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
+        return resp;
+      })
+      .catch(() => caches.match(e.request).then(cached => cached || caches.match('/offline.html')))
   );
 });

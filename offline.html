@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Offline – Indernational</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #0b0e1a; color: #f0ede6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
+    .icon { font-size: 4rem; margin-bottom: 20px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 900; margin-bottom: 8px; }
+    p { color: #7a7468; font-size: 0.9rem; margin-bottom: 28px; line-height: 1.6; }
+    .btn { padding: 14px 28px; background: #f5a623; color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .btn:hover { background: #f0b83a; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <h1>Kein Internet</h1>
+  <p>Du bist gerade offline.<br>Bitte überprüfe deine Verbindung und versuche es erneut.</p>
+  <button class="btn" onclick="location.reload()">Erneut versuchen</button>
+</body>
+</html>
