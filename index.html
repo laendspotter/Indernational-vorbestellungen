@@ -708,14 +708,8 @@
     }
 
     function handleCardClick(url, typ) {
-      // check if already logged in
-      db.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          window.location.href = url;
-        } else {
-          openPopup(url, typ);
-        }
-      });
+      // go directly — bestellung works for guests too
+      window.location.href = url;
     }
 
     function openPopup(url, typ) {
