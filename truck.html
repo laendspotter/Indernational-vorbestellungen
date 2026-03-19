@@ -666,11 +666,16 @@
       const abholEnd = new Date();
       abholEnd.setHours(toH, toM, 0, 0);
 
-      // only show for today's orders
       const dateVal = document.getElementById('date')?.value;
       const today = new Date().toISOString().split('T')[0];
-      if (dateVal !== today) return;
-      if (now < showFrom || now > abholEnd) return;
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      // show for today (if within time window) OR for tomorrow (always, since bestellschluss is vortag)
+      const isToday = dateVal === today;
+      const isTomorrow = dateVal === tomorrowStr;
+      if (isToday && (now < showFrom || now > abholEnd)) return;
+      if (!isToday && !isTomorrow) return;
 
       const sel = document.getElementById('abholzeitSelect');
       sel.innerHTML = '<option value="">Uhrzeit wählen…</option>';
@@ -906,7 +911,11 @@
           user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
         }).select().single();
         btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
-        if (error) { showToast('Fehler beim Senden.', true); }
+        if (error) {
+        btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
+        const msg = error.code === 'PGRST301' ? 'Sitzung abgelaufen – bitte neu laden.' : error.message?.includes('network') ? 'Keine Verbindung – bitte prüfen.' : 'Fehler beim Senden. Bitte erneut versuchen.';
+        showToast(msg, true);
+      }
         else {
           const orderId = insertData?.id;
           // send email if user is logged in
@@ -1105,6 +1114,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.6</div>
+  <div class="version-footer">ver 1.5.0</div>
 </body>
 </html>

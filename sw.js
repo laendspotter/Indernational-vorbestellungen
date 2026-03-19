@@ -1,4 +1,4 @@
-const CACHE = 'indernational-v146';
+const CACHE = 'indernational-v150';
 const STATIC = [
   '/',
   '/index.html',

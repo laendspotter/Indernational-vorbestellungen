@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Wochenmenü – Indernational</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="description" content="Das aktuelle Wochenmenü bei Indernational – Kantine BA Nagold"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0e1a;--surface:#131726;--border:#1e2236;--truck:#f5a623;--kantine:#3ecf8e;--text:#f0ede6;--muted:#7a7468;--radius:14px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 20px 80px;display:flex;flex-direction:column;align-items:center}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(245,166,35,0.06) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(62,207,142,0.04) 0%,transparent 55%);pointer-events:none}
+    .back-btn{position:fixed;top:16px;left:16px;z-index:200;background:rgba(19,23,38,0.85);backdrop-filter:blur(8px);border:1px solid #1e2236;color:#f0ede6;padding:8px 14px 8px 10px;border-radius:50px;font-size:0.85rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:border-color 0.2s}
+    .back-btn:hover{border-color:var(--truck)}
+    .header{text-align:center;margin-bottom:36px;width:100%;max-width:780px;position:relative;z-index:1;animation:fadeUp 0.6s ease both}
+    .logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;color:#f2efeb;margin-bottom:12px}
+    h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:900;letter-spacing:-0.02em;margin-bottom:6px}
+    .week-label{color:var(--muted);font-size:0.88rem}
+    .section-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;width:100%;max-width:780px}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+    .week-grid{width:100%;max-width:780px;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;position:relative;z-index:1}
+    .day-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;animation:fadeUp 0.5s ease both}
+    .day-header{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.2)}
+    .day-name{font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem}
+    .day-date{font-size:0.78rem;color:var(--muted)}
+    .day-today{color:var(--truck);font-size:0.7rem;font-weight:700;padding:2px 8px;background:rgba(245,166,35,0.12);border-radius:50px;border:1px solid rgba(245,166,35,0.25)}
+    .day-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+    .day-col{padding:14px 18px;position:relative}
+    .day-col:first-child{border-right:1px solid var(--border)}
+    .col-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+    .col-label.truck{color:var(--truck)}
+    .col-label.kantine{color:var(--kantine)}
+    .menu-name{font-size:0.88rem;font-weight:600;margin-bottom:3px}
+    .menu-preis{font-size:0.82rem;color:var(--truck);font-weight:600}
+    .menu-kantine-preis{color:var(--kantine)}
+    .menu-empty{font-size:0.82rem;color:var(--muted);font-style:italic}
+    .highlight-badge{font-size:0.68rem;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.2);color:var(--truck);border-radius:50px;padding:2px 6px;margin-left:4px}
+    .allergen-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+    .allergen-tag{font-size:0.68rem;background:rgba(122,116,104,0.12);border:1px solid rgba(122,116,104,0.15);border-radius:50px;padding:1px 6px;color:var(--muted)}
+    .order-btns{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:rgba(0,0,0,0.1)}
+    .order-btn{flex:1;padding:10px;border-radius:8px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;text-decoration:none;text-align:center;transition:opacity 0.2s;display:block}
+    .order-btn.truck{background:var(--truck);color:#0b0e1a}
+    .order-btn.kantine{background:var(--kantine);color:#0b0e1a}
+    .order-btn:hover{opacity:0.85}
+    .empty-day{opacity:0.4}
+    @media(max-width:500px){.day-body{grid-template-columns:1fr}.day-col:first-child{border-right:none;border-bottom:1px solid var(--border)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .version-footer{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:0.65rem;color:rgba(122,116,104,0.4);pointer-events:none}
+    body.light{--bg:#f4f2ec;--surface:#ffffff;--border:#ddd8cc;--text:#1a1916;--muted:#8a8070}
+    .theme-toggle{position:fixed;bottom:20px;right:20px;z-index:500;width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-btn">‹ Zurück</a>
+
+  <div class="header">
+    <div class="logo">⬡ Indernational</div>
+    <h1>Wochenmenü</h1>
+    <div class="week-label" id="weekLabel">KW wird geladen…</div>
+  </div>
+
+  <div class="section-title" id="truckTitle" style="display:none">🚚 Food Truck & 🍽️ Kantine</div>
+  <div class="week-grid" id="weekGrid"></div>
+
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+  <div class="version-footer">ver 1.5.0</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const DAYS = ['mo','di','mi','do','fr'];
+    const DAY_NAMES = { mo:'Montag', di:'Dienstag', mi:'Mittwoch', do:'Donnerstag', fr:'Freitag' };
+    const ALLERGEN_EMOJIS = {"gluten":"🌾","weizen":"🌾","milch":"🥛","laktose":"🥛","eier":"🥚","ei":"🥚","erdnüsse":"🥜","nüsse":"🌰","fisch":"🐟","meeresfrüchte":"🦐","soja":"🫘","sellerie":"🥬","senf":"🌿","sesam":"🌱","sulfite":"🍷","lupinen":"🌸","weichtiere":"🐚","schalenfrüchte":"🌰","krebstiere":"🦐"};
+
+    function getWeekStart(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+      return d.toISOString().split('T')[0];
+    }
+
+    function getKW(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+      const week1 = new Date(d.getFullYear(), 0, 4);
+      return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+
+    function renderAllergens(str) {
+      if (!str) return '';
+      return str.split(',').map(a => {
+        const k = a.trim().toLowerCase();
+        const emoji = ALLERGEN_EMOJIS[k] || '';
+        return `<span class="allergen-tag">${emoji} ${a.trim()}</span>`;
+      }).join('');
+    }
+
+    async function loadMenu() {
+      const today = new Date();
+      const weekStart = getWeekStart(today);
+      const kw = getKW(weekStart);
+      const year = today.getFullYear();
+      document.getElementById('weekLabel').textContent = `KW ${kw} · ${year}`;
+
+      const [{ data: truck }, { data: kantine }] = await Promise.all([
+        db.from('menus').select('*').eq('typ','truck').eq('woche_start', weekStart).maybeSingle(),
+        db.from('menus').select('*').eq('typ','kantine').eq('woche_start', weekStart).maybeSingle()
+      ]);
+
+      if (!truck && !kantine) {
+        document.getElementById('weekGrid').innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;">Für diese Woche wurde noch kein Menü eingetragen.</div>';
+        return;
+      }
+
+      document.getElementById('truckTitle').style.display = 'flex';
+      const todayStr = today.toISOString().split('T')[0];
+      const dow = today.getDay();
+
+      const grid = document.getElementById('weekGrid');
+      grid.innerHTML = DAYS.map((dk, i) => {
+        const dayDate = new Date(weekStart + 'T00:00:00');
+        dayDate.setDate(dayDate.getDate() + i);
+        const dateStr = dayDate.toISOString().split('T')[0];
+        const isToday = dateStr === todayStr;
+
+        const tm1 = truck?.[`${dk}_menu1`] || '';
+        const tm2 = truck?.[`${dk}_menu2`] || '';
+        const tp1 = truck?.[`${dk}_menu1_preis`] || 0;
+        const tp2 = truck?.[`${dk}_menu2_preis`] || 0;
+        const ta1 = truck?.[`${dk}_menu1_allergene`] || '';
+        const ta2 = truck?.[`${dk}_menu2_allergene`] || '';
+        const th = truck?.[`${dk}_highlight`] || 0;
+
+        const km1 = kantine?.[`${dk}_menu1`] || '';
+        const km2 = kantine?.[`${dk}_menu2`] || '';
+        const kp1 = kantine?.[`${dk}_menu1_preis`] || 0;
+        const kp2 = kantine?.[`${dk}_menu2_preis`] || 0;
+        const ka1 = kantine?.[`${dk}_menu1_allergene`] || '';
+        const ka2 = kantine?.[`${dk}_menu2_allergene`] || '';
+        const kh = kantine?.[`${dk}_highlight`] || 0;
+
+        const hasTruck = tm1 || tm2;
+        const hasKantine = km1 || km2;
+        const isEmpty = !hasTruck && !hasKantine;
+
+        const dayDateFmt = dayDate.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit'});
+
+        const truckCol = `<div class="day-col">
+          <div class="col-label truck">🚚 Food Truck</div>
+          ${tm1 ? `<div class="menu-name">${tm1}${th===1?'<span class="highlight-badge">⭐ Highlight</span>':''}</div>${tp1?`<div class="menu-preis">${parseFloat(tp1).toFixed(2).replace('.',',')} €</div>`:''}<div class="allergen-tags">${renderAllergens(ta1)}</div>` : ''}
+          ${tm2 ? `<div class="menu-name" style="margin-top:8px">${tm2}${th===2?'<span class="highlight-badge">⭐ Highlight</span>':''}</div>${tp2?`<div class="menu-preis">${parseFloat(tp2).toFixed(2).replace('.',',')} €</div>`:''}<div class="allergen-tags">${renderAllergens(ta2)}</div>` : ''}
+          ${!hasTruck ? '<div class="menu-empty">Kein Menü</div>' : ''}
+        </div>`;
+
+        const kantineCol = `<div class="day-col">
+          <div class="col-label kantine">🍽️ Kantine</div>
+          ${km1 ? `<div class="menu-name">${km1}${kh===1?'<span class="highlight-badge" style="border-color:rgba(62,207,142,0.3);background:rgba(62,207,142,0.08);color:var(--kantine)">⭐ Highlight</span>':''}</div>${kp1?`<div class="menu-preis menu-kantine-preis">${parseFloat(kp1).toFixed(2).replace('.',',')} €</div>`:''}<div class="allergen-tags">${renderAllergens(ka1)}</div>` : ''}
+          ${km2 ? `<div class="menu-name" style="margin-top:8px">${km2}${kh===2?'<span class="highlight-badge" style="border-color:rgba(62,207,142,0.3);background:rgba(62,207,142,0.08);color:var(--kantine)">⭐ Highlight</span>':''}</div>${kp2?`<div class="menu-preis menu-kantine-preis">${parseFloat(kp2).toFixed(2).replace('.',',')} €</div>`:''}<div class="allergen-tags">${renderAllergens(ka2)}</div>` : ''}
+          ${!hasKantine ? '<div class="menu-empty">Kein Menü</div>' : ''}
+        </div>`;
+
+        return `<div class="day-card ${isEmpty?'empty-day':''}" style="animation-delay:${i*0.06}s">
+          <div class="day-header">
+            <span class="day-name">${DAY_NAMES[dk]}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${isToday ? '<span class="day-today">Heute</span>' : ''}
+              <span class="day-date">${dayDateFmt}</span>
+            </div>
+          </div>
+          <div class="day-body">${truckCol}${kantineCol}</div>
+          ${!isEmpty && (dow === 0 || (i >= dow - 1)) ? `<div class="order-btns">
+            <a href="truck.html" class="order-btn truck">🚚 Truck bestellen</a>
+            <a href="kantine.html" class="order-btn kantine">🍽️ Kantine bestellen</a>
+          </div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    loadMenu();
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '☀️'; }
+  </script>
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});</script>
+</body>
+</html>

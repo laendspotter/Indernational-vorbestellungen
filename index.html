@@ -474,6 +474,9 @@
     <div class="footer-nav">
       <a href="adminaccounts.html" class="footer-link">🔐 Verwaltung</a>
       <a href="loyalty.html" class="footer-link">⭐ Meine Punkte</a>
+      <a href="wochenmenu.html" class="footer-link">🍴 Wochenmenü</a>
+      <a href="impressum.html" class="footer-link">Impressum</a>
+      <a href="datenschutz.html" class="footer-link">Datenschutz</a>
     </div>
 
   </div>
@@ -585,6 +588,15 @@
     }
 
     loadBanners();
+
+    // DSGVO banner
+    if (!localStorage.getItem('dsgvo_accepted')) {
+      document.getElementById('dsgvoBanner').style.display = 'block';
+    }
+    function acceptDSGVO() {
+      localStorage.setItem('dsgvo_accepted', '1');
+      document.getElementById('dsgvoBanner').style.display = 'none';
+    }
 
     // PWA install prompt
     let deferredPrompt = null;
@@ -763,6 +775,17 @@
     </div>
   </div>
 
+  <!-- DSGVO BANNER -->
+  <div id="dsgvoBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(19,23,38,0.97);backdrop-filter:blur(12px);border-top:1px solid #1e2236;padding:16px 20px;z-index:1000;animation:slideUp 0.4s ease both;">
+    <div style="max-width:780px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:3px;">🍪 Datenschutzhinweis</div>
+        <div style="font-size:0.78rem;color:#7a7468;">Wir verwenden technisch notwendige LocalStorage-Einträge. Keine Tracking-Cookies. <a href="datenschutz.html" style="color:#f5a623;text-decoration:none;">Mehr erfahren</a></div>
+      </div>
+      <button onclick="acceptDSGVO()" style="padding:10px 20px;background:#f5a623;color:#0b0e1a;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;">Verstanden</button>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
@@ -782,6 +805,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.6</div>
+  <div class="version-footer">ver 1.5.0</div>
 </body>
 </html>

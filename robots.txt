@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /truck-admin.html
+Disallow: /kantine-admin.html
+Disallow: /loyalty-admin.html
+Disallow: /adminaccounts.html
+Disallow: /api/
+Allow: /
+Allow: /wochenmenu.html
+Allow: /index.html
+Allow: /truck.html
+Allow: /kantine.html
+Sitemap: https://indernational-vorbestellungssystem.vercel.app/sitemap.xml

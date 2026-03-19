@@ -152,6 +152,26 @@
     .live-counter-num { font-family: 'Syne', sans-serif; font-weight: 900; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s; }
     .live-counter-num.bump { transform: scale(1.3); color: var(--truck); }
 
+    /* ADMIN CHAT */
+    .chat-panel { position: fixed; bottom: 20px; right: 70px; z-index: 300; }
+    .chat-toggle { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--truck), var(--kantine)); border: none; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    .chat-toggle:hover { transform: scale(1.1); }
+    .chat-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; background: var(--error); border-radius: 50%; font-size: 0.6rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; display: none; }
+    .chat-box { position: absolute; bottom: 60px; right: 0; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; flex-direction: column; }
+    .chat-box.open { display: flex; }
+    .chat-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); }
+    .chat-header-title { display: flex; align-items: center; gap: 8px; }
+    .chat-messages { height: 240px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.82rem; line-height: 1.4; }
+    .chat-msg.mine { background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.2); align-self: flex-end; }
+    .chat-msg.other { background: var(--bg); border: 1px solid var(--border); align-self: flex-start; }
+    .chat-msg-sender { font-size: 0.68rem; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
+    .chat-msg-time { font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
+    .chat-input-row { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; }
+    .chat-input:focus { outline: none; border-color: var(--truck); }
+    .chat-send { padding: 8px 12px; background: var(--truck); color: #0b0e1a; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.82rem; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
@@ -338,6 +358,33 @@
       <div class="section-title">top kunden (30 tage)</div>
       <div class="top-kunden" id="topKunden" style="animation:fadeUp 0.6s ease 0.13s both;"></div>
 
+      <!-- ANALYTICS -->
+      <div class="section-title">analytics</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.16s both;">
+        
+        <!-- HEATMAP -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;grid-column:1/-1;">
+          <div class="chart-title"><span>⏰ Bestellzeiten (heute)</span></div>
+          <div id="heatmapChart" style="display:flex;gap:4px;align-items:flex-end;height:60px;margin-top:8px;"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.68rem;color:var(--muted);">
+            <span>8:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span>
+          </div>
+        </div>
+
+        <!-- MENÜ PERFORMANCE -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div class="chart-title" style="margin-bottom:12px;"><span>🍽️ Menü-Performance</span></div>
+          <div id="menuPerf"></div>
+        </div>
+
+        <!-- GETRÄNKE -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div class="chart-title" style="margin-bottom:12px;"><span>🥤 Getränke heute</span></div>
+          <div id="drinkPerf"></div>
+        </div>
+
+      </div>
+
       <!-- ACTIVITY -->
       <div class="section-title">letzte aktivität</div>
       <div class="activity-list" id="activityList" style="animation:fadeUp 0.6s ease 0.15s both">
@@ -345,6 +392,27 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- ADMIN CHAT -->
+  <div class="chat-panel">
+    <div class="chat-box" id="chatBox">
+      <div class="chat-header">
+        <div class="chat-header-title">💬 Admin Chat</div>
+        <button onclick="toggleChat()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:20px;">Lade Nachrichten…</div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" placeholder="Nachricht…" onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+        <button class="chat-send" onclick="sendChatMsg()">→</button>
+      </div>
+    </div>
+    <button class="chat-toggle" onclick="toggleChat()" title="Admin Chat">
+      💬
+      <div class="chat-badge" id="chatBadge"></div>
+    </button>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -397,6 +465,7 @@
       await loadBestellschlussWidget();
       await loadWochenChart();
       await loadTopKunden();
+      await loadAnalytics();
       subscribeRealtime();
       // refresh bestellschluss every minute
       setInterval(loadBestellschlussWidget, 60000);
@@ -563,6 +632,76 @@
     }
 
     // ── TOP KUNDEN ──
+    async function loadAnalytics() {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayOrders } = await db.from('vorbestellungen').select('*').eq('datum', today);
+      const orders = todayOrders || [];
+
+      // heatmap — orders per hour
+      const byHour = {};
+      orders.forEach(o => {
+        if (!o.created_at) return;
+        const h = new Date(o.created_at).getHours();
+        byHour[h] = (byHour[h]||0) + 1;
+      });
+      const hours = Array.from({length:10}, (_,i) => i + 8); // 8-17
+      const maxH = Math.max(...hours.map(h => byHour[h]||0), 1);
+      const heatmap = document.getElementById('heatmapChart');
+      if (heatmap) {
+        heatmap.innerHTML = hours.map(h => {
+          const count = byHour[h] || 0;
+          const pct = Math.round(count / maxH * 100);
+          const isNow = new Date().getHours() === h;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:0.65rem;color:var(--muted);">${count||''}</div>
+            <div style="width:100%;background:${isNow ? 'rgba(245,166,35,0.6)' : 'rgba(62,207,142,0.6)'};border-radius:3px 3px 0 0;height:${Math.max(pct,2)}%;min-height:${count?4:1}px;transition:height 0.5s ease;"></div>
+          </div>`;
+        }).join('');
+      }
+
+      // menü performance (last 30 days)
+      const since = new Date(); since.setDate(since.getDate()-30);
+      const { data: recent } = await db.from('vorbestellungen').select('menu,typ').gte('created_at', since.toISOString());
+      const recentOrders = recent || [];
+      const m1truck = recentOrders.filter(o => o.menu==='menu1' && o.typ==='truck').length;
+      const m2truck = recentOrders.filter(o => o.menu==='menu2' && o.typ==='truck').length;
+      const m1kant = recentOrders.filter(o => o.menu==='menu1' && o.typ==='kantine').length;
+      const m2kant = recentOrders.filter(o => o.menu==='menu2' && o.typ==='kantine').length;
+      const totalM = m1truck+m2truck+m1kant+m2kant || 1;
+      const menuPerf = document.getElementById('menuPerf');
+      if (menuPerf) {
+        menuPerf.innerHTML = [
+          {label:'🚚 Menü 1', count:m1truck, color:'#f5a623'},
+          {label:'🚚 Menü 2', count:m2truck, color:'#f5a62388'},
+          {label:'🍽️ Menü 1', count:m1kant, color:'#3ecf8e'},
+          {label:'🍽️ Menü 2', count:m2kant, color:'#3ecf8e88'},
+        ].map(({label,count,color}) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.82rem;">
+          <span style="min-width:80px;color:var(--muted);">${label}</span>
+          <div style="flex:1;background:var(--border);border-radius:3px;height:8px;overflow:hidden;">
+            <div style="background:${color};height:100%;width:${Math.round(count/totalM*100)}%;border-radius:3px;transition:width 0.6s ease;"></div>
+          </div>
+          <span style="color:var(--text);font-weight:600;min-width:24px;">${count}</span>
+        </div>`).join('');
+      }
+
+      // drinks today
+      const drinkCounts = {};
+      orders.filter(o => o.getraenk).forEach(o => { drinkCounts[o.getraenk] = (drinkCounts[o.getraenk]||0)+1; });
+      const drinkPerf = document.getElementById('drinkPerf');
+      if (drinkPerf) {
+        const sorted = Object.entries(drinkCounts).sort((a,b) => b[1]-a[1]);
+        const maxD = sorted[0]?.[1] || 1;
+        drinkPerf.innerHTML = sorted.length > 0 ? sorted.map(([name,count]) => `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.82rem;">
+            <span style="flex:1;color:var(--muted);">${esc(name)}</span>
+            <div style="width:80px;background:var(--border);border-radius:3px;height:8px;overflow:hidden;">
+              <div style="background:#a78bfa;height:100%;width:${Math.round(count/maxD*100)}%;border-radius:3px;"></div>
+            </div>
+            <span style="color:var(--text);font-weight:600;min-width:20px;">${count}</span>
+          </div>`).join('') : '<div style="color:var(--muted);font-size:0.82rem;">Noch keine Getränke heute</div>';
+      }
+    }
+
     async function loadTopKunden() {
       const since = new Date();
       since.setDate(since.getDate() - 30);
@@ -673,7 +812,61 @@
       else showToast('Fehler: ' + data.error, true);
     }
 
+    // ── ADMIN CHAT ──
+    let chatOpen = false;
+    let lastChatCount = 0;
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chatBox').classList.toggle('open', chatOpen);
+      if (chatOpen) {
+        document.getElementById('chatBadge').style.display = 'none';
+        loadChatMessages();
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    async function loadChatMessages() {
+      const { data } = await db.from('admin_chat').select('*').order('created_at', { ascending: true }).limit(50);
+      const msgs = data || [];
+      const box = document.getElementById('chatMessages');
+      if (msgs.length === 0) {
+        box.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:20px;">Noch keine Nachrichten</div>';
+        return;
+      }
+      box.innerHTML = msgs.map(m => {
+        const isMine = m.sender === 'dashboard';
+        const time = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+        return `<div class="chat-msg ${isMine ? 'mine' : 'other'}">
+          <div class="chat-msg-sender">${m.sender === 'truck' ? '🚚 Truck' : m.sender === 'kantine' ? '🍽️ Kantine' : '📊 Dashboard'}</div>
+          ${esc(m.message)}
+          <div class="chat-msg-time">${time}</div>
+        </div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+      lastChatCount = msgs.length;
+    }
+
+    async function sendChatMsg() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      await db.from('admin_chat').insert({ sender: 'dashboard', message: msg });
+    }
+
     function subscribeRealtime() {
+      // chat subscription
+      db.channel('admin-chat-sub')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_chat' }, (payload) => {
+          if (chatOpen) loadChatMessages();
+          else {
+            const badge = document.getElementById('chatBadge');
+            badge.style.display = 'flex';
+            badge.textContent = '!';
+          }
+        }).subscribe();
+
       db.channel('admin-dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
         .subscribe();
@@ -711,6 +904,6 @@
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.6</div>
+  <div class="version-footer">ver 1.5.0</div>
 </body>
 </html>

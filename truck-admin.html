@@ -1547,6 +1547,7 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
     let kuecheChannel = null;
 
     async function loadKueche() {
+      if (Notification.permission === 'default') Notification.requestPermission();
       const datum = document.getElementById('kuecheDatum').value;
       const { data } = await db.from('vorbestellungen').select('*')
         .eq('typ', 'truck').eq('datum', datum).order('created_at', { ascending: true });
@@ -1580,11 +1581,37 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
         <div class="kueche-stat"><strong style="color:#3ecf8e">${m2}</strong>Menü 2</div>
         <div class="kueche-stat"><strong style="color:var(--success)">${done}</strong>Fertig</div>`;
 
+      // play sound if new order
+      const prevCount = window._prevKuecheCount || 0;
+      if (kuecheOrders.length > prevCount && prevCount > 0) {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+        } catch(e) {}
+        if (Notification.permission === 'granted') {
+          new Notification('🍴 Neue Bestellung!', { body: `${kuecheOrders[kuecheOrders.length-1].name}`, icon: '/logo.svg' });
+        }
+      }
+      window._prevKuecheCount = kuecheOrders.length;
+
       const list = document.getElementById('kuecheList');
       if (filtered.length === 0) {
         list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>Keine Bestellungen.</p></div>';
         return;
       }
+      // sort by abholzeit if available
+      filtered.sort((a,b) => {
+        const at = (a.notiz || '').match(/Abholung: (\d{2}:\d{2})/)?.[1] || '99:99';
+        const bt = (b.notiz || '').match(/Abholung: (\d{2}:\d{2})/)?.[1] || '99:99';
+        return at.localeCompare(bt);
+      });
       list.innerHTML = filtered.map(o => {
         const drink = o.getraenk ? ` · ${esc(o.getraenk)}` : '';
         return `<div class="kueche-item ${o.erledigt ? 'done' : ''}" id="ki-${o.id}">
@@ -1816,6 +1843,6 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
     }
   </script>
   <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.4.6</div>
+  <div class="version-footer">ver 1.5.0</div>
 </body>
 </html>
