@@ -651,8 +651,8 @@
         const h1 = highlight === 1;
         const h2 = highlight === 2;
         let html = '<div class="tagesangebot-menus">';
-        if (m1) html += \`<div class="tagesangebot-menu \${h1 ? 'tagesangebot-highlight' : ''}"><div class="tagesangebot-menu-label">Menü 1\${h1 ? ' ⭐' : ''}</div><div>\${m1}</div>\${p1 ? \`<div style="font-size:0.75rem;color:var(--accent);">\${parseFloat(p1).toFixed(2).replace('.',',')} €</div>\` : ''}</div>\`;
-        if (m2) html += \`<div class="tagesangebot-menu \${h2 ? 'tagesangebot-highlight' : ''}"><div class="tagesangebot-menu-label">Menü 2\${h2 ? ' ⭐' : ''}</div><div>\${m2}</div>\${p2 ? \`<div style="font-size:0.75rem;color:var(--accent);">\${parseFloat(p2).toFixed(2).replace('.',',')} €</div>\` : ''}</div>\`;
+        if (m1) html += '<div class="tagesangebot-menu ' + (h1?'tagesangebot-highlight':'') + '"><div class="tagesangebot-menu-label">Menü 1' + (h1?' ⭐':'') + '</div><div>' + m1 + '</div>' + (p1?'<div style="font-size:0.75rem;color:var(--accent);">' + parseFloat(p1).toFixed(2).replace('.',',') + ' €</div>':'') + '</div>';
+        if (m2) html += '<div class="tagesangebot-menu ' + (h2?'tagesangebot-highlight':'') + '"><div class="tagesangebot-menu-label">Menü 2' + (h2?' ⭐':'') + '</div><div>' + m2 + '</div>' + (p2?'<div style="font-size:0.75rem;color:var(--accent);">' + parseFloat(p2).toFixed(2).replace('.',',') + ' €</div>':'') + '</div>';
         html += '</div>';
         return html;
       };
@@ -660,7 +660,7 @@
       const truckHighlight = truckMenu?.highlight || 0;
       const kantineHighlight = kantineMenu?.highlight || 0;
 
-      document.getElementById('tagesangebotContainer').innerHTML = \`
+      document.getElementById('tagesangebotContainer').innerHTML = `
         <div class="tagesangebot">
           <div class="tagesangebot-header">
             <span class="tagesangebot-title">🍴 Heute bei uns</span>
@@ -676,7 +676,7 @@
               \${renderMenus(kantineMenu, kantineHighlight)}
             </div>
           </div>
-        </div>\`;
+        </div>`;
     }
     loadLiveCounter();
 
