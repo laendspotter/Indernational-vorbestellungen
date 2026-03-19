@@ -530,6 +530,10 @@
       renderAllergenTags('tags1', menus.allergene1 || '', menus.hinweis1 || '');
       renderAllergenTags('tags2', menus.allergene2 || '', menus.hinweis2 || '');
 
+      // check user allergens
+      const emailVal = (document.getElementById('email')?.value || '').trim();
+      if (emailVal) checkUserAllergens(emailVal);
+
       // autofill fav menu
       const fav = localStorage.getItem('fav_menu_kantine');
       if (fav && !selectedMenu) { setTimeout(() => { const card = document.getElementById('card' + (fav === 'menu1' ? '1' : '2')); if (card && !card.style.pointerEvents?.includes('none')) card.click(); }, 100); }
@@ -879,7 +883,8 @@
 
           // mark coupon used
           if (appliedCoupon?.einloesungId) {
-            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
+            if (couponErr) console.error('Coupon update error:', couponErr);
           }
           const resp = await fetch('/api/create-checkout', {
             method: 'POST',
@@ -939,14 +944,18 @@
           // loyalty
           // mark coupon as used
           if (appliedCoupon?.einloesungId) {
-            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
+            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
+            if (couponErr) console.error('Coupon update error:', couponErr);
           }
           const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
           const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
           const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
           if (loyaltyEmail && loyaltyTotal > 0) earnLoyaltyPoints(loyaltyEmail, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
-          const successUrl = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarnedPts > 0 ? '&pts=' + loyaltyEarnedPts + '&email=' + encodeURIComponent(loyaltyEmail) : '');
-          window.location.href = successUrl;
+          // store order in sessionStorage to avoid URL length issues
+          sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+          sessionStorage.setItem('lastOrderPts', loyaltyEarnedPts || 0);
+          sessionStorage.setItem('lastOrderEmail', loyaltyEmail || '');
+          window.location.href = 'success.html';
         }
       }
     }
@@ -1003,6 +1012,37 @@
 
     const ALLERGEN_EMOJIS = {"gluten": "🌾", "weizen": "🌾", "roggen": "🌾", "milch": "🥛", "laktose": "🥛", "eier": "🥚", "ei": "🥚", "erdnüsse": "🥜", "erdnuss": "🥜", "nüsse": "🌰", "nuss": "🌰", "mandel": "🌰", "fisch": "🐟", "meeresfrüchte": "🦐", "krebstiere": "🦐", "soja": "🫘", "sellerie": "🥬", "senf": "🌿", "sesam": "🌱", "schwefeldioxid": "🍷", "sulfite": "🍷", "lupinen": "🌸", "weichtiere": "🐚"};
 
+    // check user allergens and warn
+    function checkUserAllergens(email) {
+      const saved = JSON.parse(localStorage.getItem('allergens_' + email) || '[]');
+      if (saved.length === 0) return;
+      ['1','2'].forEach(num => {
+        const card = document.getElementById('card' + num);
+        if (!card) return;
+        const tags = card.querySelectorAll('.allergen-tag');
+        let hasMatch = false;
+        tags.forEach(tag => {
+          const tagText = tag.textContent.trim();
+          if (saved.some(a => tagText.toLowerCase().includes(a.toLowerCase()))) {
+            tag.style.background = 'rgba(224,92,92,0.15)';
+            tag.style.borderColor = 'rgba(224,92,92,0.4)';
+            tag.style.color = 'var(--error)';
+            hasMatch = true;
+          }
+        });
+        if (hasMatch) {
+          let warn = card.querySelector('.allergen-warn');
+          if (!warn) {
+            warn = document.createElement('div');
+            warn.className = 'allergen-warn';
+            warn.style.cssText = 'font-size:0.72rem;color:var(--error);margin-top:5px;display:flex;align-items:center;gap:4px;';
+            warn.innerHTML = '⚠️ Enthält deine Allergene';
+            card.appendChild(warn);
+          }
+        }
+      });
+    }
+
     function renderAllergenTags(containerId, allergeneStr, hinweisStr) {
       const el = document.getElementById(containerId);
       if (!el) return;
@@ -1046,7 +1086,12 @@
       const ptsPerEuro = settings?.bestellschluss_stunde || 10;
       const bonus = settings?.bestellschluss_minute || 0;
       const total = parseFloat(preis) + parseFloat(drinkPreis || 0);
-      const earned = Math.floor(total * ptsPerEuro) + (drinkPreis > 0 ? bonus : 0);
+      // birthday double points
+      const email2 = document.getElementById('email')?.value.trim() || '';
+      const birthday = localStorage.getItem('birthday_' + email2);
+      const isToday = birthday && birthday.slice(5) === new Date().toISOString().slice(5,10);
+      let earned = Math.floor(total * ptsPerEuro) + (drinkPreis > 0 ? bonus : 0);
+      if (isToday) earned *= 2;
       if (earned <= 0) return;
 
       const { data: existing } = await db.from('loyalty_punkte').select('*').eq('email', email).maybeSingle();
@@ -1068,7 +1113,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const emailEl = document.getElementById('email');
       if (emailEl) {
-        emailEl.addEventListener('blur', () => { loadLoyaltyInfo(); maybeShowCoupon(); });
+        emailEl.addEventListener('blur', () => { loadLoyaltyInfo(); maybeShowCoupon(); checkUserAllergens(emailEl.value.trim()); });
         emailEl.addEventListener('change', () => { loadLoyaltyInfo(); maybeShowCoupon(); });
       }
       // also check if logged in user already has points

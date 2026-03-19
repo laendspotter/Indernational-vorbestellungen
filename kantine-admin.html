@@ -219,6 +219,12 @@
     .kasse-item-meta { font-size: 0.75rem; color: var(--muted); }
     .kasse-item-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 50px; }
 
+    @media print {
+      .tab-nav, .mode-switch, button, .theme-toggle, .back-btn, .version-footer { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .order-card { border: 1px solid #ccc !important; break-inside: avoid; }
+    }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -782,7 +788,8 @@
     }
 
     function subscribeRealtime() {
-      realtimeChannel = db.channel('kantine-orders')
+      if (window._realtimeChannel) { db.removeChannel(window._realtimeChannel); }
+      window._realtimeChannel = db.channel('kantine-orders')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen', filter: 'typ=eq.kantine' }, payload => {
           if (payload.eventType === 'INSERT') { allOrders.unshift(payload.new); showToast('Neue Vorbestellung eingegangen!'); }
           else if (payload.eventType === 'UPDATE') { const i = allOrders.findIndex(o => o.id === payload.new.id); if (i !== -1) allOrders[i] = payload.new; }
@@ -836,6 +843,14 @@
       document.getElementById('btnSortTime').classList.toggle('active', s === 'time');
       document.getElementById('btnSortName').classList.toggle('active', s === 'name');
       renderOrders();
+    }
+
+    async function bulkErledigen() {
+      if (!confirm('Alle unerledigten Bestellungen als erledigt markieren?')) return;
+      const today = document.getElementById('filterDate')?.value || new Date().toISOString().split('T')[0];
+      const { error } = await db.from('vorbestellungen').update({ erledigt: true }).eq('datum', today).eq('typ', 'kantine').eq('erledigt', false);
+      if (!error) { showToast('✅ Alle erledigt!'); loadVerwaltung(); }
+      else showToast('Fehler', true);
     }
 
     function exportCSV() {
@@ -1558,7 +1573,17 @@ Schreibe die Menünamen vollständig und korrekt ab, genau wie auf der Karte.`;
       if (kuecheChannel) db.removeChannel(kuecheChannel);
       kuecheChannel = db.channel('kueche-kantine')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen', filter: 'typ=eq.kantine' }, () => loadKueche())
-        .subscribe();
+        .subscribe((status) => {
+        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = setTimeout(() => {
+            reconnectDelay = Math.min(reconnectDelay * 1.5, 30000);
+            subscribeRealtime();
+          }, reconnectDelay);
+        } else if (status === 'SUBSCRIBED') {
+          reconnectDelay = 2000;
+        }
+      });
     }
 
     function setKuecheFilter(f) {

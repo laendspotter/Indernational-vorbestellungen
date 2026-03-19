@@ -101,6 +101,10 @@
       <a href="index.html" class="btn" style="flex:1;text-align:center;background:transparent;border:1px solid var(--border);color:var(--muted);">Startseite</a>
       <a id="nochmalBtn" href="kantine.html" class="btn" style="flex:1;text-align:center;">Nochmal bestellen →</a>
     </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button id="calendarBtn" onclick="addToCalendar()" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(66,133,244,0.4);color:#4285f4;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;display:none;">📅 Kalender</button>
+      <button id="shareBtn" onclick="shareOrder()" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;display:none;">🔗 Teilen</button>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -115,9 +119,24 @@
 
     // ── ORDER DETAILS ──
     async function init() {
-      const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
-      const sessionId = params.get('session_id');
+      // read from sessionStorage (bar orders) or URL params (stripe)
+      const storedOrder = sessionStorage.getItem('lastOrder');
+      let orderParam, sessionId, storedPts = 0, storedEmail = '';
+      if (storedOrder) {
+        storedPts = parseInt(sessionStorage.getItem('lastOrderPts') || '0');
+        storedEmail = sessionStorage.getItem('lastOrderEmail') || '';
+        sessionStorage.removeItem('lastOrder');
+        sessionStorage.removeItem('lastOrderPts');
+        sessionStorage.removeItem('lastOrderEmail');
+        orderParam = encodeURIComponent(storedOrder);
+        sessionId = null;
+      } else {
+        const params = new URLSearchParams(location.search);
+        orderParam = params.get('order');
+        sessionId = params.get('session_id');
+        storedPts = parseInt(params.get('pts') || '0');
+        storedEmail = params.get('email') || '';
+      }
 
       if (orderParam) {
         try {
@@ -131,12 +150,14 @@
           const qrData = JSON.stringify({ id: o.id, name: o.name, datum: o.datum, menu: o.menu, typ: o.typ, getraenk: o.getraenk || '' });
           document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
           document.getElementById('qrSection').style.display = 'block';
+          document.getElementById('calendarBtn').style.display = 'block';
+          document.getElementById('shareBtn').style.display = 'block';
         } catch(e) {}
       }
 
       // ── LOYALTY ──
-      const pts = parseInt(params.get('pts') || '0');
-      const emailRaw = params.get('email') || '';
+      const pts = storedPts || 0;
+      const emailRaw = storedEmail || '';
       const email = emailRaw ? decodeURIComponent(emailRaw) : '';
 
       if (pts > 0 && email) {
@@ -170,8 +191,45 @@
 
     init();
 
+    function addToCalendar() {
+      const params = new URLSearchParams(location.search);
+      const orderParam = params.get('order');
+      if (!orderParam) return;
+      try {
+        const o = JSON.parse(decodeURIComponent(orderParam));
+        const dateStr = o.datum ? o.datum.replace(/-/g,'') : '';
+        const startTime = '120000'; // 12:00
+        const endTime = '130000';   // 13:00
+        const title = encodeURIComponent('🍴 Mittagessen abholen – Indernational');
+        const details = encodeURIComponent((o.menu === 'menu1' ? 'Menü 1' : 'Menü 2') + (o.getraenk ? ' + ' + o.getraenk : '') + '\nZahlung: ' + (o.zahlung === 'online' ? 'Online bezahlt' : 'Bar'));
+        const location = encodeURIComponent('Bahnhofstraße 37, 72202 Nagold');
+        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}T${startTime}/${dateStr}T${endTime}&details=${details}&location=${location}`;
+        window.open(url, '_blank');
+      } catch(e) {}
+    }
+
+    function shareOrder() {
+      const params = new URLSearchParams(location.search);
+      const orderParam = params.get('order');
+      if (!orderParam) return;
+      try {
+        const o = JSON.parse(decodeURIComponent(orderParam));
+        const menuLabel = o.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
+        const dateStr = o.datum ? new Date(o.datum + 'T00:00:00').toLocaleDateString('de-DE', {weekday:'long',day:'2-digit',month:'2-digit'}) : '';
+        const text = `🍴 Ich habe ${menuLabel} bei Indernational vorbestellt (${dateStr})`;
+        if (navigator.share) {
+          navigator.share({ title: 'Indernational Bestellung', text, url: 'https://indernational-vorbestellungssystem.vercel.app' });
+        } else {
+          navigator.clipboard.writeText(text + ' – indernational-vorbestellungssystem.vercel.app');
+          showToast('✓ Link kopiert!');
+        }
+      } catch(e) {}
+    }
+
     // set nochmal bestellen link
-    (function() {
+    (async function() {
+      // small delay to let history.replaceState settle
+      await new Promise(r => setTimeout(r, 50));
       const params = new URLSearchParams(location.search);
       const orderParam = params.get('order');
       if (orderParam) {

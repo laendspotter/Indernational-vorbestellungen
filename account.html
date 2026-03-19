@@ -196,6 +196,41 @@
       await loadOrders();
       await loadLoyalty();
       loadReminderPref();
+      loadBirthday();
+      loadAllergenPrefs();
+    }
+
+    const ALLERGENS = ['Gluten','Milch','Ei','Fisch','Erdnüsse','Soja','Schalenfrüchte','Sellerie','Senf','Sesam','Sulfite','Lupine','Weichtiere','Krebstiere'];
+
+    function loadBirthday() {
+      const saved = localStorage.getItem('birthday_' + userEmail);
+      if (saved) document.getElementById('birthdayInput').value = saved;
+    }
+    function saveBirthday(val) {
+      localStorage.setItem('birthday_' + userEmail, val);
+      showToast('✓ Geburtstag gespeichert');
+    }
+
+    function loadAllergenPrefs() {
+      const saved = JSON.parse(localStorage.getItem('allergens_' + userEmail) || '[]');
+      const box = document.getElementById('allergenCheckboxes');
+      if (!box) return;
+      box.innerHTML = ALLERGENS.map(a => {
+        const checked = saved.includes(a);
+        return `<label style="display:flex;align-items:center;gap:5px;background:${checked?'rgba(224,92,92,0.1)':'var(--bg)'};border:1px solid ${checked?'rgba(224,92,92,0.3)':'var(--border)'};border-radius:8px;padding:5px 10px;cursor:pointer;font-size:0.82rem;transition:all 0.2s;">
+          <input type="checkbox" ${checked?'checked':''} onchange="toggleAllergen('${a}',this.checked)" style="accent-color:var(--error);"/>
+          ${a}
+        </label>`;
+      }).join('');
+    }
+    function toggleAllergen(name, checked) {
+      const key = 'allergens_' + userEmail;
+      let saved = JSON.parse(localStorage.getItem(key) || '[]');
+      if (checked) { if (!saved.includes(name)) saved.push(name); }
+      else saved = saved.filter(a => a !== name);
+      localStorage.setItem(key, JSON.stringify(saved));
+      loadAllergenPrefs();
+      showToast('✓ Allergene gespeichert');
     }
 
     function loadReminderPref() {

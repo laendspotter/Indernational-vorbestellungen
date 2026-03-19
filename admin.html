@@ -385,6 +385,32 @@
 
       </div>
 
+      <!-- ERWEITERTE ANALYTICS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.2s both;">
+
+        <!-- DURCHSCHNITTLICHER BESTELLWERT -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div class="chart-title" style="margin-bottom:12px;"><span>💰 Ø Bestellwert</span></div>
+          <div id="avgOrderValue" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:var(--kantine);">–</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">letzte 30 Tage</div>
+        </div>
+
+        <!-- WIEDERKEHRENDE KUNDEN -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div class="chart-title" style="margin-bottom:12px;"><span>🔁 Stammkunden</span></div>
+          <div id="returningRate" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:var(--truck);">–</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Anteil mit 3+ Bestellungen</div>
+        </div>
+
+        <!-- PEAK ZEIT -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div class="chart-title" style="margin-bottom:12px;"><span>⏰ Peak-Zeit</span></div>
+          <div id="peakTime" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:#a78bfa;">–</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">meiste Bestellungen um</div>
+        </div>
+
+      </div>
+
       <!-- ACTIVITY -->
       <div class="section-title">letzte aktivität</div>
       <div class="activity-list" id="activityList" style="animation:fadeUp 0.6s ease 0.15s both">
@@ -466,6 +492,8 @@
       await loadWochenChart();
       await loadTopKunden();
       await loadAnalytics();
+      checkKapazitaet();
+      loadExtendedAnalytics();
       subscribeRealtime();
       // refresh bestellschluss every minute
       setInterval(loadBestellschlussWidget, 60000);
@@ -545,6 +573,16 @@
     }
 
     // ── BESTELLSCHLUSS WIDGET ──
+    async function checkKapazitaet() {
+      const { data: settings } = await db.from('einstellungen').select('*').eq('typ','kapazitaet').maybeSingle();
+      const maxOrders = settings?.bestellschluss_stunde || 50;
+      const today = new Date().toISOString().split('T')[0];
+      const { count } = await db.from('vorbestellungen').select('*', { count: 'exact', head: true }).eq('datum', today);
+      if (count >= maxOrders) {
+        showToast(`⚠️ Kapazitätswarnung: ${count}/${maxOrders} Bestellungen heute!`, true);
+      }
+    }
+
     async function loadBestellschlussWidget() {
       const { data } = await db.from('einstellungen').select('*');
       if (!data) return;
@@ -700,6 +738,37 @@
             <span style="color:var(--text);font-weight:600;min-width:20px;">${count}</span>
           </div>`).join('') : '<div style="color:var(--muted);font-size:0.82rem;">Noch keine Getränke heute</div>';
       }
+    }
+
+    async function loadExtendedAnalytics() {
+      const since = new Date(); since.setDate(since.getDate()-30);
+      const { data: recent } = await db.from('vorbestellungen').select('name,user_email,preis,getraenk_preis,created_at').gte('created_at', since.toISOString());
+      const orders = recent || [];
+
+      // avg order value
+      const total = orders.reduce((s,o) => s + parseFloat(o.preis||0) + parseFloat(o.getraenk_preis||0), 0);
+      const avg = orders.length > 0 ? total / orders.length : 0;
+      const avgEl = document.getElementById('avgOrderValue');
+      if (avgEl) avgEl.textContent = avg.toFixed(2).replace('.',',') + ' €';
+
+      // returning customers
+      const counts = {};
+      orders.forEach(o => { const k = o.user_email || o.name; counts[k] = (counts[k]||0)+1; });
+      const returning = Object.values(counts).filter(n => n >= 3).length;
+      const total_customers = Object.keys(counts).length || 1;
+      const rateEl = document.getElementById('returningRate');
+      if (rateEl) rateEl.textContent = Math.round(returning/total_customers*100) + '%';
+
+      // peak time
+      const byHour = {};
+      orders.forEach(o => {
+        if (!o.created_at) return;
+        const h = new Date(o.created_at).getHours();
+        byHour[h] = (byHour[h]||0)+1;
+      });
+      const peakHour = Object.entries(byHour).sort((a,b)=>b[1]-a[1])[0]?.[0];
+      const peakEl = document.getElementById('peakTime');
+      if (peakEl) peakEl.textContent = peakHour ? peakHour + ':00 Uhr' : '–';
     }
 
     async function loadTopKunden() {
