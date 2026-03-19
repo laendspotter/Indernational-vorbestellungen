@@ -879,8 +879,7 @@
 
           // mark coupon used
           if (appliedCoupon?.einloesungId) {
-            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
-            if (couponErr) console.error('Coupon update error:', couponErr);
+            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
           }
           const resp = await fetch('/api/create-checkout', {
             method: 'POST',
@@ -940,18 +939,14 @@
           // loyalty
           // mark coupon as used
           if (appliedCoupon?.einloesungId) {
-            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
-            if (couponErr) console.error('Coupon update error:', couponErr);
+            await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId).catch(() => {});
           }
           const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
           const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
           const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
           if (loyaltyEmail && loyaltyTotal > 0) earnLoyaltyPoints(loyaltyEmail, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
-          // store order in sessionStorage to avoid URL length issues
-          sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
-          sessionStorage.setItem('lastOrderPts', loyaltyEarnedPts || 0);
-          sessionStorage.setItem('lastOrderEmail', loyaltyEmail || '');
-          window.location.href = 'success.html';
+          const successUrl = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarnedPts > 0 ? '&pts=' + loyaltyEarnedPts + '&email=' + encodeURIComponent(loyaltyEmail) : '');
+          window.location.href = successUrl;
         }
       }
     }

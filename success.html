@@ -115,24 +115,9 @@
 
     // ── ORDER DETAILS ──
     async function init() {
-      // read from sessionStorage (bar orders) or URL params (stripe)
-      const storedOrder = sessionStorage.getItem('lastOrder');
-      let orderParam, sessionId, storedPts = 0, storedEmail = '';
-      if (storedOrder) {
-        storedPts = parseInt(sessionStorage.getItem('lastOrderPts') || '0');
-        storedEmail = sessionStorage.getItem('lastOrderEmail') || '';
-        sessionStorage.removeItem('lastOrder');
-        sessionStorage.removeItem('lastOrderPts');
-        sessionStorage.removeItem('lastOrderEmail');
-        orderParam = encodeURIComponent(storedOrder);
-        sessionId = null;
-      } else {
-        const params = new URLSearchParams(location.search);
-        orderParam = params.get('order');
-        sessionId = params.get('session_id');
-        storedPts = parseInt(params.get('pts') || '0');
-        storedEmail = params.get('email') || '';
-      }
+      const params = new URLSearchParams(location.search);
+      const orderParam = params.get('order');
+      const sessionId = params.get('session_id');
 
       if (orderParam) {
         try {
@@ -150,8 +135,8 @@
       }
 
       // ── LOYALTY ──
-      const pts = storedPts || 0;
-      const emailRaw = storedEmail || '';
+      const pts = parseInt(params.get('pts') || '0');
+      const emailRaw = params.get('email') || '';
       const email = emailRaw ? decodeURIComponent(emailRaw) : '';
 
       if (pts > 0 && email) {
@@ -186,9 +171,7 @@
     init();
 
     // set nochmal bestellen link
-    (async function() {
-      // small delay to let history.replaceState settle
-      await new Promise(r => setTimeout(r, 50));
+    (function() {
       const params = new URLSearchParams(location.search);
       const orderParam = params.get('order');
       if (orderParam) {
