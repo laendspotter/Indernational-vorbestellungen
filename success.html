@@ -116,7 +116,19 @@
     // ── ORDER DETAILS ──
     async function init() {
       const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
+      // read from sessionStorage (new method) or URL params (stripe/old)
+      const storedOrder = sessionStorage.getItem('lastOrder');
+      if (storedOrder) {
+        const storedPts = parseInt(sessionStorage.getItem('lastOrderPts') || '0');
+        const storedEmail = sessionStorage.getItem('lastOrderEmail') || '';
+        sessionStorage.removeItem('lastOrder');
+        sessionStorage.removeItem('lastOrderPts');
+        sessionStorage.removeItem('lastOrderEmail');
+        // inject as URL params for rest of code
+        const o = JSON.parse(storedOrder);
+        history.replaceState(null, '', 'success.html?order=' + encodeURIComponent(JSON.stringify(o)) + (storedPts > 0 ? '&pts=' + storedPts + '&email=' + encodeURIComponent(storedEmail) : ''));
+      }
+      const orderParam = params.get('order') || new URLSearchParams(location.search).get('order');
       const sessionId = params.get('session_id');
 
       if (orderParam) {
@@ -171,7 +183,9 @@
     init();
 
     // set nochmal bestellen link
-    (function() {
+    (async function() {
+      // small delay to let history.replaceState settle
+      await new Promise(r => setTimeout(r, 50));
       const params = new URLSearchParams(location.search);
       const orderParam = params.get('order');
       if (orderParam) {

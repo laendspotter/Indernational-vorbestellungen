@@ -945,8 +945,11 @@
           const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
           const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
           if (loyaltyEmail && loyaltyTotal > 0) earnLoyaltyPoints(loyaltyEmail, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
-          const successUrl = 'success.html?order=' + encodeURIComponent(JSON.stringify(orderData)) + (loyaltyEarnedPts > 0 ? '&pts=' + loyaltyEarnedPts + '&email=' + encodeURIComponent(loyaltyEmail) : '');
-          window.location.href = successUrl;
+          // store order in sessionStorage to avoid URL length issues
+          sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+          sessionStorage.setItem('lastOrderPts', loyaltyEarnedPts || 0);
+          sessionStorage.setItem('lastOrderEmail', loyaltyEmail || '');
+          window.location.href = 'success.html';
         }
       }
     }
