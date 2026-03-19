@@ -152,6 +152,9 @@
           document.getElementById('qrSection').style.display = 'block';
           document.getElementById('calendarBtn').style.display = 'block';
           document.getElementById('shareBtn').style.display = 'block';
+          window._currentOrder = o;
+          const nochmalBtn = document.getElementById('nochmalBtn');
+          if (nochmalBtn) nochmalBtn.href = o.typ === 'truck' ? 'truck.html' : 'kantine.html';
         } catch(e) {}
       }
 
@@ -192,11 +195,9 @@
     init();
 
     function addToCalendar() {
-      const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
-      if (!orderParam) return;
+      const o = window._currentOrder;
+      if (!o) return;
       try {
-        const o = JSON.parse(decodeURIComponent(orderParam));
         const dateStr = o.datum ? o.datum.replace(/-/g,'') : '';
         const startTime = '120000'; // 12:00
         const endTime = '130000';   // 13:00
@@ -209,11 +210,9 @@
     }
 
     function shareOrder() {
-      const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
-      if (!orderParam) return;
+      const o = window._currentOrder;
+      if (!o) return;
       try {
-        const o = JSON.parse(decodeURIComponent(orderParam));
         const menuLabel = o.menu === 'menu1' ? 'Menü 1' : 'Menü 2';
         const dateStr = o.datum ? new Date(o.datum + 'T00:00:00').toLocaleDateString('de-DE', {weekday:'long',day:'2-digit',month:'2-digit'}) : '';
         const text = `🍴 Ich habe ${menuLabel} bei Indernational vorbestellt (${dateStr})`;
@@ -227,19 +226,7 @@
     }
 
     // set nochmal bestellen link
-    (async function() {
-      // small delay to let history.replaceState settle
-      await new Promise(r => setTimeout(r, 50));
-      const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
-      if (orderParam) {
-        try {
-          const o = JSON.parse(decodeURIComponent(orderParam));
-          const btn = document.getElementById('nochmalBtn');
-          if (btn) btn.href = o.typ === 'truck' ? 'truck.html' : 'kantine.html';
-        } catch(e) {}
-      }
-    })();
+    // nochmal btn is set via window._currentOrder in init
 
     function toggleTheme() {
       const isLight = document.body.classList.toggle('light');
