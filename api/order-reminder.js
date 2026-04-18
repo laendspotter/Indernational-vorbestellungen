@@ -10,7 +10,6 @@ module.exports = async (req, res) => {
   const today = new Date().toISOString().split('T')[0];
   const dateStr = new Date(today + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
 
-  // get all orders for today with email
   const { data: orders } = await db.from('vorbestellungen')
     .select('*')
     .eq('datum', today)
@@ -33,7 +32,6 @@ module.exports = async (req, res) => {
     <p style="font-size:0.75rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#7a7468;margin-bottom:8px;">INDERNATIONAL</p>
     <h1 style="font-size:1.6rem;font-weight:900;margin:0 0 6px;">Vergiss dein Essen nicht! 🍴</h1>
     <p style="color:#7a7468;font-size:0.9rem;margin-bottom:24px;">Heute ist Abholtag — deine Bestellung wartet auf dich.</p>
-
     <div style="background:#131726;border:1px solid #1e2236;border-radius:14px;padding:24px;margin-bottom:20px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr><td style="padding:6px 0;color:#7a7468;font-size:0.85rem;">Name</td><td style="padding:6px 0;font-weight:600;text-align:right;">${o.name}</td></tr>
@@ -44,7 +42,6 @@ module.exports = async (req, res) => {
         ${parseFloat(o.preis || 0) > 0 ? `<tr><td colspan="2" style="padding-top:10px;border-top:1px solid #1e2236;"></td></tr><tr><td style="padding:6px 0;font-weight:700;">Gesamt</td><td style="padding:6px 0;font-weight:700;color:#f5a623;text-align:right;">${total} €</td></tr>` : ''}
       </table>
     </div>
-
     <p style="text-align:center;color:#7a7468;font-size:0.75rem;">Indernational · Vielfalt die schmeckt</p>
   </div>
 </body></html>`;
@@ -54,7 +51,7 @@ module.exports = async (req, res) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: 'Indernational <onboarding@resend.dev>',
+          from: 'Indernational <vorbestellungen@indernational.laendspotter.com>',
           to: [o.user_email],
           subject: `🍴 Nicht vergessen: Deine Bestellung heute bei Indernational`,
           html

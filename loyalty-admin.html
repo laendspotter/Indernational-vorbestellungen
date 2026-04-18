@@ -3,698 +3,586 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loyalty – Indernational</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b0e1a" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Loyalty Admin – Indernational</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0b0e1a; --surface: #131726; --surface2: #191d30; --border: #1e2236;
+      --bg: #0b0e1a; --surface: #131726; --border: #1e2236;
       --accent: #a78bfa; --accent2: #f5a623;
       --text: #f0ede6; --muted: #7a7468;
       --success: #4caf7d; --error: #e05c5c; --radius: 14px;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(167,139,250,0.08) 0%, transparent 55%), radial-gradient(ellipse at 70% 100%, rgba(245,166,35,0.05) 0%, transparent 55%); pointer-events: none; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(167,139,250,0.07) 0%, transparent 60%); pointer-events: none; }
 
-    /* LOGIN */
-    #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
     .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; width: 100%; max-width: 380px; text-align: center; position: relative; overflow: hidden; }
     .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-    .login-icon { font-size: 2.5rem; margin-bottom: 14px; }
-    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
-    .login-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
-    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s; }
+    .login-icon { font-size: 40px; margin-bottom: 16px; }
+    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .login-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 16px; }
     .login-input:focus { outline: none; border-color: var(--accent); }
-    .login-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; }
-    .login-error { color: var(--error); font-size: 0.82rem; margin-top: 10px; display: none; }
+    .login-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .login-btn:hover { filter: brightness(1.1); }
+    .login-error { color: var(--error); font-size: 0.85rem; margin-top: 12px; display: none; }
 
     #adminPanel { display: none; }
-
-    /* TOPBAR */
-    .topbar { background: rgba(11,14,26,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
-    .topbar-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; }
-    .topbar-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .live-badge { background: rgba(167,139,250,0.12); color: var(--accent); border: 1px solid rgba(167,139,250,0.25); border-radius: 50px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+    .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; }
     .logout-btn:hover { border-color: var(--error); color: var(--error); }
 
-    .main { padding: 28px; max-width: 1100px; margin: 0 auto; }
+    .main { padding: 32px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+    .tab-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .tab-btn.active { background: var(--accent); color: white; }
 
-    /* TABS */
-    .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; overflow-x: auto; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
-    .tab-btn.active { background: var(--accent); color: #0b0e1a; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .card-header h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; }
+    .card-body { padding: 24px; }
+
+    .form-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; display: block; }
+    .form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: border-color 0.2s; }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .form-row { margin-bottom: 16px; }
+    .save-btn { padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: filter 0.2s; }
+    .save-btn:hover { filter: brightness(1.1); }
+    .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .danger-btn { padding: 12px 24px; background: transparent; border: 1px solid rgba(224,92,92,0.4); color: var(--error); border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .danger-btn:hover { background: rgba(224,92,92,0.1); border-color: var(--error); }
 
     /* STATS */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
-    .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 14px; }
+    .stat-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
     .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--accent); }
-    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
 
-    /* KUNDEN TABLE */
-    .search-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    .search-input { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
-    .search-input:focus { outline: none; border-color: var(--accent); }
-    .filter-btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #0b0e1a; border-color: var(--accent); }
+    /* USER TABLE */
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 10px 12px; font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .user-table td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .user-table tr:last-child td { border-bottom: none; }
+    .user-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .pts-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(167,139,250,0.12); color: var(--accent); border-radius: 50px; padding: 3px 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; }
+    .pts-edit-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .pts-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .pts-input { background: var(--bg); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; width: 80px; text-align: center; }
+    .pts-input:focus { outline: none; }
+    .pts-save-btn { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 4px 10px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .pts-save-btn:hover { filter: brightness(1.1); }
 
-    .kunden-table { width: 100%; border-collapse: collapse; }
-    .kunden-table th { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-    .kunden-table td { padding: 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-    .kunden-table tr:last-child td { border-bottom: none; }
-    .kunden-table tr:hover td { background: rgba(255,255,255,0.02); }
-    .pt-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; width: 100%; max-width: 120px; }
-    .pt-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.6s ease; }
-    .pt-badge { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.92rem; color: var(--accent); }
-    .level-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 50px; }
-    .level-bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
-    .level-silver { background: rgba(170,176,192,0.15); color: #aab0c0; }
-    .level-gold { background: rgba(245,166,35,0.15); color: #f5a623; }
-    .level-platin { background: rgba(167,139,250,0.15); color: var(--accent); }
+    /* MANUAL PUNKTE */
+    .manual-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+    @media(max-width:500px){.manual-row{grid-template-columns:1fr;}}
 
-    .action-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-right: 4px; }
-    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .action-btn.danger:hover { border-color: var(--error); color: var(--error); }
+    /* REGELN */
+    .rule-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+    .rule-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .rule-row:last-child { margin-bottom: 0; }
+    .rule-label { flex: 1; font-size: 0.88rem; }
+    .rule-input { width: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; text-align: center; }
+    .rule-input:focus { outline: none; border-color: var(--accent); }
+    .rule-unit { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
 
-    /* BELOHNUNGEN */
-    .belohnung-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .belohnung-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
-    .belohnung-icon { font-size: 1.8rem; flex-shrink: 0; }
-    .belohnung-info { flex: 1; }
-    .belohnung-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 3px; }
-    .belohnung-desc { font-size: 0.82rem; color: var(--muted); }
-    .belohnung-pt { font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
-    .belohnung-actions { display: flex; gap: 6px; flex-shrink: 0; }
-    .toggle-btn { padding: 6px 12px; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
-    .toggle-btn.on { background: rgba(76,175,125,0.15); color: var(--success); }
-    .toggle-btn.off { background: rgba(224,92,92,0.15); color: var(--error); }
+    /* 14-TAGE RESET */
+    .reset-card { background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(245,166,35,0.04)); border: 1px solid rgba(167,139,250,0.25); border-radius: var(--radius); padding: 24px; }
+    .reset-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 8px; color: var(--accent); }
+    .reset-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .reset-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+    .reset-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; }
+    .reset-stat-num { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--accent); }
+    .reset-stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+    .reset-log { margin-top: 20px; }
+    .reset-log-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 10px; }
+    .reset-log-item { font-size: 0.82rem; color: var(--muted); padding: 6px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
+    .reset-log-item:last-child { border-bottom: none; }
 
-    /* ADD BELOHNUNG FORM */
-    .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-    .add-form-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 16px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
-    .form-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; display: block; }
-    .form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
-    .form-input:focus { outline: none; border-color: var(--accent); }
-    .save-btn { padding: 11px 24px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: filter 0.2s; }
-    .save-btn:hover { filter: brightness(1.1); }
+    /* TRANSAKTIONEN LOG */
+    .tx-list { display: flex; flex-direction: column; gap: 6px; }
+    .tx-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; font-size: 0.82rem; }
+    .tx-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; white-space: nowrap; }
+    .tx-pts.pos { color: var(--success); }
+    .tx-pts.neg { color: var(--error); }
+    .tx-info { flex: 1; }
+    .tx-meta { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
 
-    /* EINSTELLUNGEN */
-    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
-    .settings-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 16px; }
-    .pts-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-    .pts-label { flex: 1; font-size: 0.9rem; min-width: 160px; }
-    .pts-input { width: 80px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; text-align: center; }
-    .pts-input:focus { outline: none; border-color: var(--accent); }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 12px; }
 
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    .modal-overlay.show { opacity: 1; pointer-events: all; }
-    .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 400px; width: 100%; position: relative; overflow: hidden; }
-    .modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
-    .modal-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
-    .modal-row { margin-bottom: 14px; }
-    .modal-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; display: block; }
-    .modal-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
-    .modal-input:focus { outline: none; border-color: var(--accent); }
-    .modal-btns { display: flex; gap: 8px; margin-top: 20px; }
-    .modal-submit { flex: 1; padding: 12px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
-    .modal-cancel { padding: 12px 16px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 400; white-space: nowrap; }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
+    .toast.error { background: var(--error); }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .confirm-overlay.show { opacity: 1; pointer-events: all; }
+    .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 360px; width: 100%; text-align: center; }
+    .confirm-box h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .confirm-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 8px; }
+    .confirm-yes { flex: 1; padding: 12px; background: var(--error); color: white; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
+    .confirm-no { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
 
-    .sk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s; }
-    .sk-card:hover { border-color: rgba(167,139,250,0.4); }
-    .sk-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--loyalty), var(--loyalty2)); }
-    .sk-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(167,139,250,0.15); color: var(--loyalty); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1.1rem; margin-bottom: 10px; }
-    .sk-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; margin-bottom: 2px; }
-    .sk-email { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
-    .sk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .sk-stat { background: var(--bg); border-radius: 8px; padding: 8px 10px; }
-    .sk-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--loyalty); }
-    .sk-stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
-    .sk-fav { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-    .sk-streak { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2); border-radius: 50px; padding: 3px 8px; font-size: 0.72rem; color: var(--loyalty2); font-weight: 600; }
-
+    [data-theme="light"] { --bg: #f4f2ee; --surface: #ffffff; --border: #e2dfd8; --text: #1a1816; --muted: #8a8680; }
+    [data-theme="dark"] { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --text: #f0ede6; --muted: #7a7468; }
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .theme-toggle:hover { border-color: var(--accent); }
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); pointer-events: none; z-index: 10; white-space: nowrap; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-    body.light { --bg: #f4f2ec; --surface: #ffffff; --surface2: #eeeae0; --border: #ddd8cc; --text: #1a1916; --muted: #8a8070; }
-    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
-    .theme-toggle:hover { transform: scale(1.1); }
-  
-    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
   </style>
 </head>
 <body>
 
-  <div id="loginScreen">
-    <div class="login-card">
-      <div class="login-icon">⭐</div>
-      <h2>Loyalty Admin</h2>
-      <p>Punkte, Belohnungen, Kunden</p>
-      <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
-      <button class="login-btn" onclick="login()">Anmelden</button>
-      <div class="login-error" id="loginError">Falsches Passwort.</div>
-    </div>
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">⭐</div>
+    <h2>Loyalty Admin</h2>
+    <p>Verwaltung des Punkteprogramms.</p>
+    <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
+    <button class="login-btn" onclick="login()">Anmelden</button>
+    <div class="login-error" id="loginError">Falsches Passwort.</div>
   </div>
+</div>
 
-  <div id="adminPanel">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title">⭐ <span>Loyalty</span></div>
-        <div class="live-badge"><div class="live-dot"></div> Live</div>
-      </div>
-      <button class="logout-btn" onclick="logout()">Abmelden</button>
+<div id="adminPanel">
+  <div class="topbar">
+    <h1>⭐ Loyalty Admin</h1>
+    <button class="logout-btn" onclick="logout()">Abmelden</button>
+  </div>
+  <div class="main">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabUebersicht" onclick="showTab('uebersicht')">📊 Übersicht</button>
+      <button class="tab-btn" id="tabUser" onclick="showTab('user')">👥 Benutzer</button>
+      <button class="tab-btn" id="tabManual" onclick="showTab('manual')">✏️ Manuell</button>
+      <button class="tab-btn" id="tabReset" onclick="showTab('reset')">🔄 14-Tage Reset</button>
+      <button class="tab-btn" id="tabRegeln" onclick="showTab('regeln')">⚙️ Regeln</button>
+      <button class="tab-btn" id="tabLog" onclick="showTab('log')">📜 Transaktionen</button>
     </div>
 
-    <div class="main">
-
-      <!-- STATS -->
-      <div class="stats-grid" id="statsGrid" style="animation:fadeUp 0.5s ease both;">
-        <div class="stat-card"><div class="stat-num" id="statKunden">–</div><div class="stat-label">Kunden</div></div>
-        <div class="stat-card"><div class="stat-num" id="statPunkte">–</div><div class="stat-label">Punkte vergeben</div></div>
-        <div class="stat-card"><div class="stat-num" id="statEinloesungen">–</div><div class="stat-label">Einlösungen</div></div>
-        <div class="stat-card"><div class="stat-num" id="statGold">–</div><div class="stat-label">Gold+ Kunden</div></div>
+    <!-- ÜBERSICHT -->
+    <div id="tabContentUebersicht">
+      <div class="stats-row" id="loyaltyStats">
+        <div class="stat-box"><div class="stat-num" id="lsTotalUser">–</div><div class="stat-label">Aktive User</div></div>
+        <div class="stat-box"><div class="stat-num" id="lsTotalPts">–</div><div class="stat-label">Punkte gesamt</div></div>
+        <div class="stat-box"><div class="stat-num" id="lsAvgPts">–</div><div class="stat-label">Ø pro User</div></div>
+        <div class="stat-box"><div class="stat-num" id="lsMaxPts">–</div><div class="stat-label">Höchster Stand</div></div>
       </div>
-
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab-btn active" id="tabKunden" onclick="showTab('kunden')">👥 Kunden</button>
-        <button class="tab-btn" id="tabStammkunden" onclick="showTab('stammkunden')">⭐ Stammkunden</button>
-        <button class="tab-btn" id="tabBelohnungen" onclick="showTab('belohnungen')">🎁 Belohnungen</button>
-        <button class="tab-btn" id="tabEinstellungen" onclick="showTab('einstellungen')">⚙️ Einstellungen</button>
-      </div>
-
-      <!-- KUNDEN TAB -->
-      <div id="contentKunden">
-        <div class="search-row">
-          <input class="search-input" id="searchInput" placeholder="Nach Name oder E-Mail suchen…" oninput="renderKunden()" />
-          <button class="filter-btn active" id="sortPt" onclick="setKundenSort('punkte')">⭐ Punkte</button>
-          <button class="filter-btn" id="sortName" onclick="setKundenSort('name')">🔤 Name</button>
-          <button class="filter-btn" onclick="exportKundenCSV()">📥 CSV</button>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <table class="kunden-table">
-            <thead>
-              <tr>
-                <th>E-Mail</th>
-                <th>Punkte</th>
-                <th>Gesamt gesammelt</th>
-                <th>Level</th>
-                <th>Aktionen</th>
-              </tr>
-            </thead>
-            <tbody id="kundenBody"></tbody>
+      <div class="card" style="margin-top:4px;">
+        <div class="card-header"><h3>Top 5 – Meiste Punkte</h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="user-table">
+            <thead><tr><th>#</th><th>E-Mail</th><th>Punkte</th><th>Bestellungen</th></tr></thead>
+            <tbody id="top5Body"></tbody>
           </table>
         </div>
       </div>
-
-      <!-- STAMMKUNDEN TAB -->
-      <div id="contentStammkunden" style="display:none;">
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;" id="stammkundenGrid">
-          <div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Lade Stammkunden…</div>
-        </div>
-      </div>
-
-      <!-- BELOHNUNGEN TAB -->
-      <div id="contentBelohnungen" style="display:none;">
-        <div class="section-title">Aktive Belohnungen</div>
-        <div class="belohnung-list" id="belohnungList"></div>
-
-        <div class="section-title">Neue Belohnung</div>
-        <div class="add-form">
-          <div class="form-grid">
-            <div>
-              <label class="form-label">Name</label>
-              <input class="form-input" id="bName" placeholder="z.B. Gratis Getränk" />
-            </div>
-            <div>
-              <label class="form-label">Benötigte Punkte</label>
-              <input class="form-input" id="bPunkte" type="number" placeholder="500" min="1" />
-            </div>
-            <div>
-              <label class="form-label">Typ</label>
-              <select class="form-input" id="bTyp">
-                <option value="getraenk">🥤 Getränk</option>
-                <option value="menue">🍽️ Menü</option>
-                <option value="frei">🎁 Freie Belohnung</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label">Beschreibung</label>
-              <input class="form-input" id="bDesc" placeholder="z.B. Ein Getränk deiner Wahl" />
-            </div>
-          </div>
-          <button class="save-btn" onclick="addBelohnung()">+ Belohnung hinzufügen</button>
-        </div>
-      </div>
-
-      <!-- EINSTELLUNGEN TAB -->
-      <div id="contentEinstellungen" style="display:none;">
-        <div class="settings-card">
-          <div class="settings-title">Punkte-Vergabe</div>
-          <div class="pts-row">
-            <span class="pts-label">Punkte pro Euro</span>
-            <input class="pts-input" id="setPtsPerEuro" type="number" value="10" min="1" />
-            <span style="color:var(--muted);font-size:0.85rem;">Punkte / €</span>
-          </div>
-          <div class="pts-row">
-            <span class="pts-label">Bonus bei Getränk-Bestellung</span>
-            <input class="pts-input" id="setPtsBonus" type="number" value="5" min="0" />
-            <span style="color:var(--muted);font-size:0.85rem;">Extra Punkte</span>
-          </div>
-          <button class="save-btn" onclick="saveSettings()" style="margin-top:8px;">Speichern</button>
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-title">Level-System</div>
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:0.88rem;">
-            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
-              <span class="level-badge level-bronze">Bronze</span>
-              <span style="flex:1;">0 – 499 Punkte</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
-              <span class="level-badge level-silver">Silber</span>
-              <span style="flex:1;">500 – 999 Punkte</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
-              <span class="level-badge level-gold">Gold</span>
-              <span style="flex:1;">1000 – 1999 Punkte</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:8px;">
-              <span class="level-badge level-platin">Platin</span>
-              <span style="flex:1;">2000+ Punkte</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
 
-  <!-- PUNKTE MODAL -->
-  <div class="modal-overlay" id="ptsModal">
-    <div class="modal-box">
-      <div class="modal-title">⭐ Punkte anpassen</div>
-      <div class="modal-sub" id="ptsModalSub">–</div>
-      <div class="modal-row">
-        <label class="modal-label">Punkte ändern</label>
-        <input class="modal-input" id="ptsChange" type="number" placeholder="z.B. +50 oder -50" />
+    <!-- BENUTZER -->
+    <div id="tabContentUser" style="display:none;">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <input type="text" class="form-input" id="userSearch" placeholder="E-Mail suchen…" oninput="filterUserTable()" style="max-width:260px;" />
+        <button class="save-btn" onclick="exportLoyaltyCSV()" style="padding:10px 18px;font-size:0.85rem;">📥 CSV</button>
+        <span style="font-size:0.82rem;color:var(--muted);" id="userCount"></span>
       </div>
-      <div class="modal-row">
-        <label class="modal-label">Grund (optional)</label>
-        <input class="modal-input" id="ptsReason" placeholder="z.B. Bonus für treue Stammkunde" />
-      </div>
-      <div class="modal-btns">
-        <button class="modal-submit" onclick="savePtsChange()">Speichern</button>
-        <button class="modal-cancel" onclick="closeModal('ptsModal')">Abbrechen</button>
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="user-table">
+            <thead><tr><th>E-Mail</th><th>Punkte</th><th>Bestellungen</th><th>Letztes Update</th><th>Aktion</th></tr></thead>
+            <tbody id="loyaltyUserBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- RABATT MODAL -->
-  <div class="modal-overlay" id="rabattModal">
-    <div class="modal-box">
-      <div class="modal-title">🎟️ Rabatt vergeben</div>
-      <div class="modal-sub" id="rabattModalSub">–</div>
-      <div class="modal-row">
-        <label class="modal-label">Belohnung wählen</label>
-        <select class="modal-input" id="rabattBelohnung"></select>
+    <!-- MANUELL -->
+    <div id="tabContentManual" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3>Punkte manuell vergeben / abziehen</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+            <label class="form-label">E-Mail</label>
+            <input type="email" class="form-input" id="manEmail" placeholder="user@beispiel.de" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-row">
+              <label class="form-label">Punkte (+/-)</label>
+              <input type="number" class="form-input" id="manPts" placeholder="z.B. 50 oder -20" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Grund</label>
+              <input type="text" class="form-input" id="manGrund" placeholder="z.B. Geburtstag, Korrektur…" />
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="save-btn" onclick="manualPunkte()">Punkte vergeben</button>
+            <span style="font-size:0.82rem;color:var(--muted);line-height:1.4;max-width:280px;align-self:center;">Negative Zahl = Punkte abziehen. Wird im Transaktionslog gespeichert.</span>
+          </div>
+        </div>
       </div>
-      <div class="modal-row">
-        <label class="modal-label">Notiz (optional)</label>
-        <input class="modal-input" id="rabattNotiz" placeholder="z.B. Entschädigung für Wartezeit" />
-      </div>
-      <div class="modal-btns">
-        <button class="modal-submit" onclick="saveRabatt()">Vergeben</button>
-        <button class="modal-cancel" onclick="closeModal('rabattModal')">Abbrechen</button>
+      <div class="card" style="margin-top:4px;">
+        <div class="card-header"><h3>Alle Punkte zurücksetzen</h3><span style="font-size:0.8rem;color:var(--error);">⚠️ Nicht rückgängig machbar</span></div>
+        <div class="card-body">
+          <p style="font-size:0.88rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">Setzt alle Loyalty-Punkte auf 0. Transaktionslog bleibt erhalten. Nur für Sonderfälle (z.B. Jahresreset).</p>
+          <button class="danger-btn" onclick="confirmResetAll()">Alle Punkte zurücksetzen</button>
+        </div>
       </div>
     </div>
+
+    <!-- 14-TAGE RESET -->
+    <div id="tabContentReset" style="display:none;">
+      <div class="reset-card">
+        <div class="reset-title">🔄 14-Tage Vergabe-Reset</div>
+        <div class="reset-desc">Das System vergibt automatisch Punkte bei Bestellungen. Dieser Reset-Mechanismus verhindert, dass in einem 14-Tage-Fenster zu viele Punkte vergeben werden. Hier siehst du Statistiken und kannst den Zähler manuell zurücksetzen.</div>
+        <div class="reset-stats">
+          <div class="reset-stat"><div class="reset-stat-num" id="r14Total">–</div><div class="reset-stat-label">Punkte letzte 14 Tage</div></div>
+          <div class="reset-stat"><div class="reset-stat-num" id="r14Users">–</div><div class="reset-stat-label">Betroffene User</div></div>
+          <div class="reset-stat"><div class="reset-stat-num" id="r14Avg">–</div><div class="reset-stat-label">Ø pro User</div></div>
+          <div class="reset-stat"><div class="reset-stat-num" id="r14LastReset">–</div><div class="reset-stat-label">Letzter Reset</div></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="save-btn" onclick="doReset14()">Reset jetzt ausführen</button>
+          <button class="save-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="load14Reset()">Aktualisieren</button>
+        </div>
+        <div class="reset-log" id="resetLogSection">
+          <div class="reset-log-title">Reset-Verlauf</div>
+          <div id="resetLog"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGELN -->
+    <div id="tabContentRegeln" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3>Punkteregeln</h3></div>
+        <div class="card-body">
+          <div class="rule-card">
+            <div class="rule-row">
+              <div class="rule-label">Punkte pro Bestellung (Menü 1)</div>
+              <input type="number" class="rule-input" id="rMenu1" value="10" min="0" />
+              <span class="rule-unit">Punkte</span>
+            </div>
+            <div class="rule-row">
+              <div class="rule-label">Punkte pro Bestellung (Menü 2)</div>
+              <input type="number" class="rule-input" id="rMenu2" value="10" min="0" />
+              <span class="rule-unit">Punkte</span>
+            </div>
+            <div class="rule-row">
+              <div class="rule-label">Geburtstags-Multiplikator</div>
+              <input type="number" class="rule-input" id="rGeb" value="2" min="1" step="0.5" />
+              <span class="rule-unit">× Punkte</span>
+            </div>
+            <div class="rule-row">
+              <div class="rule-label">Punkte zum Einlösen pro 1 € Rabatt</div>
+              <input type="number" class="rule-input" id="rEinloesen" value="100" min="1" />
+              <span class="rule-unit">Punkte / €</span>
+            </div>
+            <div class="rule-row">
+              <div class="rule-label">Max. Punkte einlösbar pro Bestellung</div>
+              <input type="number" class="rule-input" id="rMaxEinloesen" value="500" min="0" />
+              <span class="rule-unit">Punkte</span>
+            </div>
+            <div class="rule-row">
+              <div class="rule-label">Ablaufzeit Punkte (0 = kein Ablauf)</div>
+              <input type="number" class="rule-input" id="rAblauf" value="0" min="0" />
+              <span class="rule-unit">Tage</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <button class="save-btn" onclick="saveRegeln()">Regeln speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSAKTIONEN LOG -->
+    <div id="tabContentLog" style="display:none;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+        <input type="text" class="form-input" id="logSearch" placeholder="E-Mail filtern…" oninput="filterLog()" style="max-width:260px;" />
+        <input type="date" class="form-input" id="logDate" onchange="loadLog()" style="max-width:180px;" />
+        <button class="save-btn" onclick="exportLogCSV()" style="padding:10px 18px;font-size:0.85rem;">📥 CSV</button>
+      </div>
+      <div class="tx-list" id="txList"><div style="color:var(--muted);font-size:0.88rem;">Lade…</div></div>
+    </div>
   </div>
+</div>
 
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
-  <div class="toast" id="toast"></div>
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">Wirklich?</h3>
+    <p id="confirmText">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+    <div class="confirm-btns"><button class="confirm-yes" id="confirmYes">Ja, ausführen</button><button class="confirm-no" onclick="closeConfirm()">Abbrechen</button></div>
+  </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script>
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let allLoyaltyUsers = [], allLog = [];
 
-    const PW = 'Indernational2026!';
-    let kunden = [], belohnungen = [], kundenSort = 'punkte';
-    let currentEmail = null;
+// ── AUTH ──
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORDS.loyalty) {
+    sessionStorage.setItem('loyalty_auth','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    initAdmin();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+function logout() { sessionStorage.removeItem('loyalty_auth'); document.getElementById('adminPanel').style.display='none'; document.getElementById('loginScreen').style.display='flex'; document.getElementById('pwInput').value=''; }
+if (sessionStorage.getItem('loyalty_auth')) { document.getElementById('loginScreen').style.display='none'; document.getElementById('adminPanel').style.display='block'; initAdmin(); }
 
-    // ── AUTH ──
-    function login() {
-      if (document.getElementById('pwInput').value === PW) {
-        sessionStorage.setItem('loyalty_auth', '1');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-        init();
-      } else {
-        document.getElementById('loginError').style.display = 'block';
-      }
-    }
+async function initAdmin() { await loadOverview(); }
 
-    function logout() {
-      sessionStorage.removeItem('loyalty_auth');
-      document.getElementById('adminPanel').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-    }
+// ── TABS ──
+function showTab(tab) {
+  ['uebersicht','user','manual','reset','regeln','log'].forEach(t => {
+    const el = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'user') loadUsers();
+  if (tab === 'reset') load14Reset();
+  if (tab === 'regeln') loadRegeln();
+  if (tab === 'log') { document.getElementById('logDate').value = new Date().toISOString().split('T')[0]; loadLog(); }
+}
 
-    if (sessionStorage.getItem('loyalty_auth')) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      init();
-    }
+// ── ÜBERSICHT ──
+async function loadOverview() {
+  const { data } = await db.from('loyalty_punkte').select('email,punkte').order('punkte', { ascending: false });
+  const users = data || [];
+  const total = users.reduce((s,u)=>s+(u.punkte||0),0);
+  const avg = users.length ? Math.round(total/users.length) : 0;
+  const max = users[0]?.punkte || 0;
+  document.getElementById('lsTotalUser').textContent = users.length;
+  document.getElementById('lsTotalPts').textContent = total.toLocaleString('de-DE');
+  document.getElementById('lsAvgPts').textContent = avg.toLocaleString('de-DE');
+  document.getElementById('lsMaxPts').textContent = max.toLocaleString('de-DE');
+  const { data: orders } = await db.from('vorbestellungen').select('user_email');
+  const orderCounts = {};
+  (orders||[]).forEach(o => { if(o.user_email) orderCounts[o.user_email]=(orderCounts[o.user_email]||0)+1; });
+  const top5 = users.slice(0,5);
+  document.getElementById('top5Body').innerHTML = top5.length ? top5.map((u,i)=>`<tr><td>${['🥇','🥈','🥉','4.','5.'][i]}</td><td>${esc(u.email)}</td><td><span class="pts-badge">⭐ ${(u.punkte||0).toLocaleString('de-DE')}</span></td><td>${orderCounts[u.email]||0}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">Keine Daten.</td></tr>';
+  allLoyaltyUsers = users;
+}
 
-    // ── INIT ──
-    async function init() {
-      await Promise.all([loadKunden(), loadBelohnungen(), loadStats()]);
-      subscribeRealtime();
-    }
+// ── USER TABLE ──
+async function loadUsers() {
+  const { data } = await db.from('loyalty_punkte').select('*').order('punkte', { ascending: false });
+  allLoyaltyUsers = data || [];
+  const { data: orders } = await db.from('vorbestellungen').select('user_email');
+  const oc = {};
+  (orders||[]).forEach(o=>{if(o.user_email)oc[o.user_email]=(oc[o.user_email]||0)+1;});
+  window._loyaltyOrderCounts = oc;
+  document.getElementById('userCount').textContent = `${allLoyaltyUsers.length} Benutzer`;
+  renderUserTable();
+}
 
-    async function loadStats() {
-      const { data: kd } = await db.from('loyalty_punkte').select('punkte, punkte_gesamt');
-      const { data: ed } = await db.from('loyalty_einloesungen').select('id');
-      const total = kd?.reduce((s, k) => s + (k.punkte_gesamt || 0), 0) || 0;
-      const gold = kd?.filter(k => k.punkte_gesamt >= 1000).length || 0;
-      document.getElementById('statKunden').textContent = kd?.length || 0;
-      document.getElementById('statPunkte').textContent = total.toLocaleString('de-DE');
-      document.getElementById('statEinloesungen').textContent = ed?.length || 0;
-      document.getElementById('statGold').textContent = gold;
-    }
+function filterUserTable() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  window._userFilter = q;
+  renderUserTable();
+}
 
-    // ── KUNDEN ──
-    async function loadKunden() {
-      const { data } = await db.from('loyalty_punkte').select('*').order('punkte', { ascending: false });
-      kunden = data || [];
-      renderKunden();
-    }
+function renderUserTable() {
+  const q = window._userFilter || '';
+  const filtered = allLoyaltyUsers.filter(u => !q || u.email.toLowerCase().includes(q));
+  const oc = window._loyaltyOrderCounts || {};
+  const tbody = document.getElementById('loyaltyUserBody');
+  tbody.innerHTML = filtered.map(u => {
+    const updated = u.updated_at ? new Date(u.updated_at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) : '–';
+    return `<tr id="urow-${u.id}">
+      <td>${esc(u.email)}</td>
+      <td>
+        <span class="pts-badge" id="ptsBadge-${u.id}">⭐ ${(u.punkte||0).toLocaleString('de-DE')}</span>
+        <button class="pts-edit-btn" style="margin-left:6px;" onclick="editPts('${u.id}','${esc(u.email)}',${u.punkte||0})">✏️</button>
+      </td>
+      <td>${oc[u.email]||0}</td>
+      <td>${updated}</td>
+      <td></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Keine Ergebnisse.</td></tr>';
+}
 
-    function setKundenSort(s) {
-      kundenSort = s;
-      document.getElementById('sortPt').classList.toggle('active', s === 'punkte');
-      document.getElementById('sortName').classList.toggle('active', s === 'name');
-      renderKunden();
-    }
+function editPts(id, email, current) {
+  const row = document.getElementById('urow-' + id);
+  if (!row) return;
+  const td = row.cells[1];
+  td.innerHTML = `<input class="pts-input" id="ptsIn-${id}" value="${current}" type="number" />
+    <button class="pts-save-btn" onclick="savePtsInline('${id}','${email}')">✓</button>
+    <button onclick="cancelPtsEdit('${id}',${current})" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:2px 6px;">✕</button>`;
+  document.getElementById('ptsIn-' + id)?.focus();
+}
 
-    function getLevel(pts) {
-      if (pts >= 2000) return { label: 'Platin', cls: 'level-platin' };
-      if (pts >= 1000) return { label: 'Gold', cls: 'level-gold' };
-      if (pts >= 500) return { label: 'Silber', cls: 'level-silver' };
-      return { label: 'Bronze', cls: 'level-bronze' };
-    }
+function cancelPtsEdit(id, pts) {
+  const row = document.getElementById('urow-' + id);
+  if (!row) return;
+  row.cells[1].innerHTML = `<span class="pts-badge" id="ptsBadge-${id}">⭐ ${pts.toLocaleString('de-DE')}</span><button class="pts-edit-btn" style="margin-left:6px;" onclick="editPts('${id}','',${pts})">✏️</button>`;
+}
 
-    function renderKunden() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      let filtered = kunden.filter(k => !search || k.email.toLowerCase().includes(search));
-      if (kundenSort === 'name') filtered.sort((a, b) => a.email.localeCompare(b.email));
-      const maxPts = Math.max(...filtered.map(k => k.punkte_gesamt || 0), 1);
+async function savePtsInline(id, email) {
+  const newPts = parseInt(document.getElementById('ptsIn-' + id)?.value || '0');
+  if (isNaN(newPts)) return;
+  const old = allLoyaltyUsers.find(u=>u.id===id)?.punkte||0;
+  const diff = newPts - old;
+  await db.from('loyalty_punkte').upsert({ id, email, punkte: newPts }, { onConflict:'email' });
+  if (diff !== 0) await db.from('loyalty_log').insert({ email, delta: diff, grund: 'Admin-Korrektur', admin: true });
+  const u = allLoyaltyUsers.find(x=>x.id===id); if(u) u.punkte = newPts;
+  cancelPtsEdit(id, newPts);
+  showToast(`✓ ${newPts.toLocaleString('de-DE')} Punkte gespeichert`);
+}
 
-      const body = document.getElementById('kundenBody');
-      if (filtered.length === 0) {
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted);">Keine Kunden gefunden.</td></tr>';
-        return;
-      }
+function exportLoyaltyCSV() {
+  if (!allLoyaltyUsers.length) return showToast('Keine Daten.');
+  const oc = window._loyaltyOrderCounts || {};
+  const header = 'Email,Punkte,Bestellungen,Letztes Update';
+  const rows = allLoyaltyUsers.map(u=>[`"${u.email}"`,u.punkte||0,oc[u.email]||0,u.updated_at?new Date(u.updated_at).toLocaleDateString('de-DE'):''].join(','));
+  dlCSV([header,...rows].join('\n'), 'loyalty-punkte.csv');
+  showToast('✓ Export fertig!');
+}
 
-      body.innerHTML = filtered.map(k => {
-        const level = getLevel(k.punkte_gesamt || 0);
-        const pct = ((k.punkte_gesamt || 0) / maxPts * 100).toFixed(0);
-        return `<tr>
-          <td>${esc(k.email)}</td>
-          <td>
-            <span class="pt-badge">${(k.punkte || 0).toLocaleString('de-DE')} ⭐</span>
-            <div class="pt-bar"><div class="pt-bar-fill" style="width:${pct}%"></div></div>
-          </td>
-          <td style="color:var(--muted);">${(k.punkte_gesamt || 0).toLocaleString('de-DE')} gesamt</td>
-          <td><span class="level-badge ${level.cls}">${level.label}</span></td>
-          <td>
-            <button class="action-btn" onclick="openPtsModal('${k.email}', ${k.punkte || 0})">⭐ Punkte</button>
-            <button class="action-btn" onclick="openRabattModal('${k.email}')">🎟️ Rabatt</button>
-            <button class="action-btn danger" onclick="resetKunde('${k.email}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
+// ── MANUELL ──
+async function manualPunkte() {
+  const email = document.getElementById('manEmail').value.trim();
+  const pts = parseInt(document.getElementById('manPts').value || '0');
+  const grund = document.getElementById('manGrund').value.trim() || 'Manuell vergeben';
+  if (!email || !pts) return showToast('E-Mail und Punkte Pflichtfelder.');
+  const { data: existing } = await db.from('loyalty_punkte').select('punkte').eq('email', email).maybeSingle();
+  const current = existing?.punkte || 0;
+  const newPts = Math.max(0, current + pts);
+  await db.from('loyalty_punkte').upsert({ email, punkte: newPts }, { onConflict: 'email' });
+  await db.from('loyalty_log').insert({ email, delta: pts, grund, admin: true });
+  document.getElementById('manEmail').value = '';
+  document.getElementById('manPts').value = '';
+  document.getElementById('manGrund').value = '';
+  showToast(`✓ ${pts > 0 ? '+' : ''}${pts} Punkte für ${email}`);
+}
 
-    function exportKundenCSV() {
-      const header = 'E-Mail,Punkte,Gesamt gesammelt,Level';
-      const rows = kunden.map(k => {
-        const level = getLevel(k.punkte_gesamt || 0);
-        return `"${k.email}",${k.punkte || 0},${k.punkte_gesamt || 0},"${level.label}"`;
-      });
-      const csv = [header, ...rows].join('\n');
-      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `loyalty-kunden-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-    }
+async function confirmResetAll() {
+  document.getElementById('confirmTitle').textContent = 'Alle Punkte zurücksetzen?';
+  document.getElementById('confirmText').textContent = 'Alle Loyalty-Punkte aller Benutzer werden auf 0 gesetzt. Diese Aktion kann nicht rückgängig gemacht werden.';
+  document.getElementById('confirmOverlay').classList.add('show');
+  document.getElementById('confirmYes').onclick = async () => {
+    closeConfirm();
+    await db.from('loyalty_punkte').update({ punkte: 0 }).gte('punkte', 0);
+    await db.from('loyalty_log').insert({ email: 'ALLE', delta: 0, grund: 'Globaler Reset durch Admin', admin: true });
+    showToast('✓ Alle Punkte zurückgesetzt');
+  };
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); }
 
-    // ── PUNKTE MODAL ──
-    function openPtsModal(email, currentPts) {
-      currentEmail = email;
-      document.getElementById('ptsModalSub').textContent = `${email} · aktuell ${currentPts.toLocaleString('de-DE')} Punkte`;
-      document.getElementById('ptsChange').value = '';
-      document.getElementById('ptsReason').value = '';
-      document.getElementById('ptsModal').classList.add('show');
-    }
+// ── 14-TAGE RESET ──
+async function load14Reset() {
+  const since = new Date(); since.setDate(since.getDate()-14);
+  const sinceStr = since.toISOString().split('T')[0];
+  const { data: logData } = await db.from('loyalty_log').select('email,delta').gte('created_at', sinceStr + 'T00:00:00Z').gt('delta', 0);
+  const items = logData || [];
+  const totalPts = items.reduce((s,l)=>s+(l.delta||0),0);
+  const uniqueEmails = [...new Set(items.map(l=>l.email))].length;
+  const avg = uniqueEmails ? Math.round(totalPts/uniqueEmails) : 0;
+  document.getElementById('r14Total').textContent = totalPts.toLocaleString('de-DE');
+  document.getElementById('r14Users').textContent = uniqueEmails;
+  document.getElementById('r14Avg').textContent = avg.toLocaleString('de-DE');
+  // letzter reset aus tabelle
+  const { data: resets } = await db.from('loyalty_reset_log').select('*').eq('typ','14tage').order('created_at',{ascending:false}).limit(5);
+  const lastReset = resets?.[0]?.created_at;
+  document.getElementById('r14LastReset').textContent = lastReset ? new Date(lastReset).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Noch nie';
+  const resetLog = document.getElementById('resetLog');
+  if (!resets || resets.length === 0) { resetLog.innerHTML = '<div class="reset-log-item" style="color:var(--muted);">Noch kein Reset durchgeführt.</div>'; return; }
+  resetLog.innerHTML = resets.map(r=>`<div class="reset-log-item"><span style="color:var(--muted);white-space:nowrap;">${new Date(r.created_at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span><span>14-Tage Reset ausgeführt</span></div>`).join('');
+}
 
-    async function savePtsChange() {
-      const change = parseInt(document.getElementById('ptsChange').value);
-      if (isNaN(change)) return showToast('Bitte Zahl eingeben.', true);
-      const k = kunden.find(x => x.email === currentEmail);
-      if (!k) return;
-      const newPts = Math.max(0, (k.punkte || 0) + change);
-      const newGesamt = change > 0 ? (k.punkte_gesamt || 0) + change : (k.punkte_gesamt || 0);
-      await db.from('loyalty_punkte').update({ punkte: newPts, punkte_gesamt: newGesamt, updated_at: new Date().toISOString() }).eq('email', currentEmail);
-      showToast(`✓ Punkte angepasst: ${change > 0 ? '+' : ''}${change}`);
-      closeModal('ptsModal');
-      loadKunden(); loadStats();
-    }
+async function doReset14() {
+  document.getElementById('confirmTitle').textContent = '14-Tage Reset ausführen?';
+  document.getElementById('confirmText').textContent = 'Der Vergabe-Zähler für das 14-Tage-Fenster wird zurückgesetzt. Punkte der Benutzer bleiben erhalten. Im Reset-Log gespeichert.';
+  document.getElementById('confirmOverlay').classList.add('show');
+  document.getElementById('confirmYes').onclick = async () => {
+    closeConfirm();
+    await db.from('loyalty_reset_log').insert({ typ: '14tage' });
+    showToast('✓ 14-Tage Reset gespeichert');
+    await load14Reset();
+  };
+}
 
-    // ── RABATT MODAL ──
-    function openRabattModal(email) {
-      currentEmail = email;
-      document.getElementById('rabattModalSub').textContent = email;
-      document.getElementById('rabattNotiz').value = '';
-      const sel = document.getElementById('rabattBelohnung');
-      sel.innerHTML = belohnungen.filter(b => b.aktiv).map(b =>
-        `<option value="${b.id}">${b.name} (${b.punkte_benoetigt} Punkte)</option>`
-      ).join('');
-      document.getElementById('rabattModal').classList.add('show');
-    }
+// ── REGELN ──
+async function loadRegeln() {
+  const { data } = await db.from('loyalty_regeln').select('*').maybeSingle();
+  if (!data) return;
+  const set = (id, val) => { const el=document.getElementById(id); if(el&&val!==null&&val!==undefined)el.value=val; };
+  set('rMenu1', data.punkte_menu1);
+  set('rMenu2', data.punkte_menu2);
+  set('rGeb', data.geburtstags_multiplikator);
+  set('rEinloesen', data.punkte_pro_euro);
+  set('rMaxEinloesen', data.max_einloesen);
+  set('rAblauf', data.ablauf_tage);
+}
 
-    async function saveRabatt() {
-      const belohnungId = document.getElementById('rabattBelohnung').value;
-      const b = belohnungen.find(x => x.id === belohnungId);
-      if (!b) return;
-      const notiz = document.getElementById('rabattNotiz').value.trim();
-      // insert einloesung without deducting points (admin gift)
-      await db.from('loyalty_einloesungen').insert({
-        email: currentEmail, belohnung_id: belohnungId,
-        belohnung_name: b.name + (notiz ? ` (${notiz})` : ''),
-        punkte_verwendet: 0, used: false
-      });
-      showToast(`✓ ${b.name} für ${currentEmail} vergeben!`);
-      closeModal('rabattModal');
-    }
+async function saveRegeln() {
+  const payload = {
+    punkte_menu1: parseInt(document.getElementById('rMenu1').value)||10,
+    punkte_menu2: parseInt(document.getElementById('rMenu2').value)||10,
+    geburtstags_multiplikator: parseFloat(document.getElementById('rGeb').value)||2,
+    punkte_pro_euro: parseInt(document.getElementById('rEinloesen').value)||100,
+    max_einloesen: parseInt(document.getElementById('rMaxEinloesen').value)||500,
+    ablauf_tage: parseInt(document.getElementById('rAblauf').value)||0
+  };
+  const { error } = await db.from('loyalty_regeln').upsert({ id:1, ...payload }, { onConflict:'id' });
+  if (error) showToast('Fehler: '+error.message); else showToast('✓ Regeln gespeichert!');
+}
 
-    async function resetKunde(email) {
-      if (!confirm(`Punkte von ${email} wirklich auf 0 zurücksetzen?`)) return;
-      await db.from('loyalty_punkte').update({ punkte: 0 }).eq('email', email);
-      showToast('✓ Punkte zurückgesetzt');
-      loadKunden(); loadStats();
-    }
+// ── LOG ──
+async function loadLog() {
+  const date = document.getElementById('logDate').value;
+  let q = db.from('loyalty_log').select('*').order('created_at', { ascending: false }).limit(200);
+  if (date) q = q.gte('created_at', date+'T00:00:00Z').lte('created_at', date+'T23:59:59Z');
+  const { data } = await q;
+  allLog = data || [];
+  renderLog();
+}
 
-    // ── BELOHNUNGEN ──
-    async function loadBelohnungen() {
-      const { data } = await db.from('loyalty_belohnungen').select('*').order('punkte_benoetigt');
-      belohnungen = data || [];
-      renderBelohnungen();
-    }
+function filterLog() { renderLog(); }
 
-    function getBelohnungIcon(typ) {
-      return typ === 'getraenk' ? '🥤' : typ === 'menue' ? '🍽️' : '🎁';
-    }
+function renderLog() {
+  const q = (document.getElementById('logSearch')?.value||'').toLowerCase();
+  const filtered = allLog.filter(l => !q || (l.email||'').toLowerCase().includes(q));
+  const container = document.getElementById('txList');
+  if (!filtered.length) { container.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;padding:8px 0;">Keine Einträge.</div>'; return; }
+  container.innerHTML = filtered.map(l=>`<div class="tx-item">
+    <div class="tx-pts ${l.delta>=0?'pos':'neg'}">${l.delta>=0?'+':''}${l.delta} Pts</div>
+    <div class="tx-info">
+      <div>${esc(l.email||'–')} · ${esc(l.grund||'–')}</div>
+      <div class="tx-meta">${l.created_at?new Date(l.created_at).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'–'}${l.admin?' · 👤 Admin':''}</div>
+    </div>
+  </div>`).join('');
+}
 
-    function renderBelohnungen() {
-      const list = document.getElementById('belohnungList');
-      if (belohnungen.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:12px;">Keine Belohnungen angelegt.</div>';
-        return;
-      }
-      list.innerHTML = belohnungen.map(b => `
-        <div class="belohnung-item" style="${!b.aktiv ? 'opacity:0.5' : ''}">
-          <span class="belohnung-icon">${getBelohnungIcon(b.typ)}</span>
-          <div class="belohnung-info">
-            <div class="belohnung-name">${esc(b.name)}</div>
-            <div class="belohnung-desc">${esc(b.beschreibung || '')}</div>
-          </div>
-          <div class="belohnung-pt">${b.punkte_benoetigt.toLocaleString('de-DE')} ⭐</div>
-          <div class="belohnung-actions">
-            <button class="action-btn" onclick="editBelohnung('${b.id}', ${b.punkte_benoetigt})">✏️</button>
-            <button class="toggle-btn ${b.aktiv ? 'on' : 'off'}" onclick="toggleBelohnung('${b.id}', ${b.aktiv})">${b.aktiv ? 'Aktiv' : 'Inaktiv'}</button>
-            <button class="action-btn danger" onclick="deleteBelohnung('${b.id}')">✕</button>
-          </div>
-        </div>`).join('');
-    }
+function exportLogCSV() {
+  if (!allLog.length) return showToast('Keine Daten.');
+  const header = 'Email,Delta,Grund,Admin,Datum';
+  const rows = allLog.map(l=>[`"${l.email||''}"`,l.delta,`"${(l.grund||'').replace(/"/g,"'")}"`,(l.admin?'ja':'nein'),l.created_at?new Date(l.created_at).toLocaleString('de-DE'):''].join(','));
+  dlCSV([header,...rows].join('\n'), 'loyalty-log.csv');
+  showToast('✓ Export fertig!');
+}
 
-    async function addBelohnung() {
-      const name = document.getElementById('bName').value.trim();
-      const punkte = parseInt(document.getElementById('bPunkte').value);
-      if (!name || !punkte) return showToast('Name und Punkte sind Pflicht.', true);
-      await db.from('loyalty_belohnungen').insert({
-        name, punkte_benoetigt: punkte,
-        typ: document.getElementById('bTyp').value,
-        beschreibung: document.getElementById('bDesc').value.trim(),
-        aktiv: true
-      });
-      document.getElementById('bName').value = '';
-      document.getElementById('bPunkte').value = '';
-      document.getElementById('bDesc').value = '';
-      showToast('✓ Belohnung hinzugefügt!');
-      loadBelohnungen();
-    }
+function dlCSV(csv, filename) { const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg, isError=false) { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast'+(isError?' error':'')+' show'; setTimeout(()=>t.classList.remove('show'),3000); }
+</script>
 
-    async function editBelohnung(id, currentPts) {
-      const newPts = prompt('Neue Punktzahl:', currentPts);
-      if (!newPts) return;
-      await db.from('loyalty_belohnungen').update({ punkte_benoetigt: parseInt(newPts) }).eq('id', id);
-      showToast('✓ Gespeichert!');
-      loadBelohnungen();
-    }
-
-    async function toggleBelohnung(id, current) {
-      await db.from('loyalty_belohnungen').update({ aktiv: !current }).eq('id', id);
-      loadBelohnungen();
-    }
-
-    async function deleteBelohnung(id) {
-      if (!confirm('Belohnung wirklich löschen?')) return;
-      await db.from('loyalty_belohnungen').delete().eq('id', id);
-      loadBelohnungen();
-    }
-
-    // ── EINSTELLUNGEN ──
-    async function saveSettings() {
-      const ptsPerEuro = parseInt(document.getElementById('setPtsPerEuro').value) || 10;
-      const bonus = parseInt(document.getElementById('setPtsBonus').value) || 0;
-      await db.from('einstellungen').upsert({ typ: 'loyalty', bestellschluss_stunde: ptsPerEuro, bestellschluss_minute: bonus }, { onConflict: 'typ' });
-      showToast('✓ Einstellungen gespeichert!');
-    }
-
-    // ── TABS ──
-    // ── STAMMKUNDEN ──
-    async function loadStammkunden() {
-      const grid = document.getElementById('stammkundenGrid');
-      if (!grid) return;
-      grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Lade…</div>';
-
-      // get all orders
-      const { data: orders } = await db.from('vorbestellungen').select('name,user_email,menu,typ,preis,getraenk_preis,datum,created_at').order('created_at', { ascending: false });
-      if (!orders || orders.length === 0) {
-        grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">Keine Daten.</div>';
-        return;
-      }
-
-      // group by email or name
-      const byEmail = {};
-      orders.forEach(o => {
-        const key = o.user_email || o.name;
-        if (!byEmail[key]) byEmail[key] = { name: o.name, email: o.user_email, orders: [] };
-        byEmail[key].orders.push(o);
-      });
-
-      // sort by order count
-      const sorted = Object.values(byEmail).sort((a,b) => b.orders.length - a.orders.length).slice(0, 20);
-
-      grid.innerHTML = sorted.map(k => {
-        const count = k.orders.length;
-        const revenue = k.orders.reduce((s,o) => s + parseFloat(o.preis||0) + parseFloat(o.getraenk_preis||0), 0);
-        const m1 = k.orders.filter(o => o.menu === 'menu1').length;
-        const m2 = k.orders.filter(o => o.menu === 'menu2').length;
-        const favMenu = m1 >= m2 ? 'Menü 1' : 'Menü 2';
-        const truckCount = k.orders.filter(o => o.typ === 'truck').length;
-        const kantineCount = k.orders.filter(o => o.typ === 'kantine').length;
-        const favTyp = truckCount >= kantineCount ? '🚚 Truck' : '🍽️ Kantine';
-        const initial = (k.name || k.email || '?').charAt(0).toUpperCase();
-
-        // streak: consecutive weeks
-        const weeks = new Set(k.orders.map(o => {
-          const d = new Date(o.datum + 'T00:00:00');
-          const day = d.getDay();
-          d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-          return d.toISOString().split('T')[0];
-        }));
-        const streak = weeks.size;
-
-        return `<div class="sk-card">
-          <div class="sk-avatar">${initial}</div>
-          <div class="sk-name">${esc(k.name || '–')}</div>
-          <div class="sk-email">${esc(k.email || 'Gast')}</div>
-          <div class="sk-stats">
-            <div class="sk-stat"><div class="sk-stat-num">${count}</div><div class="sk-stat-label">Bestellungen</div></div>
-            <div class="sk-stat"><div class="sk-stat-num">${revenue.toFixed(2).replace('.',',')} €</div><div class="sk-stat-label">Umsatz</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-            <div class="sk-fav">⭐ ${favMenu} · ${favTyp}</div>
-            <div class="sk-streak">🔥 ${streak} Wochen</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    function showTab(tab) {
-      ['kunden','stammkunden','belohnungen','einstellungen'].forEach(t => {
-        const cap = t.charAt(0).toUpperCase() + t.slice(1);
-        const content = document.getElementById('content' + cap);
-        if (content) content.style.display = t === tab ? 'block' : 'none';
-        const btn = document.getElementById('tab' + cap);
-        if (btn) btn.classList.toggle('active', t === tab);
-      });
-      if (tab === 'stammkunden') loadStammkunden();
-    }
-
-    function subscribeRealtime() {
-      db.channel('loyalty-admin')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_punkte' }, () => { loadKunden(); loadStats(); })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_einloesungen' }, () => loadStats())
-        .subscribe();
-    }
-
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-    function showToast(msg, isError = false) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-    function toggleTheme() {
-      const isLight = document.body.classList.toggle('light');
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
-      document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
-    }
-    if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); }
-  </script>
-  <div class="version-footer">ver 1.5.0</div>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+<script>
+(function(){const saved=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',saved);document.getElementById('themeToggle').textContent=saved==='dark'?'☀️':'🌙';})();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.getElementById('themeToggle').textContent=n==='dark'?'☀️':'🌙';}
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+<div class="version-footer">ver 1.6.0</div>
 </body>
 </html>

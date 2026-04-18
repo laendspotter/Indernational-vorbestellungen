@@ -1,4 +1,4 @@
-const CACHE = 'indernational-v150';
+const CACHE = 'indernational-v160';
 const STATIC = [
   '/',
   '/index.html',
@@ -31,7 +31,6 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
       .then(resp => {
-        // cache fresh responses
         if (resp.ok && e.request.method === 'GET') {
           const clone = resp.clone();
           caches.open(CACHE).then(cache => cache.put(e.request, clone));

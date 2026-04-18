@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,1151 +14,956 @@
       --success: #4caf7d; --error: #e05c5c; --radius: 14px;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px; }
-    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(62,207,142,0.07) 0%, transparent 60%); pointer-events: none; }
-    .header { text-align: center; margin-bottom: 48px; animation: fadeUp 0.6s ease both; }
-    .header-icon { font-size: 52px; margin-bottom: 12px; display: block; filter: drop-shadow(0 0 20px rgba(245,166,35,0.4)); }
-    h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.08) 0%, transparent 60%); pointer-events: none; }
+
+    .back-btn { position: fixed; top: 16px; left: 16px; z-index: 200; background: rgba(19,23,38,0.85); backdrop-filter: blur(8px); border: 1px solid #1e2236; color: #f0ede6; padding: 8px 14px 8px 10px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; }
+    .back-btn:hover, .back-btn:focus { border-color: #f5a623; outline: none; }
+
+    .lang-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; background: rgba(19,23,38,0.85); backdrop-filter: blur(8px); border: 1px solid #1e2236; color: #f0ede6; padding: 8px 14px; border-radius: 50px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: border-color 0.2s; }
+    .lang-toggle:hover, .lang-toggle:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* STEPPER */
+    .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 32px; width: 100%; max-width: 480px; animation: fadeUp 0.5s ease both; }
+    .step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .step-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem; color: var(--muted); transition: all 0.3s; position: relative; z-index: 1; background: var(--bg); }
+    .step.active .step-circle { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.1); }
+    .step.done .step-circle { border-color: var(--success); background: var(--success); color: white; }
+    .step-label { font-size: 0.68rem; color: var(--muted); margin-top: 5px; text-align: center; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .step.active .step-label { color: var(--accent); }
+    .step.done .step-label { color: var(--success); }
+    .step-connector { flex: 1; height: 2px; background: var(--border); margin: 0 -1px; position: relative; top: -12px; transition: background 0.3s; max-width: 60px; }
+    .step-connector.done { background: var(--success); }
+
+    .header { text-align: center; margin-bottom: 28px; animation: fadeUp 0.6s ease both; }
+    .header-icon { font-size: 44px; margin-bottom: 10px; display: block; filter: drop-shadow(0 0 20px rgba(245,166,35,0.4)); }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; }
     h1 span { color: var(--accent); }
-    .subtitle { color: var(--muted); margin-top: 8px; font-size: 1rem; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; width: 100%; max-width: 480px; animation: fadeUp 0.6s ease 0.1s both; position: relative; overflow: hidden; }
+    .subtitle { color: var(--muted); margin-top: 6px; font-size: 0.95rem; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 480px; animation: fadeUp 0.6s ease 0.1s both; position: relative; overflow: hidden; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); }
-    .form-group { margin-bottom: 24px; }
+
+    /* STEP PANELS */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .form-group { margin-bottom: 20px; }
     label { display: block; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
-    input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; appearance: none; }
-    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(62,207,142,0.15); }
+    input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; transition: border-color 0.2s, box-shadow 0.2s; appearance: none; }
+    input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,166,35,0.15); }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 
-    .menu-info { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 0.9rem; transition: all 0.3s; }
-    .menu-info.loaded { color: var(--text); border-color: rgba(62,207,142,0.3); }
+    /* BIRTHDAY BANNER */
+    .birthday-banner { background: linear-gradient(90deg, rgba(245,166,35,0.15), rgba(167,139,250,0.12)); border: 1px solid rgba(245,166,35,0.35); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 600; color: var(--accent); }
+
+    /* PERSONEN */
+    .personen-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .person-row { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .person-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .person-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; }
+    .person-del { background: transparent; border: 1px solid rgba(224,92,92,0.3); color: var(--error); border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .person-del:hover, .person-del:focus { background: rgba(224,92,92,0.1); outline: 2px solid var(--error); outline-offset: 2px; }
+    .person-row select, .person-row .variant-row { margin-top: 0; }
+    .person-anzahl { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .person-anzahl label { font-size: 0.75rem; text-transform: none; letter-spacing: 0; color: var(--muted); margin: 0; }
+    .anzahl-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; flex-shrink: 0; }
+    .anzahl-btn:hover, .anzahl-btn:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+    .anzahl-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; min-width: 20px; text-align: center; }
+
+    /* VARIANT TOGGLE (freitag) */
+    .variant-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .variant-btn { border: 2px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 0.82rem; font-weight: 600; background: transparent; color: var(--muted); }
+    .variant-btn:hover, .variant-btn:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+    .variant-btn.selected { border-color: var(--accent); background: rgba(245,166,35,0.08); color: var(--text); }
+    .variant-label { font-size: 0.65rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+
+    .add-person-btn { width: 100%; padding: 11px; background: transparent; border: 1px dashed rgba(245,166,35,0.4); color: var(--accent); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .add-person-btn:hover, .add-person-btn:focus { background: rgba(245,166,35,0.06); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* MENU INFO */
+    .menu-info { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 0.9rem; transition: all 0.3s; }
+    .menu-info.loaded { color: var(--text); border-color: rgba(245,166,35,0.3); }
     .menu-info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
     .menu-info-content { flex: 1; }
-    .menu-info-row { display: flex; gap: 8px; margin-bottom: 4px; align-items: baseline; justify-content: space-between; }
-    .menu-info-row:last-child { margin-bottom: 0; }
-    .menu-info-left { display: flex; gap: 8px; align-items: baseline; }
-    .menu-info-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); min-width: 52px; flex-shrink: 0; }
-    .menu-info-text { font-size: 0.88rem; }
+    .menu-info-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; gap: 8px; }
+    .menu-info-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); min-width: 52px; flex-shrink: 0; }
+    .menu-info-text { font-size: 0.88rem; flex: 1; }
     .menu-info-preis { font-size: 0.82rem; color: var(--accent); font-weight: 600; }
 
-    .menu-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .menu-card { border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; position: relative; }
-    .menu-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .menu-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
-    .menu-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-    .menu-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text); }
-    .menu-card-desc { font-size: 0.82rem; color: var(--muted); margin-top: 4px; transition: color 0.3s; }
-    .menu-card-desc.has-text { color: var(--text); }
-    .menu-card-preis { font-size: 0.88rem; color: var(--accent); font-weight: 600; margin-top: 6px; }
-    .menu-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); margin-bottom: 10px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .menu-card.selected .menu-check { background: var(--accent); border-color: var(--accent); }
-    .menu-card.selected .menu-check::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+    /* CUTOFF NOTICE */
+    .cutoff-notice { background: rgba(224,92,92,0.08); border: 1px solid rgba(224,92,92,0.25); border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: var(--error); margin-bottom: 12px; }
 
-    /* Getränke */
-    .drink-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-    .drink-card { border: 2px solid var(--border); border-radius: 10px; padding: 12px 10px; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; text-align: center; }
-    .drink-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .drink-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
-    .drink-card.none-card { color: var(--muted); }
-    .drink-name { font-size: 0.85rem; font-weight: 600; }
-    .drink-preis { font-size: 0.78rem; color: var(--accent); margin-top: 3px; }
-    .drink-card.none-card .drink-preis { color: var(--muted); }
+    /* SLOT PICKER */
+    .slot-section { margin-bottom: 20px; }
+    .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+    .slot-btn { border: 1px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; background: transparent; color: var(--muted); }
+    .slot-btn:hover:not(:disabled), .slot-btn:focus:not(:disabled) { border-color: var(--accent); color: var(--text); outline: 2px solid var(--accent); outline-offset: 2px; }
+    .slot-btn.selected { border-color: var(--accent); background: rgba(245,166,35,0.1); color: var(--text); }
+    .slot-btn:disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+    .slot-btn.almost-full { border-color: rgba(245,166,35,0.4); color: var(--accent); }
+    .slot-wait { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+    .slot-wait.selected { color: var(--accent); }
 
-    /* Zahlung */
+    /* ZAHLUNG */
     .payment-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .payment-card { border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .payment-card:hover { border-color: var(--accent); }
-    .payment-card.selected { border-color: var(--accent); background: rgba(62,207,142,0.07); }
-    .payment-icon { font-size: 1.6rem; }
-    .payment-label { font-size: 0.88rem; font-weight: 600; }
+    .payment-card { border: 2px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .payment-card:hover, .payment-card:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+    .payment-card.selected { border-color: var(--accent); background: rgba(245,166,35,0.08); }
+    .payment-icon { font-size: 1.5rem; }
+    .payment-label { font-size: 0.85rem; font-weight: 600; }
 
-    /* Zusammenfassung */
+    /* SUMMARY */
     .summary { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
     .summary-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px; color: var(--muted); }
-    .summary-row:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; font-weight: 700; font-size: 0.95rem; color: var(--text); }
-    .summary-row span:last-child { color: var(--accent); }
+    .summary-row.total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .summary-row.total span:last-child, .summary-row span:last-child { color: var(--accent); }
+    .summary-person { background: rgba(0,0,0,0.15); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; font-size: 0.82rem; }
 
-    .btn { width: 100%; padding: 16px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
-    .btn:hover { background: #52d99e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(62,207,142,0.3); }
-    .btn:active { transform: translateY(0); }
+    /* BUTTONS */
+    .btn { width: 100%; padding: 15px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-top: 8px; }
+    .btn:hover { background: #f0b83a; transform: translateY(-1px); }
+    .btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
 
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 14px 24px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
+    .step-nav { display: flex; gap: 10px; margin-top: 12px; }
+
+    .allergen-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+    .allergen-tag { font-size: 0.72rem; background: rgba(122,116,104,0.12); border: 1px solid rgba(122,116,104,0.15); border-radius: 50px; padding: 2px 7px; color: var(--muted); }
+
+    .loyalty-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; color: #a78bfa; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
     .toast.error { background: var(--error); }
     .toast.show { transform: translateX(-50%) translateY(0); }
-    .nav-link { margin-top: 24px; color: var(--muted); font-size: 0.9rem; text-align: center; animation: fadeUp 0.6s ease 0.2s both; }
+
+    .nav-link { margin-top: 20px; color: var(--muted); font-size: 0.88rem; text-align: center; }
     .nav-link a { color: var(--accent); text-decoration: none; font-weight: 600; }
-    .nav-link a:hover { text-decoration: underline; }
-    .allergen-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-    .allergen-tag { font-size: 0.75rem; background: rgba(122,116,104,0.15); border: 1px solid rgba(122,116,104,0.2); border-radius: 50px; padding: 2px 8px; color: var(--muted); display: flex; align-items: center; gap: 3px; }
-    .hinweis-tag { font-size: 0.75rem; background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.2); border-radius: 50px; padding: 2px 8px; color: var(--accent); }
-    .allergen-legend { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 20px; }
-    .allergen-legend-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
-    .allergen-legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
-    .allergen-legend-item { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  
-    .back-btn {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 200;
-      background: rgba(19,23,38,0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid #1e2236;
-      color: #f0ede6;
-      padding: 8px 14px 8px 10px;
-      border-radius: 50px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .back-btn:hover { border-color: #f5a623; background: rgba(19,23,38,0.95); }
-
-
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f4f2ee;
-        --surface: #ffffff;
-        --border: #e2dfd8;
-        --text: #1a1816;
-        --muted: #8a8680;
-      }
-    }
-    [data-theme="light"] {
-      --bg: #f4f2ee;
-      --surface: #ffffff;
-      --border: #e2dfd8;
-      --text: #1a1816;
-      --muted: #8a8680;
-    }
-    [data-theme="dark"] {
-      --bg: #0b0e1a;
-      --surface: #131726;
-      --border: #1e2236;
-      --text: #f0ede6;
-      --muted: #7a7468;
-    }
-
-    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
-    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
-  
-    /* COUPON */
-    .coupon-section { margin-bottom: 16px; }
-    .coupon-btn { width: 100%; padding: 11px; background: transparent; border: 1px dashed rgba(167,139,250,0.4); border-radius: 10px; color: #a78bfa; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .coupon-btn:hover { background: rgba(167,139,250,0.06); border-color: rgba(167,139,250,0.7); }
-    .coupon-applied { background: rgba(76,175,125,0.08); border: 1px solid rgba(76,175,125,0.3); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
-    .coupon-applied-icon { font-size: 1.2rem; }
-    .coupon-applied-info { flex: 1; }
-    .coupon-applied-name { font-weight: 600; color: var(--success); }
-    .coupon-applied-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .coupon-remove { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 4px; }
-    .coupon-remove:hover { color: var(--error); }
-
-    /* COUPON MODAL */
-    .coupon-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 250; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
-    .coupon-modal.show { display: flex; }
-    .coupon-modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; position: relative; overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
-    .coupon-modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #a78bfa, #f5a623); }
-    .coupon-modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
-    .coupon-option { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s, background 0.2s; }
-    .coupon-option:hover { border-color: #a78bfa; background: rgba(167,139,250,0.05); }
-    .coupon-option-icon { font-size: 1.4rem; flex-shrink: 0; }
-    .coupon-option-info { flex: 1; }
-    .coupon-option-name { font-weight: 600; font-size: 0.9rem; }
-    .coupon-option-pts { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-    .coupon-option-discount { font-size: 0.82rem; color: var(--success); font-weight: 600; flex-shrink: 0; }
-    .coupon-modal-cancel { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
-    .coupon-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.88rem; }
-
-    /* ABHOLZEIT */
-    .abholzeit-section { margin-bottom: 20px; display: none; }
-    .abholzeit-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; display: block; }
-    .abholzeit-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .abholzeit-select { flex: 1; min-width: 140px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; appearance: none; cursor: pointer; }
-    .abholzeit-select:focus { outline: none; border-color: #3ecf8e; }
-    .eat-toggle { display: flex; gap: 8px; }
-    .eat-btn { flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .eat-btn.selected { border-color: #3ecf8e; background: rgba(62,207,142,0.07); color: var(--text); }
-
-    /* CONFIRM POPUP */
-    .confirm-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
-    .confirm-popup.show { display: flex; }
-    .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 20px 20px; padding: 28px 24px; max-width: 420px; width: 100%; position: relative; overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
-    .confirm-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3ecf8e, #3ecf8eaa); }
-    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .confirm-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
-    .confirm-rows { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
-    .confirm-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 5px 0; border-bottom: 1px solid var(--border); }
-    .confirm-row:last-child { border-bottom: none; }
-    .confirm-row-label { color: var(--muted); }
-    .confirm-row-val { font-weight: 600; }
-    .confirm-btns { display: flex; gap: 10px; }
-    .confirm-ok { flex: 1; padding: 13px; background: #3ecf8e; color: #0b0e1a; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
-    .confirm-cancel { padding: 13px 18px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-
-    /* COUNTDOWN */
-    .countdown-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 50px; padding: 6px 12px; font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; }
-    .countdown-badge.urgent { border-color: rgba(224,92,92,0.4); color: var(--error); background: rgba(224,92,92,0.06); }
-    .countdown-badge.soon { border-color: rgba(245,166,35,0.4); color: var(--accent-dark, #f5a623); background: rgba(245,166,35,0.06); }
-    .countdown-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
 
     .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(19,23,38,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); z-index: 100; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
     .bottom-nav-inner { display: flex; justify-content: space-around; max-width: 480px; margin: 0 auto; }
-    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; text-decoration: none; color: var(--muted); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.2s; }
+    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; text-decoration: none; color: var(--muted); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; transition: color 0.2s; }
     .bottom-nav-item.active, .bottom-nav-item:hover { color: var(--accent); }
     .bottom-nav-icon { font-size: 1.3rem; }
     @media (max-width: 600px) { .bottom-nav { display: block; } body { padding-bottom: 70px; } }
 
-    body.light {
-      --bg: #f4f2ec;
-      --surface: #ffffff;
-      --surface2: #eeeae0;
-      --border: #ddd8cc;
-      --text: #1a1916;
-      --muted: #8a8070;
-    }
-  
-    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
+    [data-theme="light"] { --bg: #f4f2ee; --surface: #ffffff; --border: #e2dfd8; --text: #1a1816; --muted: #8a8680; }
+    [data-theme="dark"] { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --text: #f0ede6; --muted: #7a7468; }
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.3); transition: border-color 0.2s; }
+    .theme-toggle:hover, .theme-toggle:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); pointer-events: none; z-index: 10; }
+
+    /* freitag menü2 cutoff badge */
+    .fr-only-badge { font-size: 0.68rem; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: var(--accent); border-radius: 50px; padding: 2px 8px; margin-left: 6px; }
+
+    /* skip link for a11y */
+    .skip-link { position: absolute; left: -9999px; top: 4px; padding: 8px 16px; background: var(--accent); color: #0b0e1a; border-radius: 6px; font-weight: 700; z-index: 1000; }
+    .skip-link:focus { left: 4px; }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b0e1a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
-<a href="index.html" class="back-btn">‹ Zurück</a>
-  <div id="authNav" style="margin-bottom:16px;animation:fadeUp 0.6s ease both;"></div>
-  <div class="header">
-    <span class="header-icon">🍽️</span>
-    <h1><span>Kantine</span> Vorbestellung</h1>
-    <div id="zeitenInfo" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
-    <div id="countdownBadge" style="display:none;justify-content:center;margin-top:8px;"></div>
-    <p class="subtitle">Schnell und einfach vorbestellen</p>
+<a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+<a href="index.html" class="back-btn" aria-label="Zurück zur Startseite">‹ Zurück</a>
+<button class="lang-toggle" id="langToggle" onclick="toggleLang()" aria-label="Sprache wechseln">🌐 EN</button>
+
+<div id="authNav" style="margin-bottom:12px;animation:fadeUp 0.6s ease both;" aria-live="polite"></div>
+
+<div class="header" role="banner">
+  <span class="header-icon" aria-hidden="true">🚚</span>
+  <h1 id="pageTitle">Kantine</h1>
+  <p class="subtitle" id="pageSubtitle">Jetzt einfach vorbestellen</p>
+</div>
+
+<!-- STEPPER -->
+<nav class="stepper" aria-label="Bestellschritte" id="stepperNav">
+  <div class="step active" id="step1-indicator" aria-current="step">
+    <div class="step-circle" aria-hidden="true">1</div>
+    <span class="step-label" id="step1-lbl">Daten</span>
   </div>
-
-  <div class="card">
-    <div class="form-group">
-      <label for="name">Ihr Name</label>
-      <input type="text" id="name" placeholder="Max Mustermann" autocomplete="name" />
-    </div>
-    <div class="form-group">
-      <label for="email">E-Mail <span style="color:var(--muted);font-size:0.78rem;text-transform:none;letter-spacing:0;">(für QR-Code Bestätigung)</span></label>
-      <input type="email" id="email" placeholder="max@beispiel.de" autocomplete="email" />
-    </div>
-    <div class="form-group">
-      <label for="date">Gewünschter Tag</label>
-      <input type="date" id="date" onchange="loadMenuForDate()" />
-    </div>
-    <div id="loyaltyInfo" style="display:none;flex-direction:row;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:12px 16px;margin-bottom:24px;font-size:0.85rem;align-items:center;gap:10px;">
-      <span style="font-size:1.2rem;">⭐</span>
-      <span id="loyaltyText" style="flex:1;color:#a78bfa;"></span>
-    </div>
-
-    <div class="menu-info" id="menuInfo">
-      <span class="menu-info-icon">📋</span>
-      <span>Wählen Sie einen Tag, um das Tagesmenü zu sehen.</span>
-    </div>
-
-    <div class="form-group">
-      <label>Menü-Auswahl</label>
-      <div class="menu-cards">
-        <div class="menu-card" id="card1" onclick="selectMenu('menu1')">
-          <input type="radio" name="menu" value="menu1" />
-          <div class="menu-check"></div>
-          <div class="menu-card-title">Menü 1</div>
-          <div class="menu-card-desc" id="desc1">Tagesangebot 1</div>
-          <div class="menu-card-preis" id="preis1"></div>
-          <div class="allergen-tags" id="tags1"></div>
-        </div>
-        <div class="menu-card" id="card2" onclick="selectMenu('menu2')">
-          <input type="radio" name="menu" value="menu2" />
-          <div class="menu-check"></div>
-          <div class="menu-card-title">Menü 2</div>
-          <div class="menu-card-desc" id="desc2">Tagesangebot 2</div>
-          <div class="menu-card-preis" id="preis2"></div>
-          <div class="allergen-tags" id="tags2"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Getränk dazu? <span style="color:var(--muted);font-size:0.8rem;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <div class="drink-grid" id="drinkGrid">
-        <div class="drink-card none-card selected" onclick="selectDrink(null, 0, this)">
-          <div class="drink-name">Kein Getränk</div>
-          <div class="drink-preis">–</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABHOLZEIT -->
-    <div class="abholzeit-section" id="abholzeitSection">
-      <label class="abholzeit-label">Abholzeit & Art <span style="color:var(--muted);font-size:0.75rem;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
-      <div class="abholzeit-row">
-        <select class="abholzeit-select" id="abholzeitSelect">
-          <option value="">Uhrzeit wählen…</option>
-        </select>
-      </div>
-      <div class="eat-toggle" style="margin-top:8px;" id="eatToggle">
-        <button class="eat-btn" id="eatVorOrt" onclick="setEatType('vor-ort')">🍽️ Vor Ort essen</button>
-        <button class="eat-btn" id="eatMitnehmen" onclick="setEatType('mitnehmen')">🥡 Mitnehmen</button>
-      </div>
-    </div>
-
-    <!-- COUPON -->
-    <div class="coupon-section" id="couponSection" style="display:none;">
-      <div id="couponDisplay">
-        <button class="coupon-btn" onclick="openCouponModal()">⭐ Coupon / Belohnung einlösen</button>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Zahlungsart</label>
-      <div class="payment-cards">
-        <div class="payment-card selected" id="payBar" onclick="selectPayment('bar')">
-          <span class="payment-icon">💵</span>
-          <span class="payment-label">Bar zahlen</span>
-        </div>
-        <div class="payment-card" id="payOnline" onclick="selectPayment('online')">
-          <span class="payment-icon">💳</span>
-          <span class="payment-label">Online zahlen</span>
-        </div>
-      </div>
-    </div>
-
-    <div id="paymentNotice" style="display:none;margin-bottom:16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:10px 14px;font-size:0.82rem;color:var(--muted);">
-      💳 Bei Online-Zahlung wird eine Zahlungsgebühr von 1,5&nbsp;%&nbsp;+&nbsp;0,25&nbsp;€ erhoben.
-    </div>
-
-    <div class="summary" id="summary" style="display:none">
-      <div class="summary-row"><span>Menü</span><span id="sumMenu">–</span></div>
-      <div class="summary-row" id="sumDrinkRow" style="display:none"><span>Getränk</span><span id="sumDrink">–</span></div>
-      <div class="summary-row"><span>Gesamt</span><span id="sumTotal">–</span></div>
-    </div>
-
-    <div class="form-group">
-      <label for="notiz">Hinweis <span style="color:var(--muted);font-size:0.78rem;text-transform:none;letter-spacing:0;">(optional, z.B. kein Fleisch)</span></label>
-      <input type="text" id="notiz" placeholder="z.B. ohne Zwiebeln, extra scharf…" maxlength="100" />
-    </div>
-
-    <div id="bestellschlussNotice" style="display:none;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#e05c5c;margin-bottom:12px;"></div>
-    <button class="btn" id="submitBtn" onclick="showConfirm()">Jetzt vorbestellen</button>
+  <div class="step-connector" id="conn1"></div>
+  <div class="step" id="step2-indicator">
+    <div class="step-circle" aria-hidden="true">2</div>
+    <span class="step-label" id="step2-lbl">Menü</span>
   </div>
-
-  <div class="allergen-legend" style="width:100%;max-width:480px;animation:fadeUp 0.6s ease 0.3s both;">
-    <div class="allergen-legend-title">Allergen-Verzeichnis</div>
-    <div class="allergen-legend-grid">
-          <div class="allergen-legend-item"><span>🌾</span><span>Gluten</span></div>
-          <div class="allergen-legend-item"><span>🥛</span><span>Milch/Laktose</span></div>
-          <div class="allergen-legend-item"><span>🥚</span><span>Eier</span></div>
-          <div class="allergen-legend-item"><span>🥜</span><span>Erdnüsse</span></div>
-          <div class="allergen-legend-item"><span>🌰</span><span>Nüsse</span></div>
-          <div class="allergen-legend-item"><span>🐟</span><span>Fisch</span></div>
-          <div class="allergen-legend-item"><span>🦐</span><span>Meeresfrüchte</span></div>
-          <div class="allergen-legend-item"><span>🫘</span><span>Soja</span></div>
-          <div class="allergen-legend-item"><span>🥬</span><span>Sellerie</span></div>
-          <div class="allergen-legend-item"><span>🌿</span><span>Senf</span></div>
-          <div class="allergen-legend-item"><span>🌱</span><span>Sesam</span></div>
-          <div class="allergen-legend-item"><span>🍷</span><span>Sulfite</span></div>
-          <div class="allergen-legend-item"><span>🌸</span><span>Lupinen</span></div>
-          <div class="allergen-legend-item"><span>🐚</span><span>Weichtiere</span></div>
-    </div>
+  <div class="step-connector" id="conn2"></div>
+  <div class="step" id="step3-indicator">
+    <div class="step-circle" aria-hidden="true">3</div>
+    <span class="step-label" id="step3-lbl">Abschluss</span>
   </div>
+</nav>
 
-  <div class="nav-link">Zur <a href="truck.html">Food Truck-Vorbestellung</a></div>
-  <!-- COUPON MODAL -->
-  <div class="coupon-modal" id="couponModal">
-    <div class="coupon-modal-box">
-      <div class="coupon-modal-title">⭐ Coupon einlösen</div>
-      <div id="couponOptions"></div>
-      <button class="coupon-modal-cancel" onclick="closeCouponModal()">Abbrechen</button>
+<div id="main-content" class="card" role="main">
+
+  <!-- STEP 1: Name / Datum / Slot -->
+  <section class="step-panel active" id="panel1" aria-labelledby="step1-lbl">
+
+    <div id="birthdayBanner" style="display:none;" class="birthday-banner" role="status" aria-live="polite">
+      🎂 <span id="birthdayText">Heute doppelte Punkte!</span>
     </div>
-  </div>
 
-  <!-- BESTELLBESTÄTIGUNG -->
-  <div class="confirm-popup" id="confirmPopup">
-    <div class="confirm-box">
-      <div class="confirm-title">✅ Bestellung bestätigen</div>
-      <div class="confirm-rows" id="confirmRows"></div>
-      <div class="confirm-btns">
-        <button class="confirm-ok" id="confirmOkBtn">Jetzt bestellen</button>
-        <button class="confirm-cancel" onclick="closeConfirm()">Ändern</button>
+    <div class="form-group">
+      <label for="name" id="name-label">Dein Name</label>
+      <input type="text" id="name" placeholder="Max Mustermann" autocomplete="name" aria-labelledby="name-label" aria-required="true" />
+    </div>
+    <div class="form-group">
+      <label for="email" id="email-label">E-Mail <span style="color:var(--muted);font-size:0.75rem;text-transform:none;letter-spacing:0;">(für QR-Code)</span></label>
+      <input type="email" id="email" placeholder="max@beispiel.de" autocomplete="email" aria-labelledby="email-label" aria-required="true" />
+    </div>
+    <div class="form-group">
+      <label for="date" id="date-label">Gewünschter Tag</label>
+      <input type="date" id="date" aria-labelledby="date-label" aria-required="true" onchange="onDateChange()" />
+    </div>
+
+    <div id="loyaltyBox" class="loyalty-box" style="display:none;" role="status">
+      <span aria-hidden="true">⭐</span>
+      <span id="loyaltyText"></span>
+    </div>
+
+    <div id="bestellschlussNotice" style="display:none;" class="cutoff-notice" role="alert"></div>
+
+    <!-- ZEITSLOT -->
+    <div class="slot-section" id="slotSection" style="display:none;" aria-labelledby="slot-label">
+      <label id="slot-label" style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:10px;display:block;">
+        Zeitslot <span style="color:var(--muted);font-size:0.75rem;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span>
+      </label>
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;" id="slotHelpText">Max. 15 Personen pro Slot · 1,5 Min Wartezeit pro Person</p>
+      <div class="slot-grid" id="slotGrid" role="radiogroup" aria-labelledby="slot-label"></div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn" onclick="goStep2()" id="toStep2Btn" aria-label="Weiter zu Menüauswahl">Weiter →</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: Menü + Personen -->
+  <section class="step-panel" id="panel2" aria-labelledby="step2-lbl">
+    <div class="menu-info" id="menuInfo" role="status">
+      <span class="menu-info-icon" aria-hidden="true">📋</span>
+      <span>Tag wählen für Menü-Info.</span>
+    </div>
+
+    <div id="frCutoffNotice" style="display:none;" class="cutoff-notice" role="alert"></div>
+
+    <!-- PERSONEN LISTE -->
+    <div id="personenList" class="personen-list" role="list" aria-label="Bestellungen pro Person"></div>
+
+    <button class="add-person-btn" onclick="addPerson()" id="addPersonBtn" aria-label="Weitere Person hinzufügen">
+      <span aria-hidden="true">＋</span> <span id="addPersonLabel">Person hinzufügen</span>
+    </button>
+
+    <!-- NOTIZ -->
+    <div class="form-group" style="margin-top:16px;">
+      <label for="notiz" id="notiz-label">Hinweis <span style="color:var(--muted);font-size:0.75rem;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
+      <input type="text" id="notiz" placeholder="z.B. ohne Zwiebeln…" maxlength="100" aria-labelledby="notiz-label" />
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goStep(1)" aria-label="Zurück zu Schritt 1">← Zurück</button>
+      <button class="btn" onclick="goStep3()" id="toStep3Btn" aria-label="Weiter zu Abschluss">Weiter →</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: Zahlung + Zusammenfassung -->
+  <section class="step-panel" id="panel3" aria-labelledby="step3-lbl">
+
+    <div class="form-group">
+      <label id="payment-label">Zahlungsart</label>
+      <div class="payment-cards" role="radiogroup" aria-labelledby="payment-label">
+        <div class="payment-card selected" id="payBar" onclick="selectPayment('bar')" role="radio" aria-checked="true" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter')selectPayment('bar')">
+          <span class="payment-icon" aria-hidden="true">💵</span>
+          <span class="payment-label" id="payBarLabel">Bar zahlen</span>
+        </div>
+        <div class="payment-card" id="payOnline" onclick="selectPayment('online')" role="radio" aria-checked="false" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter')selectPayment('online')">
+          <span class="payment-icon" aria-hidden="true">💳</span>
+          <span class="payment-label" id="payOnlineLabel">Online zahlen</span>
+        </div>
       </div>
     </div>
+
+    <div id="paymentNotice" style="display:none;margin-bottom:16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:10px 14px;font-size:0.82rem;color:var(--muted);" role="note">
+      💳 Zahlungsgebühr: 1,5 % + 0,25 €
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary" id="orderSummary" aria-label="Bestellübersicht">
+      <div id="summaryContent"></div>
+      <div class="summary-row total">
+        <span id="totalLabel">Gesamt</span>
+        <span id="sumTotal">–</span>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goStep(2)" aria-label="Zurück zu Schritt 2">← Zurück</button>
+      <button class="btn" onclick="submitOrder()" id="submitBtn">Jetzt vorbestellen</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-link" aria-label="Navigation">Zur <a href="truck.html">Food Truck-Vorbestellung</a></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" aria-label="Hauptnavigation">
+  <div class="bottom-nav-inner">
+    <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">🏠</span><span>Start</span></a>
+    <a href="truck.html" class="bottom-nav-item" aria-current="page"><span class="bottom-nav-icon" aria-hidden="true">🚚</span><span>Truck</span></a>
+    <a href="kantine.html" class="bottom-nav-item active" aria-current="page"><span class="bottom-nav-icon" aria-hidden="true">🍽️</span><span>Kantine</span></a>
+    <a href="loyalty.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⭐</span><span>Punkte</span></a>
+    <a href="account.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">👤</span><span>Konto</span></a>
   </div>
+</nav>
 
-  <div class="toast" id="toast"></div>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Theme wechseln">🌙</button>
+<div class="version-footer" aria-hidden="true">ver 1.6.0</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script>
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let selectedMenu = null;
-    let selectedMenuPreis = 0;
-    let selectedDrink = null;
-    let selectedDrinkPreis = 0;
-    let selectedPayment = 'bar';
-    let menuData = null;
+// ── I18N ──
+const i18n = {
+  de: {
+    pageTitle: "Kantine",',
+    pageSubtitle: 'Jetzt einfach vorbestellen',
+    step1: 'Daten', step2: 'Menü', step3: 'Abschluss',
+    nameLabel: 'Dein Name', emailLabel: 'E-Mail', dateLabel: 'Gewünschter Tag',
+    slotLabel: 'Zeitslot', slotHelp: 'Max. 15 Personen pro Slot · 1,5 Min Wartezeit pro Person',
+    addPerson: 'Person hinzufügen', payBar: 'Bar zahlen', payOnline: 'Online zahlen',
+    totalLabel: 'Gesamt', submit: 'Jetzt vorbestellen', back: '← Zurück', next: 'Weiter →',
+    birthdayText: '🎂 Heute doppelte Punkte!', notiz: 'Hinweis',
+    menu1: '🥩 Menü 1', menu2: '🥗 Menü 2', variant: 'Variante',
+    slotFull: 'Voll', slotWait: 'min Wartezeit', person: 'Person',
+    frCutoff: 'Menü 2 freitags: Vorbestellung bis 0:00 Uhr Vortag',
+    noMenu: 'Für diesen Tag wurde noch kein Menü eingetragen.',
+    weekend: 'An Wochenenden keine Vorbestellungen.',
+    cutoffReached: 'Bestellschluss erreicht.',
+    toStep2: 'Weiter zu Menüauswahl',
+    toStep3: 'Weiter zu Abschluss',
+  },
+  en: {
+    pageTitle: "Kantine",',
+    pageSubtitle: 'Pre-order easily now',
+    step1: 'Details', step2: 'Menu', step3: 'Checkout',
+    nameLabel: 'Your name', emailLabel: 'Email', dateLabel: 'Desired day',
+    slotLabel: 'Time slot', slotHelp: 'Max. 15 people per slot · 1.5 min wait per person',
+    addPerson: 'Add person', payBar: 'Pay cash', payOnline: 'Pay online',
+    totalLabel: 'Total', submit: 'Order now', back: '← Back', next: 'Continue →',
+    birthdayText: '🎂 Double points today!', notiz: 'Note',
+    menu1: '🥩 Menu 1', menu2: '🥗 Menu 2', variant: 'Variant',
+    slotFull: 'Full', slotWait: 'min wait', person: 'Person',
+    frCutoff: 'Menu 2 Fridays: pre-order until midnight the day before',
+    noMenu: 'No menu entered for this day yet.',
+    weekend: 'No pre-orders on weekends.',
+    cutoffReached: 'Order deadline reached.',
+    toStep2: 'Continue to menu',
+    toStep3: 'Continue to checkout',
+  }
+};
+let lang = localStorage.getItem('lang') || 'de';
 
-    // auth check - autofill name
-    db.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const name = session.user.user_metadata?.full_name || '';
-        if (name) document.getElementById('name').value = name;
-        const emailEl = document.getElementById('email');
-        if (emailEl && session.user.email) {
-          emailEl.value = session.user.email;
-          loadLoyaltyInfo();
-        }
-        // show account link
-        const nav = document.getElementById('authNav');
-        if (nav) {
-          const displayName = name || session.user.email.split('@')[0];
-          nav.innerHTML = `<a href="account.html" style="color:var(--muted);font-size:0.82rem;text-decoration:none;">👤 ${displayName}</a>`;
-        }
+function t(key) { return (i18n[lang] || i18n.de)[key] || key; }
+
+function applyLang() {
+  document.getElementById('pageTitle').innerHTML = t('pageTitle');
+  document.getElementById('pageSubtitle').textContent = t('pageSubtitle');
+  document.getElementById('step1-lbl').textContent = t('step1');
+  document.getElementById('step2-lbl').textContent = t('step2');
+  document.getElementById('step3-lbl').textContent = t('step3');
+  document.getElementById('addPersonLabel').textContent = t('addPerson');
+  document.getElementById('payBarLabel').textContent = t('payBar');
+  document.getElementById('payOnlineLabel').textContent = t('payOnline');
+  document.getElementById('totalLabel').textContent = t('totalLabel');
+  document.getElementById('submitBtn').textContent = t('submit');
+  document.getElementById('slotHelpText').textContent = t('slotHelp');
+  document.getElementById('langToggle').textContent = lang === 'de' ? '🌐 EN' : '🌐 DE';
+  renderPersonen();
+  buildSummary();
+}
+
+function toggleLang() {
+  lang = lang === 'de' ? 'en' : 'de';
+  localStorage.setItem('lang', lang);
+  applyLang();
+}
+
+// ── STATE ──
+let currentStep = 1;
+let selectedPayment = 'bar';
+let menuData = null;
+let selectedSlot = null;
+let slotCounts = {};
+const MAX_SLOT = 15;
+const WAIT_MIN = 1.5;
+
+let personen = [{ menu: null, anzahl: 1, variant: null }];
+
+// ── STEPPER ──
+function goStep(n) {
+  currentStep = n;
+  [1,2,3].forEach(i => {
+    const panel = document.getElementById('panel' + i);
+    const indicator = document.getElementById('step' + i + '-indicator');
+    panel.classList.toggle('active', i === n);
+    if (i < n) { indicator.className = 'step done'; }
+    else if (i === n) { indicator.className = 'step active'; indicator.setAttribute('aria-current','step'); }
+    else { indicator.className = 'step'; indicator.removeAttribute('aria-current'); }
+  });
+  [1,2].forEach(i => {
+    document.getElementById('conn' + i)?.classList.toggle('done', i < n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goStep2() {
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const date = document.getElementById('date').value;
+  if (!name) return showToast(lang === 'de' ? 'Bitte Name eingeben' : 'Please enter your name', true);
+  if (!email) return showToast(lang === 'de' ? 'Bitte E-Mail eingeben' : 'Please enter email', true);
+  if (!date) return showToast(lang === 'de' ? 'Bitte Tag wählen' : 'Please select a day', true);
+  // check bestellschluss
+  if (document.getElementById('submitBtn').disabled) return showToast(t('cutoffReached'), true);
+  goStep(2);
+  renderPersonen();
+}
+
+function goStep3() {
+  const hasMenü = personen.every(p => p.menu !== null);
+  if (!hasMenü) return showToast(lang === 'de' ? 'Bitte für alle Personen ein Menü wählen' : 'Please select a menu for everyone', true);
+  goStep(3);
+  buildSummary();
+}
+
+// ── DATE CHANGE ──
+async function onDateChange() {
+  const dateStr = document.getElementById('date').value;
+  if (!dateStr) return;
+  const dow = new Date(dateStr + 'T00:00:00').getDay();
+  if (dow === 0 || dow === 6) {
+    setMenuInfoText(t('weekend'), false);
+    document.getElementById('slotSection').style.display = 'none';
+    return;
+  }
+  await loadMenuForDate(dateStr);
+  await loadSlots(dateStr);
+  checkBestellschluss(dateStr);
+  checkFrCutoff(dateStr);
+  checkBirthday();
+  loadLoyaltyInfo();
+  // reset personen varianten wenn nicht freitag
+  personen.forEach(p => { if (dow !== 5) p.variant = null; });
+  renderPersonen();
+}
+
+function checkFrCutoff(dateStr) {
+  const notice = document.getElementById('frCutoffNotice');
+  const dow = new Date(dateStr + 'T00:00:00').getDay();
+  if (dow === 5) {
+    const now = new Date();
+    const vortag = new Date(dateStr + 'T00:00:00');
+    vortag.setDate(vortag.getDate() - 1);
+    vortag.setHours(0, 0, 0, 0);
+    if (now > vortag) {
+      notice.style.display = 'block';
+      notice.textContent = t('frCutoff');
+    } else {
+      notice.style.display = 'none';
+    }
+  } else {
+    notice.style.display = 'none';
+  }
+}
+
+function isFrMenu2Cutoff(dateStr) {
+  if (!dateStr) return false;
+  const dow = new Date(dateStr + 'T00:00:00').getDay();
+  if (dow !== 5) return false;
+  const now = new Date();
+  const vortag = new Date(dateStr + 'T00:00:00');
+  vortag.setDate(vortag.getDate() - 1);
+  vortag.setHours(0, 0, 0, 0);
+  return now > vortag;
+}
+
+function checkBirthday() {
+  const email = (document.getElementById('email')?.value || '').trim();
+  const birthday = localStorage.getItem('birthday_' + email);
+  const banner = document.getElementById('birthdayBanner');
+  if (birthday && birthday.slice(5) === new Date().toISOString().slice(5,10)) {
+    banner.style.display = 'flex';
+    document.getElementById('birthdayText').textContent = t('birthdayText');
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── SLOTS ──
+async function loadSlots(dateStr) {
+  const section = document.getElementById('slotSection');
+  const grid = document.getElementById('slotGrid');
+  const { data: settings } = await db.from('einstellungen').select('abholung_von,abholung_bis').eq('typ','kantine').maybeSingle();
+  if (!settings?.abholung_von) { section.style.display = 'none'; return; }
+
+  // slot capacity vom api holen
+  try {
+    const resp = await fetch(`/api/slot-capacity?datum=${dateStr}&typ=truck`);
+    const data = await resp.json();
+    slotCounts = data.slotCounts || {};
+  } catch(e) { slotCounts = {}; }
+
+  const [fh, fm] = settings.abholung_von.split(':').map(Number);
+  const [th, tm] = settings.abholung_bis.split(':').map(Number);
+  const start = new Date(); start.setHours(fh, fm, 0, 0);
+  const end = new Date(); end.setHours(th, tm, 0, 0);
+
+  const slots = [];
+  let cur = new Date(start);
+  while (cur <= end) {
+    const h = String(cur.getHours()).padStart(2,'0');
+    const m = String(cur.getMinutes()).padStart(2,'0');
+    slots.push(`${h}:${m}`);
+    cur = new Date(cur.getTime() + 15 * 60000);
+  }
+
+  if (slots.length === 0) { section.style.display = 'none'; return; }
+
+  section.style.display = 'block';
+  grid.innerHTML = slots.map(slot => {
+    const count = slotCounts[slot] || 0;
+    const isFull = count >= MAX_SLOT;
+    const available = MAX_SLOT - count;
+    const waitMin = Math.ceil(count * WAIT_MIN);
+    const almostFull = !isFull && available <= 3;
+    return `<div>
+      <button class="slot-btn ${selectedSlot === slot ? 'selected' : ''} ${isFull ? '' : almostFull ? 'almost-full' : ''}"
+        ${isFull ? 'disabled aria-disabled="true"' : ''}
+        onclick="selectSlot('${slot}')"
+        role="radio"
+        aria-checked="${selectedSlot === slot ? 'true' : 'false'}"
+        aria-label="${slot} Uhr${isFull ? ' – voll' : ''}"
+        id="slot-${slot.replace(':','-')}">
+        ${slot}${isFull ? '<br><span style="font-size:0.65rem">' + t('slotFull') + '</span>' : ''}
+      </button>
+      ${!isFull && count > 0 ? `<div class="slot-wait ${selectedSlot === slot ? 'selected' : ''}" aria-hidden="true">~${waitMin} ${t('slotWait')}</div>` : '<div style="height:16px"></div>'}
+    </div>`;
+  }).join('');
+}
+
+function selectSlot(slot) {
+  selectedSlot = selectedSlot === slot ? null : slot;
+  document.querySelectorAll('.slot-btn').forEach(b => {
+    const s = b.id.replace('slot-','').replace('-',':');
+    b.classList.toggle('selected', s === selectedSlot);
+    b.setAttribute('aria-checked', s === selectedSlot ? 'true' : 'false');
+  });
+  document.querySelectorAll('.slot-wait').forEach((w, i) => {
+    const btn = document.querySelectorAll('.slot-btn')[i];
+    if (btn) w.classList.toggle('selected', btn.classList.contains('selected'));
+  });
+}
+
+// ── MENU ──
+function getWeekStart(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+  return d.toISOString().split('T')[0];
+}
+function getDayKey(dateStr) {
+  return ['so','mo','di','mi','do','fr','sa'][new Date(dateStr + 'T00:00:00').getDay()];
+}
+
+async function loadMenuForDate(dateStr) {
+  const dow = new Date(dateStr + 'T00:00:00').getDay();
+  if (dow === 0 || dow === 6) { setMenuInfoText(t('weekend'), false); menuData = null; return; }
+  const { data } = await db.from('menus').select('*').eq('typ','kantine').eq('woche_start', getWeekStart(dateStr)).maybeSingle();
+  menuData = data;
+  const dk = getDayKey(dateStr);
+  if (!data) { setMenuInfoText(t('noMenu'), false); return; }
+  const m1 = data[`${dk}_menu1`] || '';
+  const m2 = data[`${dk}_menu2`] || '';
+  const p1 = data[`${dk}_menu1_preis`] || 0;
+  const p2 = data[`${dk}_menu2_preis`] || 0;
+
+  const box = document.getElementById('menuInfo');
+  box.className = 'menu-info loaded';
+  box.innerHTML = `<span class="menu-info-icon" aria-hidden="true">🍴</span><div class="menu-info-content">
+    <div class="menu-info-row"><span class="menu-info-label">🥩 M1</span><span class="menu-info-text">${esc(m1 || '–')}</span>${p1 ? `<span class="menu-info-preis">${fmtE(p1)}</span>` : ''}</div>
+    <div class="menu-info-row"><span class="menu-info-label">🥗 M2</span><span class="menu-info-text">${esc(m2 || '–')}</span>${p2 ? `<span class="menu-info-preis">${fmtE(p2)}</span>` : ''}</div>
+  </div>`;
+}
+
+function setMenuInfoText(text, loaded) {
+  const box = document.getElementById('menuInfo');
+  box.className = 'menu-info' + (loaded ? ' loaded' : '');
+  box.innerHTML = `<span class="menu-info-icon" aria-hidden="true">📋</span><span>${text}</span>`;
+}
+
+// ── EU ALLERGEN NUMMERN → EMOJIS ──
+const ALLERGEN_EU = {
+  '1': '🌾 Gluten', '2': '🦐 Krebstiere', '3': '🥚 Eier', '4': '🐟 Fisch',
+  '5': '🥜 Erdnüsse', '6': '🫘 Soja', '7': '🥛 Milch', '8': '🌰 Schalenfrüchte',
+  '9': '🥬 Sellerie', '10': '🌿 Senf', '11': '🌱 Sesam', '12': '🍷 Sulfite',
+  '13': '🌸 Lupine', '14': '🐚 Weichtiere'
+};
+
+function renderAllergens(str) {
+  if (!str) return '';
+  return str.split(',').map(a => {
+    const trimmed = a.trim();
+    // check if eu-nummer
+    const euLabel = ALLERGEN_EU[trimmed];
+    const label = euLabel || trimmed;
+    return `<span class="allergen-tag" title="${label}">${label}</span>`;
+  }).join('');
+}
+
+// ── PERSONEN ──
+function renderPersonen() {
+  const dateStr = document.getElementById('date').value;
+  const dow = dateStr ? new Date(dateStr + 'T00:00:00').getDay() : 0;
+  const isFriday = dow === 5;
+  const dk = dateStr ? getDayKey(dateStr) : null;
+
+  const getMenuLabel = (menu, variant) => {
+    if (!menu) return '';
+    if (menu === 'menu1') {
+      if (isFriday && menuData) {
+        const v1 = menuData[`${dk}_fr_menu1_var1`] || menuData[`${dk}_menu1`] || '';
+        const v2 = menuData[`${dk}_fr_menu1_var2`] || '';
+        return v1 || '🥩 ' + t('menu1');
       }
-    });
-
-    const dateInput = document.getElementById('date');
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
-    dateInput.value = today;
-
-    // Getränke laden
-    async function loadDrinks() {
-      const { data } = await db.from('getraenke').select('*').eq('typ', 'kantine').eq('verfuegbar', true).order('reihenfolge');
-      if (!data) return;
-      const grid = document.getElementById('drinkGrid');
-      const noneCard = grid.querySelector('.none-card');
-      data.forEach(d => {
-        const div = document.createElement('div');
-        div.className = 'drink-card';
-        div.innerHTML = `<div class="drink-name">${esc(d.name)}</div><div class="drink-preis">${formatPreis(d.preis)}</div>`;
-        div.onclick = () => selectDrink(d.name, d.preis, div);
-        grid.appendChild(div);
-      });
-    }
-
-    loadDrinks();
-    loadMenuForDate();
-    loadZeiten();
-
-    async function loadZeiten() {
-      const { data } = await db.from('einstellungen').select('*').eq('typ', 'kantine').maybeSingle();
-      if (!data) return;
-      const el = document.getElementById('zeitenInfo');
-      const parts = [];
-      if (data.oeffnung_von && data.oeffnung_bis)
-        parts.push(`<span style="background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:0.78rem;color:var(--muted);">🕐 Geöffnet: ${data.oeffnung_von}–${data.oeffnung_bis} Uhr</span>`);
-      if (data.abholung_von && data.abholung_bis)
-        parts.push(`<span style="background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:0.78rem;color:var(--muted);">📦 Abholung: ${data.abholung_von}–${data.abholung_bis} Uhr</span>`);
-      el.innerHTML = parts.join('');
-    }
-    checkBestellschluss();
-
-    function getWeekStart(dateStr) {
-      const d = new Date(dateStr + 'T00:00:00');
-      const day = d.getDay();
-      d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-      return pad4(d.getFullYear()) + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
-    }
-
-    function getDayKey(dateStr) {
-      return ['so','mo','di','mi','do','fr','sa'][new Date(dateStr + 'T00:00:00').getDay()];
-    }
-
-    async function loadMenuForDate() {
-      const dateStr = dateInput.value;
-      if (!dateStr) return;
-      const dow = new Date(dateStr + 'T00:00:00').getDay();
-      if (dow === 0 || dow === 6) { setMenuInfo(null, true); return; }
-      const { data } = await db.from('menus').select('*').eq('typ', 'kantine').eq('woche_start', getWeekStart(dateStr)).maybeSingle();
-      menuData = data;
-      if (!data) { setMenuInfo(null, false); return; }
-      const dk = getDayKey(dateStr);
-      setMenuInfo({
-        menu1: data[`${dk}_menu1`] || '',
-        menu2: data[`${dk}_menu2`] || '',
-        preis1: data[`${dk}_menu1_preis`] || 0,
-        preis2: data[`${dk}_menu2_preis`] || 0,
-        verfuegbar1: data[`${dk}_menu1_verfuegbar`] !== false,
-        verfuegbar2: data[`${dk}_menu2_verfuegbar`] !== false,
-        allergene1: data[`${dk}_menu1_allergene`] || '',
-        allergene2: data[`${dk}_menu2_allergene`] || '',
-        hinweis1: data[`${dk}_menu1_hinweis`] || '',
-        hinweis2: data[`${dk}_menu2_hinweis`] || '',
-      }, false);
-    }
-
-    function setMenuInfo(menus, isWeekend) {
-      const box = document.getElementById('menuInfo');
-      const d1 = document.getElementById('desc1');
-      const d2 = document.getElementById('desc2');
-      const p1 = document.getElementById('preis1');
-      const p2 = document.getElementById('preis2');
-
-      if (isWeekend) {
-        box.className = 'menu-info';
-        box.innerHTML = '<span class="menu-info-icon">🚫</span><span>An Wochenenden gibt es keine Vorbestellungen.</span>';
-        return;
+      return menuData ? (menuData[`${dk}_menu1`] || '🥩 ' + t('menu1')) : '🥩 ' + t('menu1');
+    } else {
+      if (isFriday && menuData) {
+        const v1 = menuData[`${dk}_fr_menu2_var1`] || menuData[`${dk}_menu2`] || '';
+        return v1 || '🥗 ' + t('menu2');
       }
-      if (!menus || (!menus.menu1 && !menus.menu2)) {
-        box.className = 'menu-info';
-        box.innerHTML = '<span class="menu-info-icon">📋</span><span>Für diesen Tag wurde noch kein Menü eingetragen.</span>';
-        d1.textContent = 'Tagesangebot 1'; d1.className = 'menu-card-desc';
-        d2.textContent = 'Tagesangebot 2'; d2.className = 'menu-card-desc';
-        p1.textContent = ''; p2.textContent = '';
-        return;
-      }
-      box.className = 'menu-info loaded';
-      box.innerHTML = `<span class="menu-info-icon">🍴</span><div class="menu-info-content">
-        <div class="menu-info-row"><div class="menu-info-left"><span class="menu-info-label">Menü 1</span><span class="menu-info-text">${esc(menus.menu1||'–')}</span></div>${menus.preis1 ? `<span class="menu-info-preis">${formatPreis(menus.preis1)}</span>` : ''}</div>
-        <div class="menu-info-row"><div class="menu-info-left"><span class="menu-info-label">Menü 2</span><span class="menu-info-text">${esc(menus.menu2||'–')}</span></div>${menus.preis2 ? `<span class="menu-info-preis">${formatPreis(menus.preis2)}</span>` : ''}</div>
-      </div>`;
-
-      d1.textContent = menus.menu1 || 'Tagesangebot 1'; d1.className = menus.menu1 ? 'menu-card-desc has-text' : 'menu-card-desc';
-      d2.textContent = menus.menu2 || 'Tagesangebot 2'; d2.className = menus.menu2 ? 'menu-card-desc has-text' : 'menu-card-desc';
-
-      // allergene + hinweise
-      renderAllergenTags('tags1', menus.allergene1 || '', menus.hinweis1 || '');
-      renderAllergenTags('tags2', menus.allergene2 || '', menus.hinweis2 || '');
-
-      // check user allergens
-      const emailVal = (document.getElementById('email')?.value || '').trim();
-      if (emailVal) checkUserAllergens(emailVal);
-
-      // autofill fav menu
-      const fav = localStorage.getItem('fav_menu_kantine');
-      if (fav && !selectedMenu) { setTimeout(() => { const card = document.getElementById('card' + (fav === 'menu1' ? '1' : '2')); if (card && !card.style.pointerEvents?.includes('none')) card.click(); }, 100); }
-
-      // ausverkauft handling
-      const c1 = document.getElementById('card1');
-      const c2 = document.getElementById('card2');
-      if (menus.verfuegbar1 === false) {
-        c1.style.opacity = '0.4'; c1.style.pointerEvents = 'none';
-        d1.textContent = (menus.menu1 || 'Menü 1') + ' – Ausverkauft';
-      } else { c1.style.opacity = ''; c1.style.pointerEvents = ''; }
-      if (menus.verfuegbar2 === false) {
-        c2.style.opacity = '0.4'; c2.style.pointerEvents = 'none';
-        d2.textContent = (menus.menu2 || 'Menü 2') + ' – Ausverkauft';
-      } else { c2.style.opacity = ''; c2.style.pointerEvents = ''; }
-      p1.textContent = menus.preis1 ? formatPreis(menus.preis1) : '';
-      p2.textContent = menus.preis2 ? formatPreis(menus.preis2) : '';
+      return menuData ? (menuData[`${dk}_menu2`] || '🥗 ' + t('menu2')) : '🥗 ' + t('menu2');
     }
+  };
 
-    function selectMenu(val) {
-      selectedMenu = val;
-      try { localStorage.setItem('fav_menu_kantine', val); } catch(e) {}
-      document.getElementById('card1').classList.toggle('selected', val === 'menu1');
-      document.getElementById('card2').classList.toggle('selected', val === 'menu2');
+  const cutoffM2 = isFrMenu2Cutoff(dateStr);
 
-      // preis ermitteln
-      if (menuData && dateInput.value) {
-        const dk = getDayKey(dateInput.value);
-        selectedMenuPreis = parseFloat(menuData[`${dk}_${val}_preis`] || 0);
-      } else {
-        selectedMenuPreis = 0;
-      }
-      updateSummary();
-      maybeShowCoupon();
-    }
+  const container = document.getElementById('personenList');
+  container.innerHTML = personen.map((p, i) => {
+    const frVar1Name = menuData && dk ? (menuData[`${dk}_fr_menu1_var1`] || menuData[`${dk}_menu1`] || 'Variante A') : 'Variante A';
+    const frVar2Name = menuData && dk ? (menuData[`${dk}_fr_menu1_var2`] || 'Variante B') : 'Variante B';
+    const frM2Var1Name = menuData && dk ? (menuData[`${dk}_fr_menu2_var1`] || menuData[`${dk}_menu2`] || 'Variante A') : 'Variante A';
+    const frM2Var2Name = menuData && dk ? (menuData[`${dk}_fr_menu2_var2`] || 'Variante B') : 'Variante B';
 
-    function selectDrink(name, preis, el) {
-      selectedDrink = name;
-      selectedDrinkPreis = preis;
-      document.querySelectorAll('.drink-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      updateSummary();
-    }
-
-    function selectPayment(val) {
-      selectedPayment = val;
-      document.getElementById('payBar').classList.toggle('selected', val === 'bar');
-      document.getElementById('payOnline').classList.toggle('selected', val === 'online');
-      document.getElementById('paymentNotice').style.display = val === 'online' ? 'block' : 'none';
-      updateSummary();
-    }
-
-    function updateSummary() {
-      if (!selectedMenu) { document.getElementById('summary').style.display = 'none'; return; }
-      let baseMenuPreis = selectedMenuPreis;
-      let baseDrinkPreis = selectedDrinkPreis;
-      // apply coupon
-      if (appliedCoupon) {
-        if (appliedCoupon.typ === 'getraenk') baseDrinkPreis = 0;
-        if (appliedCoupon.typ === 'menue') baseMenuPreis = 0;
-      }
-      const subtotal = baseMenuPreis + baseDrinkPreis;
-      const stripeFee = selectedPayment === 'online' && subtotal > 0 ? Math.round((subtotal * 0.015 + 0.25) * 100) / 100 : 0;
-      const total = subtotal + stripeFee;
-      document.getElementById('summary').style.display = 'block';
-
-      const menuLabel = selectedMenu === 'menu1'
-        ? (document.getElementById('desc1').textContent || 'Menü 1')
-        : (document.getElementById('desc2').textContent || 'Menü 2');
-
-      document.getElementById('sumMenu').textContent = selectedMenuPreis ? `${menuLabel.substring(0,20)} · ${formatPreis(selectedMenuPreis)}` : menuLabel.substring(0,25);
-
-      const drinkRow = document.getElementById('sumDrinkRow');
-      if (selectedDrink) {
-        drinkRow.style.display = 'flex';
-        document.getElementById('sumDrink').textContent = `${selectedDrink} · ${formatPreis(selectedDrinkPreis)}`;
-      } else {
-        drinkRow.style.display = 'none';
-      }
-
-      let feeRow = document.getElementById('sumFeeRow');
-      if (!feeRow) {
-        feeRow = document.createElement('div');
-        feeRow.id = 'sumFeeRow';
-        feeRow.className = 'summary-row';
-        feeRow.innerHTML = '<span>Zahlungsgebühr</span><span id="sumFee">–</span>';
-        document.getElementById('sumTotal').closest('.summary-row').before(feeRow);
-      }
-      if (stripeFee > 0) {
-        feeRow.style.display = 'flex';
-        document.getElementById('sumFee').textContent = formatPreis(stripeFee);
-      } else {
-        feeRow.style.display = 'none';
-      }
-
-      document.getElementById('sumTotal').textContent = total ? formatPreis(total) : '–';
-
-      const btn = document.getElementById('submitBtn');
-      if (selectedPayment === 'online' && subtotal > 0) {
-        btn.textContent = `Jetzt bezahlen · ${formatPreis(total)}`;
-      } else {
-        btn.textContent = 'Jetzt vorbestellen';
-      }
-    }
-
-    function showToast(msg, isError = false) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    // ── ABHOLZEIT ──
-    let selectedAbholzeit = '';
-    let selectedEatType = '';
-
-    function setEatType(type) {
-      selectedEatType = selectedEatType === type ? '' : type;
-      document.getElementById('eatVorOrt').classList.toggle('selected', selectedEatType === 'vor-ort');
-      document.getElementById('eatMitnehmen').classList.toggle('selected', selectedEatType === 'mitnehmen');
-    }
-
-    async function loadAbholzeiten() {
-      const { data } = await db.from('einstellungen').select('abholung_von,abholung_bis').eq('typ', 'kantine').maybeSingle();
-      if (!data?.abholung_von || !data?.abholung_bis) return;
-
-      const now = new Date();
-      const [fromH, fromM] = data.abholung_von.split(':').map(Number);
-      const [toH, toM] = data.abholung_bis.split(':').map(Number);
-
-      // show section 2.5h before abholung starts
-      const abholStart = new Date();
-      abholStart.setHours(fromH, fromM, 0, 0);
-      const showFrom = new Date(abholStart.getTime() - 2.5 * 60 * 60000);
-      const abholEnd = new Date();
-      abholEnd.setHours(toH, toM, 0, 0);
-
-      const dateVal = document.getElementById('date')?.value;
-      const today = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-      
-      // show for today (if within time window) OR for tomorrow (always, since bestellschluss is vortag)
-      const isToday = dateVal === today;
-      const isTomorrow = dateVal === tomorrowStr;
-      if (isToday && (now < showFrom || now > abholEnd)) return;
-      if (!isToday && !isTomorrow) return;
-
-      const sel = document.getElementById('abholzeitSelect');
-      sel.innerHTML = '<option value="">Uhrzeit wählen…</option>';
-
-      let cur = new Date(abholStart);
-      while (cur <= abholEnd) {
-        // skip past times
-        if (cur > now) {
-          const h = String(cur.getHours()).padStart(2,'0');
-          const m = String(cur.getMinutes()).padStart(2,'0');
-          const opt = document.createElement('option');
-          opt.value = h + ':' + m;
-          opt.textContent = h + ':' + m + ' Uhr';
-          sel.appendChild(opt);
-        }
-        cur = new Date(cur.getTime() + 15 * 60000);
-      }
-
-      if (sel.options.length > 1) {
-        document.getElementById('abholzeitSection').style.display = 'block';
-        sel.addEventListener('change', () => { selectedAbholzeit = sel.value; });
-      }
-    }
-
-    // reload abholzeiten when date changes
-    const origLoadMenu = loadMenuForDate;
-    loadMenuForDate = async function() {
-      await origLoadMenu();
-      loadAbholzeiten();
-    };
-    loadAbholzeiten();
-
-    // ── COUPON ──
-    let appliedCoupon = null; // { id, name, typ, rabatt, einloesungId }
-
-    async function openCouponModal() {
-      const email = (document.getElementById('email')?.value || '').trim();
-      if (!email) { showToast('Bitte zuerst E-Mail eingeben.', true); return; }
-
-      // load active einloesungen for this email
-      const { data: einloesungen } = await db.from('loyalty_einloesungen')
-        .select('*, loyalty_belohnungen(*)').eq('email', email).eq('used', false);
-      
-      const modal = document.getElementById('couponModal');
-      const opts = document.getElementById('couponOptions');
-
-      if (!einloesungen || einloesungen.length === 0) {
-        opts.innerHTML = '<div class="coupon-empty">Keine einlösbaren Belohnungen.<br><small>Bestellungen sammeln = Punkte sammeln!</small></div>';
-      } else {
-        opts.innerHTML = einloesungen.map(e => {
-          const b = e.loyalty_belohnungen;
-          const icon = b?.typ === 'getraenk' ? '🥤' : b?.typ === 'menue' ? '🍽️' : '🎁';
-          const rabattText = b?.typ === 'getraenk' ? 'Getränk gratis' : b?.typ === 'menue' ? 'Menü gratis' : 'Rabatt';
-          return `<div class="coupon-option" onclick="applyCoupon('${e.id}','${e.belohnung_name}','${b?.typ}','${e.id}')">
-            <span class="coupon-option-icon">${icon}</span>
-            <div class="coupon-option-info">
-              <div class="coupon-option-name">${esc(e.belohnung_name || '')}</div>
-              <div class="coupon-option-pts">Eingelöst am ${new Date(e.created_at).toLocaleDateString('de-DE')}</div>
-            </div>
-            <span class="coupon-option-discount">${rabattText}</span>
-          </div>`;
-        }).join('');
-      }
-
-      modal.classList.add('show');
-    }
-
-    function closeCouponModal() {
-      document.getElementById('couponModal').classList.remove('show');
-    }
-
-    function applyCoupon(einloesungId, name, typ, id) {
-      appliedCoupon = { einloesungId, name, typ };
-      closeCouponModal();
-      
-      // update coupon display
-      const icon = typ === 'getraenk' ? '🥤' : typ === 'menue' ? '🍽️' : '🎁';
-      const rabattText = typ === 'getraenk' ? 'Getränk wird gratis' : typ === 'menue' ? 'Menü wird gratis' : 'Rabatt angewendet';
-      document.getElementById('couponDisplay').innerHTML = `
-        <div class="coupon-applied">
-          <span class="coupon-applied-icon">${icon}</span>
-          <div class="coupon-applied-info">
-            <div class="coupon-applied-name">✓ ${esc(name)}</div>
-            <div class="coupon-applied-sub">${rabattText}</div>
-          </div>
-          <button class="coupon-remove" onclick="removeCoupon()" title="Entfernen">✕</button>
+    const variantHtml = (menu) => {
+      if (!isFriday || !menu) return '';
+      if (menu === 'menu1') {
+        return `<div class="variant-row" role="radiogroup" aria-label="${t('variant')}">
+          <button class="variant-btn ${p.variant === 'A' ? 'selected' : ''}" onclick="setVariant(${i},'A')" role="radio" aria-checked="${p.variant === 'A'}">${esc(frVar1Name)}</button>
+          <button class="variant-btn ${p.variant === 'B' ? 'selected' : ''}" onclick="setVariant(${i},'B')" role="radio" aria-checked="${p.variant === 'B'}">${esc(frVar2Name)}</button>
         </div>`;
-      
-      updateSummary();
-      showToast('✓ Coupon angewendet!');
-    }
-
-    function removeCoupon() {
-      appliedCoupon = null;
-      document.getElementById('couponDisplay').innerHTML = 
-        '<button class="coupon-btn" onclick="openCouponModal()">⭐ Coupon / Belohnung einlösen</button>';
-      updateSummary();
-    }
-
-    // show coupon section when menu is selected
-    function maybeShowCoupon() {
-      const email = (document.getElementById('email')?.value || '').trim();
-      const section = document.getElementById('couponSection');
-      if (section) section.style.display = selectedMenu && email ? 'block' : 'none';
-    }
-
-    function showConfirm() {
-      const name = document.getElementById('name').value.trim();
-      const emailInput = document.getElementById('email')?.value.trim();
-      const date = document.getElementById('date').value;
-      if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
-      if (!emailInput) return showToast('Bitte geben Sie Ihre E-Mail ein.', true);
-      if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
-      if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
-
-      const menuLabel = selectedMenu === 'menu1'
-        ? (document.getElementById('desc1').textContent || 'Menü 1')
-        : (document.getElementById('desc2').textContent || 'Menü 2');
-      const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('de-DE', {weekday:'long',day:'2-digit',month:'2-digit'});
-      const total = selectedMenuPreis + selectedDrinkPreis;
-      const rows = [
-        {label: 'Name', val: name},
-        {label: 'Datum', val: dateStr},
-        {label: 'Menü', val: menuLabel},
-        {label: 'Getränk', val: selectedDrink || 'Keins'},
-        {label: 'Zahlung', val: selectedPayment === 'online' ? '💳 Online' : '💵 Bar'},
-        ...(selectedAbholzeit ? [{label: 'Abholzeit', val: selectedAbholzeit + ' Uhr' + (selectedEatType === 'vor-ort' ? ' · Vor Ort' : selectedEatType === 'mitnehmen' ? ' · Mitnehmen' : '')}] : []),
-        {label: 'Gesamt', val: total > 0 ? formatPreis(total) : '–'},
-      ];
-      document.getElementById('confirmRows').innerHTML = rows.map(r =>
-        `<div class="confirm-row"><span class="confirm-row-label">${r.label}</span><span class="confirm-row-val">${r.val}</span></div>`
-      ).join('');
-      document.getElementById('confirmPopup').classList.add('show');
-      document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); submitOrder(); };
-    }
-
-    function closeConfirm() {
-      document.getElementById('confirmPopup').classList.remove('show');
-    }
-
-    // countdown timer
-    function startCountdown(data) {
-      const badge = document.getElementById('countdownBadge');
-      if (!badge) return;
-      const tick = () => {
-        const now = new Date();
-        const dateVal = document.getElementById('date').value;
-        if (!dateVal) return;
-        const deadline = new Date(dateVal + 'T00:00:00');
-        if (data.vortag) deadline.setDate(deadline.getDate() - 1);
-        deadline.setHours(data.bestellschluss_stunde, data.bestellschluss_minute, 0, 0);
-        const diff = deadline - now;
-        if (diff <= 0) { badge.innerHTML = ''; badge.style.display = 'none'; return; }
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        const urgent = diff < 30 * 60000;
-        const soon = diff < 60 * 60000;
-        badge.style.display = 'flex';
-        badge.className = 'countdown-badge' + (urgent ? ' urgent' : soon ? ' soon' : '');
-        badge.innerHTML = `<span class="countdown-dot"></span>Bestellschluss in ${h > 0 ? h + 'h ' : ''}${m}m ${s}s`;
-      };
-      tick();
-      setInterval(tick, 1000);
-    }
-
-    async function submitOrder() {
-      const name = document.getElementById('name').value.trim();
-      const date = dateInput.value;
-      if (!name) return showToast('Bitte geben Sie Ihren Namen ein.', true);
-      const emailInput = document.getElementById('email')?.value.trim();
-      if (!emailInput) return showToast('Bitte geben Sie Ihre E-Mail ein.', true);
-      if (!date) return showToast('Bitte wählen Sie einen Tag.', true);
-      if (!selectedMenu) return showToast('Bitte wählen Sie ein Menü.', true);
-
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Wird gesendet…';
-
-      const menuLabel = selectedMenu === 'menu1'
-        ? (document.getElementById('desc1').textContent || 'Menü 1')
-        : (document.getElementById('desc2').textContent || 'Menü 2');
-
-      if (selectedPayment === 'online' && selectedMenuPreis > 0) {
-        // Stripe checkout
-        try {
-          let baseMenuPreis = selectedMenuPreis;
-      let baseDrinkPreis = selectedDrinkPreis;
-      // apply coupon
-      if (appliedCoupon) {
-        if (appliedCoupon.typ === 'getraenk') baseDrinkPreis = 0;
-        if (appliedCoupon.typ === 'menue') baseMenuPreis = 0;
-      }
-      const subtotal = baseMenuPreis + baseDrinkPreis;
-          const stripeFee = Math.round((subtotal * 0.015 + 0.25) * 100) / 100;
-          const couponMenuPreis = appliedCoupon?.typ === 'menue' ? 0 : selectedMenuPreis;
-          const couponDrinkPreis = appliedCoupon?.typ === 'getraenk' ? 0 : selectedDrinkPreis;
-          const items = [{ name: menuLabel + (appliedCoupon?.typ === 'menue' ? ' (Coupon)' : ''), amount_cents: Math.round(couponMenuPreis * 100) }];
-          if (selectedDrink) items.push({ name: selectedDrink + (appliedCoupon?.typ === 'getraenk' ? ' (Coupon)' : ''), amount_cents: Math.round(couponDrinkPreis * 100) });
-          items.push({ name: 'Zahlungsgebühr', amount_cents: Math.round(stripeFee * 100) });
-
-          // mark coupon used
-          if (appliedCoupon?.einloesungId) {
-            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
-            if (couponErr) console.error('Coupon update error:', couponErr);
-          }
-          const resp = await fetch('/api/create-checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              items,
-              bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, notiz: document.getElementById('notiz')?.value.trim() || '', origin: location.origin, notiz: document.getElementById('notiz')?.value.trim() || '', user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null }
-            })
-          });
-          const data = await resp.json();
-          if (data.url) {
-            window.location.href = data.url;
-          } else {
-            throw new Error(data.error || 'Unbekannter Fehler');
-          }
-        } catch (err) {
-          btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
-          showToast('Fehler beim Zahlungsvorgang: ' + err.message, true);
-        }
       } else {
-        // Bar zahlen → direkt in supabase
-        const { data: insertData, error } = await db.from('vorbestellungen').insert({
-          name, datum: date, menu: selectedMenu, typ: 'kantine',
-          getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis,
-          preis: appliedCoupon?.typ === 'menue' ? 0 : selectedMenuPreis,
-          getraenk_preis: appliedCoupon?.typ === 'getraenk' ? 0 : selectedDrinkPreis,
-          zahlung: 'bar', bezahlt: false, erledigt: false,
-          notiz: (document.getElementById('notiz')?.value.trim() || '') + (selectedAbholzeit ? ` | Abholung: ${selectedAbholzeit}${selectedEatType ? ' ('+selectedEatType+')' : ''}` : ''),
-          user_email: document.getElementById('email')?.value.trim() || (await db.auth.getSession()).data.session?.user?.email || null
-        }).select().single();
-        btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
-        if (error) {
-        btn.disabled = false; btn.textContent = 'Jetzt vorbestellen';
-        const msg = error.code === 'PGRST301' ? 'Sitzung abgelaufen – bitte neu laden.' : error.message?.includes('network') ? 'Keine Verbindung – bitte prüfen.' : 'Fehler beim Senden. Bitte erneut versuchen.';
-        showToast(msg, true);
+        if (cutoffM2) return `<div class="cutoff-notice" style="margin-top:6px;font-size:0.78rem;">${t('frCutoff')}</div>`;
+        return `<div class="variant-row" role="radiogroup" aria-label="${t('variant')}">
+          <button class="variant-btn ${p.variant === 'A' ? 'selected' : ''}" onclick="setVariant(${i},'A')" role="radio" aria-checked="${p.variant === 'A'}">${esc(frM2Var1Name)}</button>
+          <button class="variant-btn ${p.variant === 'B' ? 'selected' : ''}" onclick="setVariant(${i},'B')" role="radio" aria-checked="${p.variant === 'B'}">${esc(frM2Var2Name)}</button>
+        </div>`;
       }
-        else {
-          const orderId = insertData?.id;
-          // send email if user is logged in
-          const emailVal = document.getElementById('email')?.value.trim();
-          const { data: { session } } = await db.auth.getSession();
-          const sendTo = emailVal || session?.user?.email;
-          if (sendTo) {
-            const qrData = JSON.stringify({ id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '' });
-            fetch('/api/send-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to: sendTo,
-                bestellung: { name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' },
-                qrData
-              })
-            }).catch(console.error);
-          }
-          // redirect to success page with real id
-          const orderData = { id: orderId, name, datum: date, menu: selectedMenu, typ: 'kantine', getraenk: selectedDrink || '', getraenk_preis: selectedDrinkPreis, preis: selectedMenuPreis, zahlung: 'bar' };
-          // loyalty
-          // mark coupon as used
-          if (appliedCoupon?.einloesungId) {
-            const { error: couponErr } = await db.from('loyalty_einloesungen').update({ used: true }).eq('id', appliedCoupon.einloesungId);
-            if (couponErr) console.error('Coupon update error:', couponErr);
-          }
-          const loyaltyEmail = (document.getElementById('email')?.value || '').trim() || (session?.user?.email || '');
-          const loyaltyTotal = (selectedMenuPreis || 0) + (selectedDrinkPreis || 0);
-          const loyaltyEarnedPts = loyaltyEmail && loyaltyTotal > 0 ? Math.floor(loyaltyTotal * 10) : 0;
-          if (loyaltyEmail && loyaltyTotal > 0) earnLoyaltyPoints(loyaltyEmail, selectedMenuPreis, selectedDrinkPreis).catch(console.error);
-          // store order in sessionStorage to avoid URL length issues
-          sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
-          sessionStorage.setItem('lastOrderPts', loyaltyEarnedPts || 0);
-          sessionStorage.setItem('lastOrderEmail', loyaltyEmail || '');
-          window.location.href = 'success.html';
-        }
-      }
+    };
+
+    return `<div class="person-row" role="listitem">
+      <div class="person-row-header">
+        <span class="person-label" id="person-${i}-label">${t('person')} ${i + 1}</span>
+        ${i > 0 ? `<button class="person-del" onclick="removePerson(${i})" aria-label="${t('person')} ${i+1} entfernen">✕</button>` : ''}
+      </div>
+      <div>
+        <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;" for="menu-sel-${i}">Menü</label>
+        <select id="menu-sel-${i}" onchange="setPMenu(${i}, this.value)" aria-labelledby="person-${i}-label" style="margin-bottom:0;">
+          <option value="" ${!p.menu ? 'selected' : ''}>${lang === 'de' ? 'Bitte wählen…' : 'Please select…'}</option>
+          <option value="menu1" ${p.menu === 'menu1' ? 'selected' : ''}>🥩 ${menuData && dk && menuData[`${dk}_menu1`] ? menuData[`${dk}_menu1`] : 'Menü 1'}</option>
+          <option value="menu2" ${p.menu === 'menu2' ? 'selected' : ''} ${cutoffM2 ? 'disabled' : ''}>🥗 ${menuData && dk && menuData[`${dk}_menu2`] ? menuData[`${dk}_menu2`] : 'Menü 2'}${cutoffM2 ? ' (Vorbestellung abgelaufen)' : ''}</option>
+        </select>
+        ${variantHtml(p.menu)}
+      </div>
+      <div class="person-anzahl">
+        <button class="anzahl-btn" onclick="setAnzahl(${i}, ${Math.max(1, p.anzahl - 1)})" aria-label="${t('person')} ${i+1} Anzahl verringern">−</button>
+        <span class="anzahl-num" aria-live="polite">${p.anzahl}</span>
+        <button class="anzahl-btn" onclick="setAnzahl(${i}, ${p.anzahl + 1})" aria-label="${t('person')} ${i+1} Anzahl erhöhen">+</button>
+        <label style="font-size:0.78rem;color:var(--muted);">× ${lang === 'de' ? 'Portion(en)' : 'portion(s)'}</label>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addPerson() {
+  personen.push({ menu: null, anzahl: 1, variant: null });
+  renderPersonen();
+}
+function removePerson(i) {
+  personen.splice(i, 1);
+  renderPersonen();
+}
+function setPMenu(i, val) {
+  personen[i].menu = val || null;
+  personen[i].variant = null;
+  renderPersonen();
+}
+function setVariant(i, v) {
+  personen[i].variant = v;
+  renderPersonen();
+}
+function setAnzahl(i, val) {
+  personen[i].anzahl = Math.max(1, val);
+  renderPersonen();
+}
+
+// ── BESTELLSCHLUSS ──
+async function checkBestellschluss(dateStr) {
+  const { data } = await db.from('einstellungen').select('*').eq('typ','kantine').maybeSingle();
+  if (!data || !dateStr) return;
+  const now = new Date();
+  const deadline = new Date(dateStr + 'T00:00:00');
+  if (data.vortag) deadline.setDate(deadline.getDate() - 1);
+  deadline.setHours(data.bestellschluss_stunde, data.bestellschluss_minute, 0, 0);
+  const closed = now > deadline;
+  const btn = document.getElementById('submitBtn');
+  const notice = document.getElementById('bestellschlussNotice');
+  btn.disabled = closed;
+  if (closed) {
+    const pad = n => String(n).padStart(2,'0');
+    notice.style.display = 'block';
+    notice.textContent = `⏰ ${t('cutoffReached')} (${data.vortag ? 'Vortag' : 'heute'} bis ${pad(data.bestellschluss_stunde)}:${pad(data.bestellschluss_minute)} Uhr)`;
+  } else {
+    notice.style.display = 'none';
+  }
+}
+
+// ── ZAHLUNG ──
+function selectPayment(val) {
+  selectedPayment = val;
+  document.getElementById('payBar').classList.toggle('selected', val === 'bar');
+  document.getElementById('payBar').setAttribute('aria-checked', val === 'bar');
+  document.getElementById('payOnline').classList.toggle('selected', val === 'online');
+  document.getElementById('payOnline').setAttribute('aria-checked', val === 'online');
+  document.getElementById('paymentNotice').style.display = val === 'online' ? 'block' : 'none';
+  buildSummary();
+}
+
+// ── SUMMARY ──
+function buildSummary() {
+  const dateStr = document.getElementById('date').value;
+  const dk = dateStr ? getDayKey(dateStr) : null;
+  let total = 0;
+  let html = '';
+
+  personen.forEach((p, i) => {
+    if (!p.menu) return;
+    const preis = menuData && dk ? parseFloat(menuData[`${dk}_${p.menu}_preis`] || 0) : 0;
+    const menuName = menuData && dk ? (menuData[`${dk}_${p.menu}`] || (p.menu === 'menu1' ? 'Menü 1' : 'Menü 2')) : (p.menu === 'menu1' ? 'Menü 1' : 'Menü 2');
+    const variantStr = p.variant ? ` (${t('variant')} ${p.variant})` : '';
+    const subtotal = preis * p.anzahl;
+    total += subtotal;
+    html += `<div class="summary-person">${t('person')} ${i+1}: ${esc(menuName)}${variantStr} × ${p.anzahl}${preis > 0 ? ' = ' + fmtE(subtotal) : ''}</div>`;
+  });
+
+  if (selectedPayment === 'online' && total > 0) {
+    const fee = Math.round((total * 0.015 + 0.25) * 100) / 100;
+    html += `<div class="summary-row" style="margin-top:8px;"><span>${lang === 'de' ? 'Zahlungsgebühr' : 'Payment fee'}</span><span>${fmtE(fee)}</span></div>`;
+    total += fee;
+  }
+
+  if (selectedSlot) {
+    html = `<div class="summary-person" style="color:var(--muted);">⏰ Slot: ${selectedSlot} Uhr</div>` + html;
+  }
+
+  document.getElementById('summaryContent').innerHTML = html;
+  document.getElementById('sumTotal').textContent = total > 0 ? fmtE(total) : '–';
+
+  const btn = document.getElementById('submitBtn');
+  if (selectedPayment === 'online' && total > 0) {
+    btn.textContent = (lang === 'de' ? 'Jetzt bezahlen' : 'Pay now') + ' · ' + fmtE(total);
+  } else {
+    btn.textContent = t('submit');
+  }
+}
+
+// ── LOYALTY ──
+async function loadLoyaltyInfo() {
+  const email = (document.getElementById('email')?.value || '').trim();
+  const el = document.getElementById('loyaltyBox');
+  if (!email || !email.includes('@')) { el.style.display = 'none'; return; }
+  const { data } = await db.from('loyalty_punkte').select('punkte').eq('email', email).maybeSingle();
+  const pts = data?.punkte || 0;
+  el.style.display = 'flex';
+  const txt = document.getElementById('loyaltyText');
+  txt.innerHTML = pts > 0 ? `👋 ${lang === 'de' ? 'Willkommen zurück!' : 'Welcome back!'} <strong style="color:#a78bfa">${pts.toLocaleString('de-DE')} Punkte</strong> ⭐` : `✨ ${lang === 'de' ? 'Diese Bestellung bringt deine ersten Punkte!' : 'This order earns your first points!'}`;
+}
+
+async function earnLoyaltyPoints(email, totalPreis) {
+  const { data: settings } = await db.from('einstellungen').select('*').eq('typ','loyalty').maybeSingle();
+  const ptsPerEuro = settings?.bestellschluss_stunde || 10;
+  // birthday double points check
+  const birthday = localStorage.getItem('birthday_' + email);
+  const isToday = birthday && birthday.slice(5) === new Date().toISOString().slice(5,10);
+  let earned = Math.floor(totalPreis * ptsPerEuro);
+  if (isToday) earned *= 2;
+  if (earned <= 0) return 0;
+  const { data: existing } = await db.from('loyalty_punkte').select('*').eq('email', email).maybeSingle();
+  if (existing) {
+    await db.from('loyalty_punkte').update({
+      punkte: (existing.punkte || 0) + earned,
+      punkte_gesamt: (existing.punkte_gesamt || 0) + earned,
+      updated_at: new Date().toISOString()
+    }).eq('email', email);
+  } else {
+    await db.from('loyalty_punkte').insert({ email, punkte: earned, punkte_gesamt: earned });
+  }
+  return earned;
+}
+
+// ── SUBMIT ──
+async function submitOrder() {
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const dateStr = document.getElementById('date').value;
+  if (!name || !email || !dateStr) return showToast(lang === 'de' ? 'Fehlende Felder' : 'Missing fields', true);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = lang === 'de' ? 'Wird gesendet…' : 'Sending…';
+
+  const dk = getDayKey(dateStr);
+  let totalPreis = 0;
+
+  const notiz = (document.getElementById('notiz')?.value.trim() || '');
+  const slotSuffix = selectedSlot ? ` | Slot: ${selectedSlot}` : '';
+  const fullNotiz = notiz + slotSuffix;
+
+  try {
+    // session für email holen
+    const { data: { session } } = await db.auth.getSession();
+    const userEmail = email || session?.user?.email || null;
+
+    // jede person als eigene bestellung
+    const insertedIds = [];
+    for (const p of personen) {
+      if (!p.menu) continue;
+      const preis = menuData ? parseFloat(menuData[`${dk}_${p.menu}_preis`] || 0) : 0;
+      totalPreis += preis * p.anzahl;
+      const variantStr = p.variant ? `_var${p.variant === 'A' ? '1' : '2'}` : '';
+      const menuNotiz = p.variant ? ` (${t('variant')} ${p.variant})` : '';
+
+      const { data: inserted, error } = await db.from('vorbestellungen').insert({
+        name, datum: dateStr, menu: p.menu, typ: 'kantine',
+        anzahl: p.anzahl,
+        zeitslot_uhrzeit: selectedSlot || null,
+        zeitslot_datum: selectedSlot ? dateStr : null,
+        preis: preis,
+        getraenk: '', getraenk_preis: 0,
+        zahlung: selectedPayment, bezahlt: selectedPayment === 'online',
+        erledigt: false, vorbereitet: false,
+        notiz: fullNotiz + menuNotiz,
+        user_email: userEmail,
+      }).select().single();
+
+      if (error) throw error;
+      if (inserted) insertedIds.push(inserted.id);
     }
 
-    async function checkBestellschluss() {
-      const { data } = await db.from('einstellungen').select('*').eq('typ', 'kantine').single();
-      if (!data) return;
-
-      const now = new Date();
-      const dateInput = document.getElementById('date');
-
-      // disable dates that are past bestellschluss
-      dateInput.removeEventListener('change', checkDateBestellschluss);
-      dateInput._settings = data;
-      dateInput.addEventListener('change', checkDateBestellschluss);
-      checkDateBestellschluss();
+    // loyalty punkte
+    if (userEmail && totalPreis > 0) {
+      const earned = await earnLoyaltyPoints(userEmail, totalPreis);
+      sessionStorage.setItem('lastOrderPts', earned || 0);
     }
 
-    function checkDateBestellschluss() {
-      const dateInput = document.getElementById('date');
-      const data = dateInput._settings;
-      if (!data) return;
-
-      const selected = new Date(dateInput.value + 'T00:00:00');
-      const now = new Date();
-      const deadline = new Date(selected);
-
-      if (data.vortag) {
-        // deadline = vortag um HH:MM
-        deadline.setDate(deadline.getDate() - 1);
-      }
-      deadline.setHours(data.bestellschluss_stunde, data.bestellschluss_minute, 0, 0);
-
-      const closed = now > deadline;
-      const btn = document.getElementById('submitBtn');
-      const notice = document.getElementById('bestellschlussNotice');
-
-      if (closed) {
-        btn.disabled = true;
-        btn.textContent = 'Bestellschluss erreicht';
-        if (notice) {
-          const pad = n => String(n).padStart(2,'0');
-          const timeStr = pad(data.bestellschluss_stunde) + ':' + pad(data.bestellschluss_minute);
-          const when = data.vortag ? `am Vortag bis ${timeStr} Uhr` : `bis ${timeStr} Uhr`;
-          notice.textContent = `⏰ Bestellschluss für diesen Tag war ${when}.`;
-          notice.style.display = 'block';
-        }
-      } else {
-        btn.disabled = false;
-        btn.textContent = 'Jetzt vorbestellen';
-        if (notice) notice.style.display = 'none';
-      }
+    // email senden
+    if (userEmail && insertedIds.length > 0) {
+      const firstId = insertedIds[0];
+      const qrData = JSON.stringify({ id: firstId, name, datum: dateStr, menu: personen[0]?.menu, typ: 'kantine' });
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: userEmail,
+          bestellung: { name, datum: dateStr, menu: personen[0]?.menu, typ: 'kantine', preis: totalPreis, zahlung: selectedPayment },
+          qrData
+        })
+      }).catch(console.error);
     }
 
-    const ALLERGEN_EMOJIS = {"gluten": "🌾", "weizen": "🌾", "roggen": "🌾", "milch": "🥛", "laktose": "🥛", "eier": "🥚", "ei": "🥚", "erdnüsse": "🥜", "erdnuss": "🥜", "nüsse": "🌰", "nuss": "🌰", "mandel": "🌰", "fisch": "🐟", "meeresfrüchte": "🦐", "krebstiere": "🦐", "soja": "🫘", "sellerie": "🥬", "senf": "🌿", "sesam": "🌱", "schwefeldioxid": "🍷", "sulfite": "🍷", "lupinen": "🌸", "weichtiere": "🐚"};
+    const orderData = { id: insertedIds[0], name, datum: dateStr, menu: personen[0]?.menu, typ: 'kantine', preis: totalPreis, zahlung: selectedPayment };
+    sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+    sessionStorage.setItem('lastOrderEmail', userEmail || '');
+    window.location.href = 'success.html';
 
-    // check user allergens and warn
-    function checkUserAllergens(email) {
-      const saved = JSON.parse(localStorage.getItem('allergens_' + email) || '[]');
-      if (saved.length === 0) return;
-      ['1','2'].forEach(num => {
-        const card = document.getElementById('card' + num);
-        if (!card) return;
-        const tags = card.querySelectorAll('.allergen-tag');
-        let hasMatch = false;
-        tags.forEach(tag => {
-          const tagText = tag.textContent.trim();
-          if (saved.some(a => tagText.toLowerCase().includes(a.toLowerCase()))) {
-            tag.style.background = 'rgba(224,92,92,0.15)';
-            tag.style.borderColor = 'rgba(224,92,92,0.4)';
-            tag.style.color = 'var(--error)';
-            hasMatch = true;
-          }
-        });
-        if (hasMatch) {
-          let warn = card.querySelector('.allergen-warn');
-          if (!warn) {
-            warn = document.createElement('div');
-            warn.className = 'allergen-warn';
-            warn.style.cssText = 'font-size:0.72rem;color:var(--error);margin-top:5px;display:flex;align-items:center;gap:4px;';
-            warn.innerHTML = '⚠️ Enthält deine Allergene';
-            card.appendChild(warn);
-          }
-        }
-      });
-    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = t('submit');
+    showToast(err.message || (lang === 'de' ? 'Fehler beim Senden' : 'Error submitting'), true);
+  }
+}
 
-    function renderAllergenTags(containerId, allergeneStr, hinweisStr) {
-      const el = document.getElementById(containerId);
-      if (!el) return;
-      el.innerHTML = '';
-      if (hinweisStr) {
-        const span = document.createElement('span');
-        span.className = 'hinweis-tag';
-        span.textContent = hinweisStr;
-        el.appendChild(span);
-      }
-      if (allergeneStr) {
-        allergeneStr.split(',').map(a => a.trim().toLowerCase()).filter(Boolean).forEach(a => {
-          const emoji = ALLERGEN_EMOJIS[a] || '⚠️';
-          const span = document.createElement('span');
-          span.className = 'allergen-tag';
-          span.innerHTML = `${emoji} ${a.charAt(0).toUpperCase() + a.slice(1)}`;
-          el.appendChild(span);
-        });
-      }
-    }
+// ── AUTH ──
+db.auth.getSession().then(({ data: { session } }) => {
+  if (!session) return;
+  const name = session.user.user_metadata?.full_name || '';
+  if (name) document.getElementById('name').value = name;
+  if (session.user.email) document.getElementById('email').value = session.user.email;
+  const nav = document.getElementById('authNav');
+  if (nav) {
+    const dn = name || session.user.email.split('@')[0];
+    nav.innerHTML = `<a href="account.html" style="color:var(--muted);font-size:0.82rem;text-decoration:none;" aria-label="Mein Konto">👤 ${dn}</a>`;
+  }
+  loadLoyaltyInfo();
+  checkBirthday();
+});
 
-    async function loadLoyaltyInfo() {
-      const email = (document.getElementById('email')?.value || '').trim();
-      const el = document.getElementById('loyaltyInfo');
-      if (!el) return;
-      if (!email || !email.includes('@')) { el.style.display = 'none'; return; }
-      const { data } = await db.from('loyalty_punkte').select('punkte').eq('email', email).maybeSingle();
-      const pts = data?.punkte || 0;
-      el.style.display = 'flex';
-      const textEl = document.getElementById('loyaltyText');
-      if (!textEl) return;
-      if (pts > 0) {
-        textEl.innerHTML = `👋 Willkommen zurück! Du hast <strong style="color:#a78bfa">${pts.toLocaleString('de-DE')} Punkte</strong> ⭐`;
-      } else {
-        textEl.textContent = '✨ Diese Bestellung bringt dir deine ersten Punkte!';
-      }
-    }
+// ── INIT ──
+(function init() {
+  const today = new Date().toISOString().split('T')[0];
+  const dateEl = document.getElementById('date');
+  dateEl.min = today;
+  dateEl.value = today;
+  onDateChange();
+  applyLang();
 
-    async function earnLoyaltyPoints(email, preis, drinkPreis) {
-      const { data: settings } = await db.from('einstellungen').select('*').eq('typ', 'loyalty').maybeSingle();
-      const ptsPerEuro = settings?.bestellschluss_stunde || 10;
-      const bonus = settings?.bestellschluss_minute || 0;
-      const total = parseFloat(preis) + parseFloat(drinkPreis || 0);
-      // birthday double points
-      const email2 = document.getElementById('email')?.value.trim() || '';
-      const birthday = localStorage.getItem('birthday_' + email2);
-      const isToday = birthday && birthday.slice(5) === new Date().toISOString().slice(5,10);
-      let earned = Math.floor(total * ptsPerEuro) + (drinkPreis > 0 ? bonus : 0);
-      if (isToday) earned *= 2;
-      if (earned <= 0) return;
+  // email change listeners
+  document.getElementById('email').addEventListener('blur', () => { loadLoyaltyInfo(); checkBirthday(); });
+  document.getElementById('date').addEventListener('change', onDateChange);
+})();
 
-      const { data: existing } = await db.from('loyalty_punkte').select('*').eq('email', email).maybeSingle();
-      let newTotal = earned;
-      if (existing) {
-        newTotal = (existing.punkte || 0) + earned;
-        await db.from('loyalty_punkte').update({
-          punkte: newTotal,
-          punkte_gesamt: (existing.punkte_gesamt || 0) + earned,
-          updated_at: new Date().toISOString()
-        }).eq('email', email);
-      } else {
-        await db.from('loyalty_punkte').insert({ email, punkte: earned, punkte_gesamt: earned });
-      }
-      return earned;
-    }
+// ── UTILS ──
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtE(p) { return parseFloat(p).toFixed(2).replace('.',',') + ' €'; }
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
 
-    // load loyalty info when email changes
-    document.addEventListener('DOMContentLoaded', async () => {
-      const emailEl = document.getElementById('email');
-      if (emailEl) {
-        emailEl.addEventListener('blur', () => { loadLoyaltyInfo(); maybeShowCoupon(); checkUserAllergens(emailEl.value.trim()); });
-        emailEl.addEventListener('change', () => { loadLoyaltyInfo(); maybeShowCoupon(); });
-      }
-      // also check if logged in user already has points
-      const { data: { session } } = await db.auth.getSession();
-      if (session?.user?.email) {
-        if (emailEl && !emailEl.value) emailEl.value = session.user.email;
-        loadLoyaltyInfo();
-      }
-    });
+// ── THEME ──
+(function() {
+  const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+})();
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+}
 
-    function formatPreis(p) { return parseFloat(p).toFixed(2).replace('.', ',') + ' €'; }
-    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function pad2(n) { return String(n).padStart(2,'0'); }
-    function pad4(n) { return String(n).padStart(4,'0'); }
-  </script>
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <div class="bottom-nav-inner">
-      <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span><span>Start</span></a>
-      <a href="truck.html" class="bottom-nav-item "><span class="bottom-nav-icon">🚚</span><span>Truck</span></a>
-      <a href="kantine.html" class="bottom-nav-item active"><span class="bottom-nav-icon">🍽️</span><span>Kantine</span></a>
-      <a href="loyalty.html" class="bottom-nav-item"><span class="bottom-nav-icon">⭐</span><span>Punkte</span></a>
-      <a href="account.html" class="bottom-nav-item"><span class="bottom-nav-icon">👤</span><span>Konto</span></a>
-    </div>
-  </div>
-
-  <script>
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-  </script>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
-  <script>
-    (function() {
-      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', saved);
-      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
-    })();
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
-    }
-  </script>
-  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.5.0</div>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+</script>
 </body>
 </html>

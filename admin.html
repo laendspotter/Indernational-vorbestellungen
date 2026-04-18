@@ -3,976 +3,699 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard – Indernational</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Admin – Indernational</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #0b0e1a; --surface: #131726; --surface2: #191d30; --border: #1e2236;
-      --truck: #f5a623; --kantine: #3ecf8e;
+      --accent: #f5a623; --accent-dark: #c47d0e;
       --text: #f0ede6; --muted: #7a7468;
-      --success: #4caf7d; --error: #e05c5c;
+      --success: #4caf7d; --error: #e05c5c; --radius: 14px;
     }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
-    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(62,207,142,0.05) 0%, transparent 55%); pointer-events: none; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.05) 0%, transparent 60%); pointer-events: none; }
 
-    /* LOGIN */
-    #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
-    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 380px; text-align: center; position: relative; overflow: hidden; }
-    .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--truck), var(--kantine)); }
-    .login-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
-    .login-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
-    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 12px; transition: border-color 0.2s; }
-    .login-input:focus { outline: none; border-color: var(--truck); }
-    .login-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, var(--truck), var(--kantine)); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem; cursor: pointer; }
-    .login-error { color: var(--error); font-size: 0.82rem; margin-top: 10px; display: none; }
+    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; width: 100%; max-width: 380px; text-align: center; position: relative; overflow: hidden; }
+    .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); }
+    .login-icon { font-size: 40px; margin-bottom: 16px; }
+    .login-card h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .login-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 16px; transition: border-color 0.2s; }
+    .login-input:focus { outline: none; border-color: var(--accent); }
+    .login-btn { width: 100%; padding: 14px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .login-btn:hover { background: #f0b83a; }
+    .login-error { color: var(--error); font-size: 0.85rem; margin-top: 12px; display: none; }
 
-    #dashboard { display: none; }
-
-    /* TOPBAR */
-    .topbar { padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(11,14,26,0.92); backdrop-filter: blur(12px); z-index: 50; }
-    .topbar-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; color: #f2efeb; }
-    .topbar-right { display: flex; align-items: center; gap: 10px; }
-    .topbar-date { font-size: 0.8rem; color: var(--muted); }
-    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    #adminPanel { display: none; }
+    .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar h1 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
     .logout-btn:hover { border-color: var(--error); color: var(--error); }
 
-    .main { padding: 28px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    .main { padding: 32px; max-width: 1000px; margin: 0 auto; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+    .tab-btn.active { background: var(--accent); color: #0b0e1a; }
 
-    /* GREETING */
-    .greeting { margin-bottom: 32px; }
-    .greeting-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
-    .greeting h1 { font-family: 'Syne', sans-serif; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
-    .greeting h1 .highlight { background: linear-gradient(90deg, var(--truck), var(--kantine)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .card-header h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; }
+    .card-body { padding: 24px; }
 
-    /* LIVE BADGE */
-    .live-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
-    .live-text { font-size: 0.8rem; color: var(--success); font-weight: 600; }
+    .form-row { margin-bottom: 18px; }
+    .form-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; display: block; }
+    .form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: border-color 0.2s; }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .form-input::placeholder { color: var(--muted); }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+    .form-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; appearance: none; cursor: pointer; }
+    .form-select:focus { outline: none; border-color: var(--accent); }
+    .save-btn { padding: 12px 28px; background: var(--accent); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
+    .save-btn:hover { background: #f0b83a; }
+    .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* QUICK STATS */
-    .quick-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
-    .qs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
-    .qs-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-    .qs-card.truck::after { background: var(--truck); }
-    .qs-card.kantine::after { background: var(--kantine); }
-    .qs-card.both::after { background: linear-gradient(90deg, var(--truck), var(--kantine)); }
-    .qs-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 900; }
-    .qs-card.truck .qs-num { color: var(--truck); }
-    .qs-card.kantine .qs-num { color: var(--kantine); }
-    .qs-card.both .qs-num { color: var(--text); }
-    .qs-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
-    .qs-sub { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px; }
 
-    /* SECTION TITLE */
-    .section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    /* USER MANAGEMENT */
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .user-table td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .user-table tr:last-child td { border-bottom: none; }
+    .user-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .role-badge { padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 700; }
+    .role-badge.admin { background: rgba(245,166,35,0.15); color: var(--accent); }
+    .role-badge.user { background: rgba(122,116,104,0.15); color: var(--muted); }
+    .table-action { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+    .table-action:hover { border-color: var(--error); color: var(--error); }
 
-    /* BEREICH CARDS */
-    .bereich-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-    @media (max-width: 600px) { .bereich-grid { grid-template-columns: 1fr; } }
-    .bereich-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
-    .bereich-card.truck:hover { border-color: rgba(245,166,35,0.4); }
-    .bereich-card.kantine:hover { border-color: rgba(62,207,142,0.4); }
-    .bereich-card-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .bereich-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-    .bereich-card.truck .bereich-title { color: var(--truck); }
-    .bereich-card.kantine .bereich-title { color: var(--kantine); }
-    .bereich-open-btn { padding: 7px 14px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.2s; }
-    .bereich-card.truck .bereich-open-btn { background: rgba(245,166,35,0.15); color: var(--truck); }
-    .bereich-card.kantine .bereich-open-btn { background: rgba(62,207,142,0.15); color: var(--kantine); }
-    .bereich-open-btn:hover { opacity: 0.8; }
-    .bereich-stats { padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .bs { text-align: center; }
-    .bs-num { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; }
-    .bereich-card.truck .bs-num { color: var(--truck); }
-    .bereich-card.kantine .bs-num { color: var(--kantine); }
-    .bs-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
-    .bereich-orders { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
-    .bo-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
-    .bo-item.done { opacity: 0.4; }
-    .bo-name { flex: 1; font-weight: 600; }
-    .bo-meta { font-size: 0.75rem; color: var(--muted); }
-    .bo-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 50px; }
+    /* POPUP MANAGER */
+    .popup-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .popup-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+    .popup-item-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .popup-item-info { flex: 1; }
+    .popup-item-title { font-weight: 600; font-size: 0.9rem; }
+    .popup-item-text { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .popup-item-meta { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+    .popup-toggle { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; }
+    .popup-toggle.active { background: rgba(76,175,125,0.15); border-color: rgba(76,175,125,0.3); color: var(--success); }
+    .popup-toggle.inactive { background: rgba(122,116,104,0.1); color: var(--muted); }
+    .popup-delete { padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(224,92,92,0.25); color: var(--error); background: transparent; cursor: pointer; font-size: 0.78rem; transition: all 0.2s; }
+    .popup-delete:hover { background: rgba(224,92,92,0.1); }
 
-    /* RECENT ACTIVITY */
-    .activity-list { display: flex; flex-direction: column; gap: 8px; }
-    .activity-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-size: 0.88rem; }
-    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .activity-dot.truck { background: var(--truck); }
-    .activity-dot.kantine { background: var(--kantine); }
-    .activity-text { flex: 1; }
-    .activity-time { font-size: 0.75rem; color: var(--muted); }
+    /* STATS & UMSATZPROGNOSE */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; }
+    .stat-box-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+    .stat-box-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-box-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .chart-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+    .chart-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bar-label { font-size: 0.8rem; color: var(--muted); min-width: 80px; }
+    .bar-track { flex: 1; background: var(--border); border-radius: 50px; height: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 50px; background: var(--accent); transition: width 0.6s ease; }
+    .bar-val { font-size: 0.8rem; font-weight: 600; min-width: 50px; text-align: right; }
 
-    /* TOAST */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 200; white-space: nowrap; }
+    /* UMSATZPROGNOSE */
+    .prognose-card { background: var(--bg); border: 1px solid rgba(245,166,35,0.25); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .prognose-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .prognose-num { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 900; color: var(--accent); }
+    .prognose-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .prognose-trend { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.82rem; }
+    .trend-up { color: var(--success); }
+    .trend-down { color: var(--error); }
+    .prognose-weeks { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .prognose-week { display: flex; align-items: center; gap: 10px; }
+    .prognose-week-label { font-size: 0.75rem; color: var(--muted); min-width: 60px; }
+    .prognose-week-bar { flex: 1; background: var(--border); border-radius: 50px; height: 8px; overflow: hidden; }
+    .prognose-week-fill { height: 100%; border-radius: 50px; transition: width 0.6s ease; }
+    .prognose-week-fill.current { background: var(--accent); }
+    .prognose-week-fill.prev { background: rgba(245,166,35,0.4); }
+    .prognose-week-fill.forecast { background: rgba(245,166,35,0.2); border: 1px dashed rgba(245,166,35,0.4); }
+    .prognose-week-val { font-size: 0.75rem; color: var(--muted); min-width: 60px; text-align: right; }
+
+    /* GLOBAL SETTINGS */
+    .global-settings { display: flex; flex-direction: column; gap: 16px; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); gap: 16px; flex-wrap: wrap; }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info { flex: 1; }
+    .setting-label { font-weight: 600; font-size: 0.9rem; }
+    .setting-desc { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+    .toggle-switch { width: 48px; height: 26px; background: var(--border); border-radius: 13px; border: none; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .toggle-switch.on { background: var(--accent); }
+    .toggle-switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+    .toggle-switch.on::after { left: 25px; }
+
+    /* ANKÜNDIGUNGEN LIST */
+    .ankuend-list { display: flex; flex-direction: column; gap: 10px; }
+    .ankuend-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .ankuend-item-info { flex: 1; }
+    .ankuend-item-text { font-size: 0.88rem; font-weight: 500; }
+    .ankuend-item-type { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .ankuend-delete { background: transparent; border: 1px solid rgba(224,92,92,0.25); color: var(--error); padding: 5px 9px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+    .ankuend-delete:hover { background: rgba(224,92,92,0.1); }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 22px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; white-space: nowrap; }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    .ankuendigung { border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
-    .ankuendigung.info { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: var(--truck); }
-    .ankuendigung.warning { background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.25); color: var(--error); }
-    .ankuendigung.success { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.25); color: var(--success); }
-    .ankuendigung-text { flex: 1; }
-    .ankuendigung-del { background: transparent; border: none; cursor: pointer; opacity: 0.6; font-size: 1rem; transition: opacity 0.2s; }
-    .ankuendigung-del:hover { opacity: 1; }
-    .ankuendigung-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-    .ankuendigung-input { flex: 1; min-width: 200px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
-    .ankuendigung-input:focus { outline: none; border-color: var(--truck); }
-    .ankuendigung-type { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; }
-    .ankuendigung-add { padding: 10px 18px; background: var(--truck); color: #0b0e1a; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap; }
-    .ankuendigung-add:hover { filter: brightness(1.1); }
+    .period-btns { display: flex; gap: 4px; }
+    .period-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .period-btn.active { background: var(--accent); color: #0b0e1a; border-color: var(--accent); }
 
-    /* RUNDE 2 */
-    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .chart-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
-    .chart-wrap { position: relative; height: 180px; }
-
-    .bestellschluss-widget { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 28px; display: flex; gap: 16px; flex-wrap: wrap; }
-    .bs-item { flex: 1; min-width: 140px; }
-    .bs-item-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .bs-item-time { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 900; }
-    .bs-item-time.open { color: var(--success); }
-    .bs-item-time.closing { color: var(--truck); }
-    .bs-item-time.closed { color: var(--error); }
-    .bs-item-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
-
-    .top-kunden { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
-    .tk-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
-    .tk-rank { font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem; color: var(--muted); min-width: 24px; }
-    .tk-rank.gold { color: #f5a623; }
-    .tk-rank.silver { color: #aab0c0; }
-    .tk-rank.bronze { color: #cd7f32; }
-    .tk-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
-    .tk-count { font-size: 0.82rem; color: var(--muted); }
-    .tk-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
-    .tk-bar-fill { height: 100%; background: linear-gradient(90deg, var(--truck), var(--kantine)); border-radius: 2px; transition: width 0.6s ease; }
-
-    .live-counter { display: inline-flex; align-items: center; gap: 6px; }
-    .live-counter-num { font-family: 'Syne', sans-serif; font-weight: 900; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s; }
-    .live-counter-num.bump { transform: scale(1.3); color: var(--truck); }
-
-    /* ADMIN CHAT */
-    .chat-panel { position: fixed; bottom: 20px; right: 70px; z-index: 300; }
-    .chat-toggle { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--truck), var(--kantine)); border: none; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: transform 0.2s; }
-    .chat-toggle:hover { transform: scale(1.1); }
-    .chat-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; background: var(--error); border-radius: 50%; font-size: 0.6rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; display: none; }
-    .chat-box { position: absolute; bottom: 60px; right: 0; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; flex-direction: column; }
-    .chat-box.open { display: flex; }
-    .chat-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); }
-    .chat-header-title { display: flex; align-items: center; gap: 8px; }
-    .chat-messages { height: 240px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.82rem; line-height: 1.4; }
-    .chat-msg.mine { background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.2); align-self: flex-end; }
-    .chat-msg.other { background: var(--bg); border: 1px solid var(--border); align-self: flex-start; }
-    .chat-msg-sender { font-size: 0.68rem; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
-    .chat-msg-time { font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
-    .chat-input-row { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
-    .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; }
-    .chat-input:focus { outline: none; border-color: var(--truck); }
-    .chat-send { padding: 8px 12px; background: var(--truck); color: #0b0e1a; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.82rem; }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f4f2ee;
-        --surface: #ffffff;
-        --border: #e2dfd8;
-        --text: #1a1816;
-        --muted: #8a8680;
-      }
-    }
-    [data-theme="light"] {
-      --bg: #f4f2ee;
-      --surface: #ffffff;
-      --border: #e2dfd8;
-      --text: #1a1816;
-      --muted: #8a8680;
-    }
-    [data-theme="dark"] {
-      --bg: #0b0e1a;
-      --surface: #131726;
-      --border: #1e2236;
-      --text: #f0ede6;
-      --muted: #7a7468;
-    }
-
-    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
-    .theme-toggle:hover { border-color: var(--accent, #f5a623); transform: scale(1.1); }
-  
-    body.light {
-      --bg: #f4f2ec;
-      --surface: #ffffff;
-      --surface2: #eeeae0;
-      --border: #ddd8cc;
-      --text: #1a1916;
-      --muted: #8a8070;
-    }
-  
-    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; pointer-events: none; z-index: 10; white-space: nowrap; }
+    [data-theme="light"] { --bg: #f4f2ee; --surface: #ffffff; --border: #e2dfd8; --text: #1a1816; --muted: #8a8680; }
+    [data-theme="dark"] { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --text: #f0ede6; --muted: #7a7468; }
+    .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .version-footer { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: rgba(122,116,104,0.4); pointer-events: none; z-index: 10; white-space: nowrap; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b0e1a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-  <!-- LOGIN -->
-  <div id="loginScreen">
-    <div class="login-card">
-      <div class="login-icon">🧑‍💼</div>
-      <h2>Admin Dashboard</h2>
-      <p>nur für dich bestimmt fr fr 🔒</p>
-      <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
-      <button class="login-btn" onclick="login()">rein da →</button>
-      <div class="login-error" id="loginError">wrong password bro 💀</div>
-    </div>
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <h2>Admin Verwaltung</h2>
+    <p>Nur für autorisierte Mitarbeiter.</p>
+    <input type="password" class="login-input" id="pwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()" />
+    <button class="login-btn" onclick="login()">Anmelden</button>
+    <div class="login-error" id="loginError">Falsches Passwort.</div>
   </div>
+</div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard">
-    <div class="topbar">
-      <div class="topbar-logo">Indernational</div>
-      <div class="topbar-right">
-        <span class="topbar-date" id="topbarDate"></span>
-        <button class="logout-btn" onclick="logout()">logout</button>
-      </div>
-    </div>
-
-    <div class="main">
-
-      <div class="greeting" style="animation:fadeUp 0.6s ease both">
-        <div class="greeting-sub" id="greetingSub">gm bestimmt wieder voll heute</div>
-        <h1>was geht <span class="highlight" id="greetingName">bro</span> 👋</h1>
-        <div class="live-row">
-          <div class="live-dot"></div>
-          <span class="live-text">live — wird automatisch aktualisiert</span>
-        </div>
-      </div>
-
-      <!-- BESTELLSCHLUSS WIDGET -->
-      <div class="bestellschluss-widget" id="bestellschlussWidget" style="animation:fadeUp 0.6s ease both;">
-        <div class="bs-item">
-          <div class="bs-item-label">🚚 Truck schließt</div>
-          <div class="bs-item-time" id="bsTimeTruck">–</div>
-          <div class="bs-item-sub" id="bsSubTruck">–</div>
-        </div>
-        <div class="bs-item">
-          <div class="bs-item-label">🍽️ Kantine schließt</div>
-          <div class="bs-item-time" id="bsTimeKantine">–</div>
-          <div class="bs-item-sub" id="bsSubKantine">–</div>
-        </div>
-      </div>
-
-      <!-- QUICK STATS -->
-      <div class="section-title">heute</div>
-      <div class="quick-stats" style="animation:fadeUp 0.6s ease 0.05s both">
-        <div class="qs-card both">
-          <div class="qs-num live-counter"><span class="live-counter-num" id="qsTotal">–</span></div>
-          <div class="qs-label">Bestellungen gesamt</div>
-          <div class="qs-sub" id="qsTotalSub">–</div>
-        </div>
-        <div class="qs-card truck">
-          <div class="qs-num" id="qsTruck">–</div>
-          <div class="qs-label">🚚 Food Truck</div>
-          <div class="qs-sub" id="qsTruckSub">–</div>
-        </div>
-        <div class="qs-card kantine">
-          <div class="qs-num" id="qsKantine">–</div>
-          <div class="qs-label">🍽️ Kantine</div>
-          <div class="qs-sub" id="qsKantineSub">–</div>
-        </div>
-        <div class="qs-card both">
-          <div class="qs-num" id="qsRevenue">–</div>
-          <div class="qs-label">Umsatz heute</div>
-          <div class="qs-sub" id="qsRevenueSub">–</div>
-        </div>
-      </div>
-
-      <!-- BEREICHE -->
-      <div class="section-title">bereiche</div>
-      <div class="bereich-grid" style="animation:fadeUp 0.6s ease 0.1s both">
-
-        <!-- TRUCK -->
-        <div class="bereich-card truck">
-          <div class="bereich-card-header">
-            <div class="bereich-title">🚚 Food Truck</div>
-            <a href="truck-admin.html" class="bereich-open-btn">öffnen →</a>
-          </div>
-          <div class="bereich-stats">
-            <div class="bs"><div class="bs-num" id="btTotal">–</div><div class="bs-label">Heute</div></div>
-            <div class="bs"><div class="bs-num" id="btOffen">–</div><div class="bs-label">Offen</div></div>
-            <div class="bs"><div class="bs-num" id="btRevenue">–</div><div class="bs-label">€</div></div>
-          </div>
-          <div class="bereich-orders" id="truckOrders"></div>
-        </div>
-
-        <!-- KANTINE -->
-        <div class="bereich-card kantine">
-          <div class="bereich-card-header">
-            <div class="bereich-title">🍽️ Kantine</div>
-            <a href="kantine-admin.html" class="bereich-open-btn">öffnen →</a>
-          </div>
-          <div class="bereich-stats">
-            <div class="bs"><div class="bs-num" id="bkTotal">–</div><div class="bs-label">Heute</div></div>
-            <div class="bs"><div class="bs-num" id="bkOffen">–</div><div class="bs-label">Offen</div></div>
-            <div class="bs"><div class="bs-num" id="bkRevenue">–</div><div class="bs-label">€</div></div>
-          </div>
-          <div class="bereich-orders" id="kantineOrders"></div>
-        </div>
-      </div>
-
-      <!-- ANKÜNDIGUNGEN -->
-      <div class="section-title">ankündigungen</div>
-      <div style="margin-bottom:28px;animation:fadeUp 0.6s ease 0.12s both;">
-        <div id="ankuendigungList"></div>
-        <div class="ankuendigung-form">
-          <input class="ankuendigung-input" id="ankuendigungText" placeholder="z.B. Morgen kein Food Truck 🚫" onkeydown="if(event.key==='Enter')addAnkuendigung()" />
-          <select class="ankuendigung-type" id="ankuendigungTyp">
-            <option value="info">ℹ️ Info</option>
-            <option value="warning">⚠️ Warnung</option>
-            <option value="success">✅ Positiv</option>
-          </select>
-          <button class="ankuendigung-add" onclick="addAnkuendigung()">+ posten</button>
-        </div>
-      </div>
-
-      <!-- WOCHENCHART -->
-      <div class="section-title">diese woche</div>
-      <div class="chart-card" style="animation:fadeUp 0.6s ease 0.12s both;margin-bottom:28px;">
-        <div class="chart-title">
-          <span>Bestellungen Mo–Fr</span>
-          <span style="display:flex;gap:10px;font-size:0.75rem;">
-            <span style="color:var(--truck)">■ Truck</span>
-            <span style="color:var(--kantine)">■ Kantine</span>
-          </span>
-        </div>
-        <div class="chart-wrap"><canvas id="wochenChart"></canvas></div>
-      </div>
-
-      <!-- TOP KUNDEN -->
-      <div class="section-title">top kunden (30 tage)</div>
-      <div class="top-kunden" id="topKunden" style="animation:fadeUp 0.6s ease 0.13s both;"></div>
-
-      <!-- ANALYTICS -->
-      <div class="section-title">analytics</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.16s both;">
-        
-        <!-- HEATMAP -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;grid-column:1/-1;">
-          <div class="chart-title"><span>⏰ Bestellzeiten (heute)</span></div>
-          <div id="heatmapChart" style="display:flex;gap:4px;align-items:flex-end;height:60px;margin-top:8px;"></div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.68rem;color:var(--muted);">
-            <span>8:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span>
-          </div>
-        </div>
-
-        <!-- MENÜ PERFORMANCE -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
-          <div class="chart-title" style="margin-bottom:12px;"><span>🍽️ Menü-Performance</span></div>
-          <div id="menuPerf"></div>
-        </div>
-
-        <!-- GETRÄNKE -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
-          <div class="chart-title" style="margin-bottom:12px;"><span>🥤 Getränke heute</span></div>
-          <div id="drinkPerf"></div>
-        </div>
-
-      </div>
-
-      <!-- ERWEITERTE ANALYTICS -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.2s both;">
-
-        <!-- DURCHSCHNITTLICHER BESTELLWERT -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
-          <div class="chart-title" style="margin-bottom:12px;"><span>💰 Ø Bestellwert</span></div>
-          <div id="avgOrderValue" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:var(--kantine);">–</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">letzte 30 Tage</div>
-        </div>
-
-        <!-- WIEDERKEHRENDE KUNDEN -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
-          <div class="chart-title" style="margin-bottom:12px;"><span>🔁 Stammkunden</span></div>
-          <div id="returningRate" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:var(--truck);">–</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Anteil mit 3+ Bestellungen</div>
-        </div>
-
-        <!-- PEAK ZEIT -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;">
-          <div class="chart-title" style="margin-bottom:12px;"><span>⏰ Peak-Zeit</span></div>
-          <div id="peakTime" style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:900;color:#a78bfa;">–</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">meiste Bestellungen um</div>
-        </div>
-
-      </div>
-
-      <!-- ACTIVITY -->
-      <div class="section-title">letzte aktivität</div>
-      <div class="activity-list" id="activityList" style="animation:fadeUp 0.6s ease 0.15s both">
-        <div style="color:var(--muted);font-size:0.88rem;text-align:center;padding:20px;">laden…</div>
-      </div>
-
-    </div>
+<div id="adminPanel">
+  <div class="topbar">
+    <div class="topbar-left"><h1>🔐 Admin Verwaltung</h1></div>
+    <button class="logout-btn" onclick="logout()">Abmelden</button>
   </div>
+  <div class="main">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabUebersicht" onclick="showTab('uebersicht')">📊 Übersicht</button>
+      <button class="tab-btn" id="tabPopups" onclick="showTab('popups')">📢 Popups</button>
+      <button class="tab-btn" id="tabAnkuend" onclick="showTab('ankuend')">📣 Ankündigungen</button>
+      <button class="tab-btn" id="tabStats" onclick="showTab('stats')">📈 Statistiken</button>
+      <button class="tab-btn" id="tabUser" onclick="showTab('user')">👥 Benutzer</button>
+      <button class="tab-btn" id="tabGlobal" onclick="showTab('global')">⚙️ Global</button>
+    </div>
 
-  <!-- ADMIN CHAT -->
-  <div class="chat-panel">
-    <div class="chat-box" id="chatBox">
-      <div class="chat-header">
-        <div class="chat-header-title">💬 Admin Chat</div>
-        <button onclick="toggleChat()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
+    <!-- ÜBERSICHT -->
+    <div id="tabContentUebersicht">
+      <div class="stats-grid" id="overviewStats">
+        <div class="stat-box"><div class="stat-box-num" id="ovTotal">–</div><div class="stat-box-label">Bestellungen heute</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="ovTruck">–</div><div class="stat-box-label">Food Truck</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="ovKantine">–</div><div class="stat-box-label">Kantine</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="ovUmsatz">–</div><div class="stat-box-label">Umsatz heute</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="ovUser">–</div><div class="stat-box-label">Registrierte User</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="ovPunkte">–</div><div class="stat-box-label">Loyalty-Punkte gesamt</div></div>
       </div>
-      <div class="chat-messages" id="chatMessages">
-        <div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:20px;">Lade Nachrichten…</div>
+      <div class="chart-card">
+        <div class="chart-title">Heute – nach Bereich</div>
+        <div class="bar-row"><div class="bar-label">Food Truck</div><div class="bar-track"><div class="bar-fill" id="ovBarTruck" style="width:0%"></div></div><div class="bar-val" id="ovBarTruckVal">0</div></div>
+        <div class="bar-row"><div class="bar-label">Kantine</div><div class="bar-track"><div class="bar-fill" id="ovBarKantine" style="width:0%;opacity:0.6"></div></div><div class="bar-val" id="ovBarKantineVal">0</div></div>
       </div>
-      <div class="chat-input-row">
-        <input class="chat-input" id="chatInput" placeholder="Nachricht…" onkeydown="if(event.key==='Enter')sendChatMsg()"/>
-        <button class="chat-send" onclick="sendChatMsg()">→</button>
+      <div class="chart-card">
+        <div class="chart-title">Letzte 7 Tage – Bestellungen</div>
+        <div id="last7Chart"></div>
       </div>
     </div>
-    <button class="chat-toggle" onclick="toggleChat()" title="Admin Chat">
-      💬
-      <div class="chat-badge" id="chatBadge"></div>
-    </button>
-  </div>
 
-  <div class="toast" id="toast"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script>
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const ADMIN_PW = '1296'; // change this!
-
-    function login() {
-      const pw = document.getElementById('pwInput').value;
-      if (pw === ADMIN_PW) {
-        sessionStorage.setItem('main_admin', '1');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        initDashboard();
-      } else {
-        document.getElementById('loginError').style.display = 'block';
-      }
-    }
-
-    function logout() {
-      sessionStorage.removeItem('main_admin');
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('pwInput').value = '';
-    }
-
-    if (sessionStorage.getItem('main_admin')) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      initDashboard();
-    }
-
-    async function initDashboard() {
-      // date
-      const now = new Date();
-      document.getElementById('topbarDate').textContent = now.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
-
-      // greeting
-      const h = now.getHours();
-      const greet = h < 11 ? 'gm bestimmt wieder voll heute ☀️' : h < 14 ? 'mittagszeit, läufts? 🍴' : h < 18 ? 'nachmittag check-in 📊' : 'feierabend soon? 🌙';
-      document.getElementById('greetingSub').textContent = greet;
-
-      await loadStats();
-      await loadAnkuendigungen();
-      await loadBestellschlussWidget();
-      await loadWochenChart();
-      await loadTopKunden();
-      await loadAnalytics();
-      checkKapazitaet();
-      loadExtendedAnalytics();
-      subscribeRealtime();
-      // refresh bestellschluss every minute
-      setInterval(loadBestellschlussWidget, 60000);
-    }
-
-    async function loadStats() {
-      const today = new Date().toISOString().split('T')[0];
-
-      const { data: all } = await db.from('vorbestellungen').select('*').eq('datum', today).order('created_at', { ascending: false });
-      const orders = all || [];
-
-      const truck = orders.filter(o => o.typ === 'truck');
-      const kantine = orders.filter(o => o.typ === 'kantine');
-      const revenue = orders.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
-      const erledigt = orders.filter(o => o.erledigt).length;
-
-      // quick stats
-      document.getElementById('qsTotal').textContent = orders.length;
-      bumpCounter(orders.length);
-      document.getElementById('qsTotalSub').textContent = `${erledigt} abgeholt · ${orders.length - erledigt} offen`;
-      document.getElementById('qsTruck').textContent = truck.length;
-      document.getElementById('qsTruckSub').textContent = `${truck.filter(o => !o.erledigt).length} offen`;
-      document.getElementById('qsKantine').textContent = kantine.length;
-      document.getElementById('qsKantineSub').textContent = `${kantine.filter(o => !o.erledigt).length} offen`;
-      document.getElementById('qsRevenue').textContent = revenue.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('qsRevenueSub').textContent = `${orders.filter(o => o.zahlung === 'online' && o.bezahlt).length} online bezahlt`;
-
-      // truck bereich
-      const tRevenue = truck.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
-      document.getElementById('btTotal').textContent = truck.length;
-      document.getElementById('btOffen').textContent = truck.filter(o => !o.erledigt).length;
-      document.getElementById('btRevenue').textContent = tRevenue.toFixed(2).replace('.', ',');
-      renderBereichOrders('truckOrders', truck.slice(0, 8), 'truck');
-
-      // kantine bereich
-      const kRevenue = kantine.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
-      document.getElementById('bkTotal').textContent = kantine.length;
-      document.getElementById('bkOffen').textContent = kantine.filter(o => !o.erledigt).length;
-      document.getElementById('bkRevenue').textContent = kRevenue.toFixed(2).replace('.', ',');
-      renderBereichOrders('kantineOrders', kantine.slice(0, 8), 'kantine');
-
-      // activity (last 10 overall)
-      renderActivity(orders.slice(0, 10));
-    }
-
-    function renderBereichOrders(containerId, orders, typ) {
-      const el = document.getElementById(containerId);
-      if (orders.length === 0) {
-        el.innerHTML = '<div style="padding:8px;color:var(--muted);font-size:0.82rem;text-align:center;">noch keine bestellungen heute</div>';
-        return;
-      }
-      el.innerHTML = orders.map(o => {
-        const zahlung = o.zahlung === 'online' ? (o.bezahlt ? '💳' : '⏳') : '💵';
-        const accentColor = typ === 'truck' ? 'rgba(245,166,35,0.15);color:#f5a623' : 'rgba(62,207,142,0.15);color:#3ecf8e';
-        return `<div class="bo-item ${o.erledigt ? 'done' : ''}">
-          <div>
-            <div class="bo-name">${esc(o.name)}</div>
-            <div class="bo-meta">${formatTime(o.created_at)} ${zahlung}</div>
-          </div>
-          <span class="bo-badge" style="background:${accentColor}">${o.menu === 'menu1' ? 'M1' : 'M2'}</span>
-        </div>`;
-      }).join('');
-    }
-
-    function renderActivity(orders) {
-      const el = document.getElementById('activityList');
-      if (orders.length === 0) {
-        el.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;text-align:center;padding:20px;">noch nix heute</div>';
-        return;
-      }
-      el.innerHTML = orders.map(o => `
-        <div class="activity-item">
-          <div class="activity-dot ${o.typ}"></div>
-          <div class="activity-text"><strong>${esc(o.name)}</strong> hat ${o.menu === 'menu1' ? 'Menü 1' : 'Menü 2'} bestellt ${o.typ === 'truck' ? '(Truck)' : '(Kantine)'}</div>
-          <div class="activity-time">${formatTime(o.created_at)}</div>
-        </div>`).join('');
-    }
-
-    // ── BESTELLSCHLUSS WIDGET ──
-    async function checkKapazitaet() {
-      const { data: settings } = await db.from('einstellungen').select('*').eq('typ','kapazitaet').maybeSingle();
-      const maxOrders = settings?.bestellschluss_stunde || 50;
-      const today = new Date().toISOString().split('T')[0];
-      const { count } = await db.from('vorbestellungen').select('*', { count: 'exact', head: true }).eq('datum', today);
-      if (count >= maxOrders) {
-        showToast(`⚠️ Kapazitätswarnung: ${count}/${maxOrders} Bestellungen heute!`, true);
-      }
-    }
-
-    async function loadBestellschlussWidget() {
-      const { data } = await db.from('einstellungen').select('*');
-      if (!data) return;
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-
-      data.forEach(s => {
-        const isTruck = s.typ === 'truck';
-        const timeEl = document.getElementById(isTruck ? 'bsTimeTruck' : 'bsTimeKantine');
-        const subEl = document.getElementById(isTruck ? 'bsSubTruck' : 'bsSubKantine');
-        if (!timeEl) return;
-
-        const pad = n => String(n).padStart(2,'0');
-        const timeStr = pad(s.bestellschluss_stunde) + ':' + pad(s.bestellschluss_minute);
-
-        const deadline = new Date(today + 'T00:00:00');
-        if (s.vortag) deadline.setDate(deadline.getDate() - 1);
-        deadline.setHours(s.bestellschluss_stunde, s.bestellschluss_minute, 0, 0);
-
-        const diffMs = deadline - now;
-        const diffMin = Math.floor(diffMs / 60000);
-
-        if (diffMs < 0) {
-          timeEl.textContent = 'Geschlossen';
-          timeEl.className = 'bs-item-time closed';
-          subEl.textContent = `war ${s.vortag ? 'gestern' : 'heute'} um ${timeStr}`;
-        } else if (diffMin < 60) {
-          timeEl.textContent = `in ${diffMin} min`;
-          timeEl.className = 'bs-item-time closing';
-          subEl.textContent = `um ${timeStr} Uhr`;
-        } else {
-          const h = Math.floor(diffMin / 60);
-          timeEl.textContent = `in ${h}h ${diffMin % 60}min`;
-          timeEl.className = 'bs-item-time open';
-          subEl.textContent = s.vortag ? `Vortag bis ${timeStr}` : `heute bis ${timeStr}`;
-        }
-      });
-    }
-
-    // ── WOCHENCHART ──
-    let wochenChartInstance = null;
-
-    async function loadWochenChart() {
-      const now = new Date();
-      const day = now.getDay();
-      const monday = new Date(now);
-      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-
-      const weekDates = Array.from({length: 5}, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return d.toISOString().split('T')[0];
-      });
-
-      const { data } = await db.from('vorbestellungen').select('datum,typ').gte('datum', weekDates[0]).lte('datum', weekDates[4]);
-      const orders = data || [];
-
-      const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
-      const truckData = weekDates.map(d => orders.filter(o => o.datum === d && o.typ === 'truck').length);
-      const kantineData = weekDates.map(d => orders.filter(o => o.datum === d && o.typ === 'kantine').length);
-
-      const ctx = document.getElementById('wochenChart');
-      if (!ctx) return;
-
-      if (wochenChartInstance) wochenChartInstance.destroy();
-
-      wochenChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            { label: 'Truck', data: truckData, backgroundColor: 'rgba(245,166,35,0.7)', borderRadius: 6, borderSkipped: false },
-            { label: 'Kantine', data: kantineData, backgroundColor: 'rgba(62,207,142,0.7)', borderRadius: 6, borderSkipped: false }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a7468' }, border: { display: false } },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a7468', stepSize: 1 }, border: { display: false }, beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    // ── TOP KUNDEN ──
-    async function loadAnalytics() {
-      const today = new Date().toISOString().split('T')[0];
-      const { data: todayOrders } = await db.from('vorbestellungen').select('*').eq('datum', today);
-      const orders = todayOrders || [];
-
-      // heatmap — orders per hour
-      const byHour = {};
-      orders.forEach(o => {
-        if (!o.created_at) return;
-        const h = new Date(o.created_at).getHours();
-        byHour[h] = (byHour[h]||0) + 1;
-      });
-      const hours = Array.from({length:10}, (_,i) => i + 8); // 8-17
-      const maxH = Math.max(...hours.map(h => byHour[h]||0), 1);
-      const heatmap = document.getElementById('heatmapChart');
-      if (heatmap) {
-        heatmap.innerHTML = hours.map(h => {
-          const count = byHour[h] || 0;
-          const pct = Math.round(count / maxH * 100);
-          const isNow = new Date().getHours() === h;
-          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <div style="font-size:0.65rem;color:var(--muted);">${count||''}</div>
-            <div style="width:100%;background:${isNow ? 'rgba(245,166,35,0.6)' : 'rgba(62,207,142,0.6)'};border-radius:3px 3px 0 0;height:${Math.max(pct,2)}%;min-height:${count?4:1}px;transition:height 0.5s ease;"></div>
-          </div>`;
-        }).join('');
-      }
-
-      // menü performance (last 30 days)
-      const since = new Date(); since.setDate(since.getDate()-30);
-      const { data: recent } = await db.from('vorbestellungen').select('menu,typ').gte('created_at', since.toISOString());
-      const recentOrders = recent || [];
-      const m1truck = recentOrders.filter(o => o.menu==='menu1' && o.typ==='truck').length;
-      const m2truck = recentOrders.filter(o => o.menu==='menu2' && o.typ==='truck').length;
-      const m1kant = recentOrders.filter(o => o.menu==='menu1' && o.typ==='kantine').length;
-      const m2kant = recentOrders.filter(o => o.menu==='menu2' && o.typ==='kantine').length;
-      const totalM = m1truck+m2truck+m1kant+m2kant || 1;
-      const menuPerf = document.getElementById('menuPerf');
-      if (menuPerf) {
-        menuPerf.innerHTML = [
-          {label:'🚚 Menü 1', count:m1truck, color:'#f5a623'},
-          {label:'🚚 Menü 2', count:m2truck, color:'#f5a62388'},
-          {label:'🍽️ Menü 1', count:m1kant, color:'#3ecf8e'},
-          {label:'🍽️ Menü 2', count:m2kant, color:'#3ecf8e88'},
-        ].map(({label,count,color}) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.82rem;">
-          <span style="min-width:80px;color:var(--muted);">${label}</span>
-          <div style="flex:1;background:var(--border);border-radius:3px;height:8px;overflow:hidden;">
-            <div style="background:${color};height:100%;width:${Math.round(count/totalM*100)}%;border-radius:3px;transition:width 0.6s ease;"></div>
-          </div>
-          <span style="color:var(--text);font-weight:600;min-width:24px;">${count}</span>
-        </div>`).join('');
-      }
-
-      // drinks today
-      const drinkCounts = {};
-      orders.filter(o => o.getraenk).forEach(o => { drinkCounts[o.getraenk] = (drinkCounts[o.getraenk]||0)+1; });
-      const drinkPerf = document.getElementById('drinkPerf');
-      if (drinkPerf) {
-        const sorted = Object.entries(drinkCounts).sort((a,b) => b[1]-a[1]);
-        const maxD = sorted[0]?.[1] || 1;
-        drinkPerf.innerHTML = sorted.length > 0 ? sorted.map(([name,count]) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.82rem;">
-            <span style="flex:1;color:var(--muted);">${esc(name)}</span>
-            <div style="width:80px;background:var(--border);border-radius:3px;height:8px;overflow:hidden;">
-              <div style="background:#a78bfa;height:100%;width:${Math.round(count/maxD*100)}%;border-radius:3px;"></div>
+    <!-- POPUP MANAGER -->
+    <div id="tabContentPopups" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3>📢 Neues Popup</h3></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-row">
+              <label class="form-label">Titel</label>
+              <input type="text" class="form-input" id="popTitel" placeholder="z.B. Neue Öffnungszeiten" />
             </div>
-            <span style="color:var(--text);font-weight:600;min-width:20px;">${count}</span>
-          </div>`).join('') : '<div style="color:var(--muted);font-size:0.82rem;">Noch keine Getränke heute</div>';
-      }
-    }
-
-    async function loadExtendedAnalytics() {
-      const since = new Date(); since.setDate(since.getDate()-30);
-      const { data: recent } = await db.from('vorbestellungen').select('name,user_email,preis,getraenk_preis,created_at').gte('created_at', since.toISOString());
-      const orders = recent || [];
-
-      // avg order value
-      const total = orders.reduce((s,o) => s + parseFloat(o.preis||0) + parseFloat(o.getraenk_preis||0), 0);
-      const avg = orders.length > 0 ? total / orders.length : 0;
-      const avgEl = document.getElementById('avgOrderValue');
-      if (avgEl) avgEl.textContent = avg.toFixed(2).replace('.',',') + ' €';
-
-      // returning customers
-      const counts = {};
-      orders.forEach(o => { const k = o.user_email || o.name; counts[k] = (counts[k]||0)+1; });
-      const returning = Object.values(counts).filter(n => n >= 3).length;
-      const total_customers = Object.keys(counts).length || 1;
-      const rateEl = document.getElementById('returningRate');
-      if (rateEl) rateEl.textContent = Math.round(returning/total_customers*100) + '%';
-
-      // peak time
-      const byHour = {};
-      orders.forEach(o => {
-        if (!o.created_at) return;
-        const h = new Date(o.created_at).getHours();
-        byHour[h] = (byHour[h]||0)+1;
-      });
-      const peakHour = Object.entries(byHour).sort((a,b)=>b[1]-a[1])[0]?.[0];
-      const peakEl = document.getElementById('peakTime');
-      if (peakEl) peakEl.textContent = peakHour ? peakHour + ':00 Uhr' : '–';
-    }
-
-    async function loadTopKunden() {
-      const since = new Date();
-      since.setDate(since.getDate() - 30);
-      const { data } = await db.from('vorbestellungen').select('name,user_email').gte('created_at', since.toISOString());
-      if (!data) return;
-
-      const counts = {};
-      data.forEach(o => {
-        const key = o.name;
-        counts[key] = (counts[key] || 0) + 1;
-      });
-
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const max = sorted[0]?.[1] || 1;
-      const ranks = ['🥇', '🥈', '🥉', '4.', '5.'];
-
-      const el = document.getElementById('topKunden');
-      if (!el) return;
-      if (sorted.length === 0) {
-        el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:16px;">noch keine daten</div>';
-        return;
-      }
-      el.innerHTML = sorted.map(([name, count], i) => `
-        <div class="tk-item">
-          <div class="tk-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${ranks[i]}</div>
-          <div style="flex:1;">
-            <div class="tk-name">${esc(name)}</div>
-            <div class="tk-bar"><div class="tk-bar-fill" style="width:${(count/max*100).toFixed(0)}%"></div></div>
+            <div class="form-row">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" id="popIcon" placeholder="📢" maxlength="4" value="📢" style="font-size:1.3rem;text-align:center;" />
+            </div>
           </div>
-          <div class="tk-count">${count}x</div>
-        </div>`).join('');
-    }
+          <div class="form-row">
+            <label class="form-label">Text</label>
+            <textarea class="form-input" id="popText" placeholder="Was sollen alle Besucher sehen?"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <button class="save-btn" onclick="createPopup()">Popup erstellen</button>
+            <span style="font-size:0.8rem;color:var(--muted);">Jeder Besucher sieht das Popup einmalig beim nächsten Besuch.</span>
+          </div>
+        </div>
+      </div>
 
-    // live counter bump animation
-    let lastTotal = 0;
-    function bumpCounter(newVal) {
-      const el = document.getElementById('qsTotal');
-      if (!el) return;
-      if (newVal > lastTotal) {
-        el.classList.add('bump');
-        setTimeout(() => el.classList.remove('bump'), 400);
-      }
-      lastTotal = newVal;
-    }
+      <div class="section-title">Aktive & vergangene Popups</div>
+      <div id="popupList"><div style="color:var(--muted);font-size:0.88rem;">Lade Popups…</div></div>
+    </div>
 
-    // ── ANKÜNDIGUNGEN ──
-    async function loadAnkuendigungen() {
-      const { data } = await db.from('ankuendigungen').select('*').eq('aktiv', true).order('created_at', { ascending: false });
-      const list = document.getElementById('ankuendigungList');
-      if (!data || data.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;margin-bottom:8px;">keine aktiven ankündigungen</div>';
-        return;
-      }
-      list.innerHTML = data.map(a => `
-        <div class="ankuendigung ${a.typ}">
-          <span class="ankuendigung-text">${esc(a.text)}</span>
-          <button class="ankuendigung-del" onclick="deleteAnkuendigung('${a.id}')">✕</button>
-        </div>`).join('');
-    }
+    <!-- ANKÜNDIGUNGEN -->
+    <div id="tabContentAnkuend" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3>📣 Neue Ankündigung</h3><span style="font-size:0.8rem;color:var(--muted);">Erscheint dauerhaft auf der Startseite</span></div>
+        <div class="card-body">
+          <div class="form-row">
+            <label class="form-label">Text</label>
+            <input type="text" class="form-input" id="ankText" placeholder="z.B. Heute Sonderaktion: +doppelte Punkte!" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Typ</label>
+            <select class="form-select" id="ankTyp">
+              <option value="info">ℹ️ Info</option>
+              <option value="warning">⚠️ Warnung</option>
+              <option value="success">✅ Erfolg</option>
+            </select>
+          </div>
+          <button class="save-btn" onclick="createAnkuendigung()">Ankündigung erstellen</button>
+        </div>
+      </div>
+      <div class="section-title">Aktive Ankündigungen</div>
+      <div class="ankuend-list" id="ankuendList"><div style="color:var(--muted);font-size:0.88rem;">Lade…</div></div>
+    </div>
 
-    async function addAnkuendigung() {
-      const text = document.getElementById('ankuendigungText').value.trim();
-      const typ = document.getElementById('ankuendigungTyp').value;
-      if (!text) return;
-      await db.from('ankuendigungen').insert({ text, typ, aktiv: true });
-      document.getElementById('ankuendigungText').value = '';
-      loadAnkuendigungen();
-    }
+    <!-- STATISTIKEN (mit Umsatzprognose) -->
+    <div id="tabContentStats" style="display:none;">
+      <div class="period-btns" style="margin-bottom:20px;">
+        <button class="period-btn active" id="p7" onclick="setPeriod(7)">7 Tage</button>
+        <button class="period-btn" id="p30" onclick="setPeriod(30)">30 Tage</button>
+        <button class="period-btn" id="p90" onclick="setPeriod(90)">90 Tage</button>
+      </div>
 
-    async function deleteAnkuendigung(id) {
-      await db.from('ankuendigungen').update({ aktiv: false }).eq('id', id);
-      loadAnkuendigungen();
-    }
+      <!-- UMSATZPROGNOSE -->
+      <div class="prognose-card" id="prognoseCard">
+        <div class="prognose-title">📈 Umsatzprognose (lineare Regression)</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px;">
+          <div>
+            <div class="prognose-num" id="prognoseNaechsteWoche">–</div>
+            <div class="prognose-label">Nächste Woche (Prognose)</div>
+          </div>
+          <div>
+            <div class="prognose-num" style="font-size:1.5rem;" id="prognoseAktuelleWoche">–</div>
+            <div class="prognose-label">Aktuelle Woche (bisher)</div>
+          </div>
+        </div>
+        <div class="prognose-trend" id="prognosetrend"></div>
+        <div class="prognose-weeks" id="prognoseWeeks"></div>
+      </div>
 
-    async function sendTagesbericht() {
-      const email = prompt('Tagesbericht senden an:', '');
-      if (!email) return;
-      const resp = await fetch('/api/daily-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await resp.json();
-      if (data.ok) showToast(`✓ Tagesbericht gesendet (${data.orders} Bestellungen)`);
-      else showToast('Fehler: ' + data.error, true);
-    }
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-box-num" id="sUmsatz">–</div><div class="stat-box-label">Umsatz</div><div class="stat-box-sub" id="sOnline">–</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="sBestellungen">–</div><div class="stat-box-label">Bestellungen</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="sAvg">–</div><div class="stat-box-label">Ø pro Tag</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Truck vs. Kantine</div>
+        <div class="bar-row"><div class="bar-label">Food Truck</div><div class="bar-track"><div class="bar-fill" id="sBTruck" style="width:0%"></div></div><div class="bar-val" id="sBTruckV">0</div></div>
+        <div class="bar-row"><div class="bar-label">Kantine</div><div class="bar-track"><div class="bar-fill" id="sBKantine" style="width:0%;opacity:0.6"></div></div><div class="bar-val" id="sBKantineV">0</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Menü-Aufteilung</div>
+        <div class="bar-row"><div class="bar-label">Menü 1</div><div class="bar-track"><div class="bar-fill" id="sBM1" style="width:0%"></div></div><div class="bar-val" id="sBM1V">0</div></div>
+        <div class="bar-row"><div class="bar-label">Menü 2</div><div class="bar-track"><div class="bar-fill" id="sBM2" style="width:0%;opacity:0.6"></div></div><div class="bar-val" id="sBM2V">0</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Zahlung</div>
+        <div class="bar-row"><div class="bar-label">Online</div><div class="bar-track"><div class="bar-fill" id="sBOnline" style="width:0%"></div></div><div class="bar-val" id="sBOnlineV">0</div></div>
+        <div class="bar-row"><div class="bar-label">Bar</div><div class="bar-track"><div class="bar-fill" id="sBBar" style="width:0%;opacity:0.6"></div></div><div class="bar-val" id="sBBarV">0</div></div>
+      </div>
+    </div>
 
-    async function notfallSchliessen() {
-      if (!confirm('BEIDE Bereiche sofort schließen?')) return;
-      const today = new Date().toISOString().split('T')[0];
-      await Promise.all([
-        db.from('einstellungen').upsert({ typ: 'truck', geschlossen_von: today, geschlossen_bis: today, geschlossen_grund: 'Notfall-Schließung' }, { onConflict: 'typ' }),
-        db.from('einstellungen').upsert({ typ: 'kantine', geschlossen_von: today, geschlossen_bis: today, geschlossen_grund: 'Notfall-Schließung' }, { onConflict: 'typ' })
-      ]);
-      showToast('🚨 Beide Bereiche geschlossen!');
-    }
+    <!-- USER MANAGEMENT -->
+    <div id="tabContentUser" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <h3>Registrierte Benutzer</h3>
+          <button class="save-btn" onclick="exportUsers()" style="padding:9px 18px;font-size:0.85rem;">📥 CSV Export</button>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="user-table">
+            <thead><tr><th>E-Mail</th><th>Name</th><th>Bestellungen</th><th>Punkte</th><th>Registriert</th><th></th></tr></thead>
+            <tbody id="userTableBody"><tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Lade…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-    async function sendWochenbericht() {
-      const email = prompt('Wochenbericht senden an:', '');
-      if (!email) return;
-      const resp = await fetch('/api/weekly-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await resp.json();
-      if (data.ok) showToast(`✓ Wochenbericht gesendet (${data.orders} Bestellungen)`);
-      else showToast('Fehler: ' + data.error, true);
-    }
+    <!-- GLOBAL SETTINGS -->
+    <div id="tabContentGlobal" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3>⚙️ Globale Einstellungen</h3></div>
+        <div class="card-body">
+          <div class="global-settings" id="globalSettings">
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Food Truck aktiv</div>
+                <div class="setting-desc">Vorbestellungen für den Food Truck ermöglichen</div>
+              </div>
+              <button class="toggle-switch on" id="toggleTruck" onclick="toggleGlobal('truck_aktiv','toggleTruck')"></button>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Kantine aktiv</div>
+                <div class="setting-desc">Vorbestellungen für die Kantine ermöglichen</div>
+              </div>
+              <button class="toggle-switch on" id="toggleKantine" onclick="toggleGlobal('kantine_aktiv','toggleKantine')"></button>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Loyalty-System aktiv</div>
+                <div class="setting-desc">Punkte sammeln und einlösen</div>
+              </div>
+              <button class="toggle-switch on" id="toggleLoyalty" onclick="toggleGlobal('loyalty_aktiv','toggleLoyalty')"></button>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Vorbestellungen global gesperrt</div>
+                <div class="setting-desc">Alle Bestellungen temporär deaktivieren</div>
+              </div>
+              <button class="toggle-switch" id="toggleGesperrt" onclick="toggleGlobal('global_gesperrt','toggleGesperrt')"></button>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:20px;">
+            <div class="form-row">
+              <label class="form-label">Kontakt E-Mail</label>
+              <input type="email" class="form-input" id="settingEmail" placeholder="info@indernational.de" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Impressum-Text</label>
+              <textarea class="form-input" id="settingImpressum" placeholder="Impressum-Angaben…" style="min-height:100px;"></textarea>
+            </div>
+            <button class="save-btn" onclick="saveGlobalSettings()">Speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // ── ADMIN CHAT ──
-    let chatOpen = false;
-    let lastChatCount = 0;
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let statsPeriod = 7;
 
-    function toggleChat() {
-      chatOpen = !chatOpen;
-      document.getElementById('chatBox').classList.toggle('open', chatOpen);
-      if (chatOpen) {
-        document.getElementById('chatBadge').style.display = 'none';
-        loadChatMessages();
-        document.getElementById('chatInput').focus();
-      }
-    }
+// ── AUTH ──
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORDS.main) {
+    sessionStorage.setItem('main_auth','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    initAdmin();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+function logout() { sessionStorage.removeItem('main_auth'); document.getElementById('adminPanel').style.display='none'; document.getElementById('loginScreen').style.display='flex'; document.getElementById('pwInput').value=''; }
+if (sessionStorage.getItem('main_auth')) { document.getElementById('loginScreen').style.display='none'; document.getElementById('adminPanel').style.display='block'; initAdmin(); }
 
-    async function loadChatMessages() {
-      const { data } = await db.from('admin_chat').select('*').order('created_at', { ascending: true }).limit(50);
-      const msgs = data || [];
-      const box = document.getElementById('chatMessages');
-      if (msgs.length === 0) {
-        box.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:20px;">Noch keine Nachrichten</div>';
-        return;
-      }
-      box.innerHTML = msgs.map(m => {
-        const isMine = m.sender === 'dashboard';
-        const time = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
-        return `<div class="chat-msg ${isMine ? 'mine' : 'other'}">
-          <div class="chat-msg-sender">${m.sender === 'truck' ? '🚚 Truck' : m.sender === 'kantine' ? '🍽️ Kantine' : '📊 Dashboard'}</div>
-          ${esc(m.message)}
-          <div class="chat-msg-time">${time}</div>
-        </div>`;
-      }).join('');
-      box.scrollTop = box.scrollHeight;
-      lastChatCount = msgs.length;
-    }
+async function initAdmin() {
+  await loadOverview();
+}
 
-    async function sendChatMsg() {
-      const input = document.getElementById('chatInput');
-      const msg = input.value.trim();
-      if (!msg) return;
-      input.value = '';
-      await db.from('admin_chat').insert({ sender: 'dashboard', message: msg });
-    }
+// ── TABS ──
+function showTab(tab) {
+  ['uebersicht','popups','ankuend','stats','user','global'].forEach(t => {
+    const el = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'popups') loadPopups();
+  if (tab === 'ankuend') loadAnkuendigungen();
+  if (tab === 'stats') loadStats();
+  if (tab === 'user') loadUsers();
+  if (tab === 'global') loadGlobalSettings();
+}
 
-    function subscribeRealtime() {
-      // chat subscription
-      db.channel('admin-chat-sub')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_chat' }, (payload) => {
-          if (chatOpen) loadChatMessages();
-          else {
-            const badge = document.getElementById('chatBadge');
-            badge.style.display = 'flex';
-            badge.textContent = '!';
-          }
-        }).subscribe();
+// ── ÜBERSICHT ──
+async function loadOverview() {
+  const today = new Date().toISOString().split('T')[0];
+  const [{ data: allOrd }, { data: userData }, { data: loyaltyData }] = await Promise.all([
+    db.from('vorbestellungen').select('*').eq('datum', today),
+    db.from('profiles').select('id', { count: 'exact', head: false }),
+    db.from('loyalty_punkte').select('punkte')
+  ]);
+  const orders = allOrd || [];
+  const truck = orders.filter(o => o.typ === 'truck').length;
+  const kantine = orders.filter(o => o.typ === 'kantine').length;
+  const umsatz = orders.reduce((s,o) => s+parseFloat(o.preis||0)+parseFloat(o.getraenk_preis||0), 0);
+  document.getElementById('ovTotal').textContent = orders.length;
+  document.getElementById('ovTruck').textContent = truck;
+  document.getElementById('ovKantine').textContent = kantine;
+  document.getElementById('ovUmsatz').textContent = umsatz.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('ovUser').textContent = (userData || []).length || '–';
+  document.getElementById('ovPunkte').textContent = loyaltyData ? loyaltyData.reduce((s,d)=>s+(d.punkte||0),0).toLocaleString('de-DE') : '–';
+  const total = truck + kantine || 1;
+  document.getElementById('ovBarTruck').style.width = (truck/total*100)+'%';
+  document.getElementById('ovBarKantine').style.width = (kantine/total*100)+'%';
+  document.getElementById('ovBarTruckVal').textContent = truck;
+  document.getElementById('ovBarKantineVal').textContent = kantine;
 
-      db.channel('admin-dashboard')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'vorbestellungen' }, () => loadStats())
-        .subscribe();
-    }
+  // letzte 7 tage chart
+  const since = new Date(); since.setDate(since.getDate()-6);
+  const { data: last7 } = await db.from('vorbestellungen').select('datum').gte('datum', since.toISOString().split('T')[0]);
+  const days = {};
+  for (let i=6;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); days[d.toISOString().split('T')[0]] = 0; }
+  (last7||[]).forEach(o => { if(days[o.datum]!==undefined) days[o.datum]++; });
+  const maxCount = Math.max(...Object.values(days), 1);
+  document.getElementById('last7Chart').innerHTML = Object.entries(days).map(([d,c]) => {
+    const label = new Date(d+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit'});
+    const isToday = d === today;
+    return `<div class="bar-row"><div class="bar-label" style="${isToday?'color:var(--accent);font-weight:700;':''}">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${(c/maxCount*100).toFixed(0)}%;${isToday?'':''}" ></div></div><div class="bar-val">${c}</div></div>`;
+  }).join('');
+}
 
-    function formatTime(ts) {
-      if (!ts) return '';
-      return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    }
+// ── POPUP MANAGER ──
+async function createPopup() {
+  const titel = document.getElementById('popTitel').value.trim();
+  const text = document.getElementById('popText').value.trim();
+  const icon = document.getElementById('popIcon').value.trim() || '📢';
+  if (!text) { showToast('Text ist Pflichtfeld.'); return; }
+  const { error } = await db.from('admin_announcements').insert({ titel, text, icon, aktiv: true });
+  if (error) { showToast('Fehler: '+error.message); return; }
+  document.getElementById('popTitel').value = '';
+  document.getElementById('popText').value = '';
+  document.getElementById('popIcon').value = '📢';
+  showToast('✓ Popup erstellt!');
+  loadPopups();
+}
 
-    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function loadPopups() {
+  const { data } = await db.from('admin_announcements').select('*').order('created_at', { ascending: false });
+  const container = document.getElementById('popupList');
+  if (!data || data.length === 0) { container.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;">Noch keine Popups.</div>'; return; }
+  container.innerHTML = `<div class="popup-list">${data.map(p => `
+    <div class="popup-item">
+      <div class="popup-item-icon">${esc(p.icon||'📢')}</div>
+      <div class="popup-item-info">
+        <div class="popup-item-title">${esc(p.titel||'(kein Titel)')}</div>
+        <div class="popup-item-text">${esc(p.text)}</div>
+        <div class="popup-item-meta">Erstellt: ${new Date(p.created_at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <button class="popup-toggle ${p.aktiv?'active':'inactive'}" onclick="togglePopup('${p.id}',${p.aktiv})">${p.aktiv?'✓ Aktiv':'Inaktiv'}</button>
+      <button class="popup-delete" onclick="deletePopup('${p.id}')">✕</button>
+    </div>`).join('')}</div>`;
+}
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-  </script>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
-  <script>
-    (function() {
-      const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', saved);
-      document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
-    })();
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
-    }
-  </script>
-  <script>(function(){if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeToggle');if(b)b.textContent='☀️';});}})()</script>
-  <div class="version-footer">ver 1.5.0</div>
+async function togglePopup(id, current) {
+  await db.from('admin_announcements').update({ aktiv: !current }).eq('id', id);
+  showToast(!current ? '✓ Popup aktiviert' : '○ Popup deaktiviert');
+  loadPopups();
+}
+async function deletePopup(id) {
+  if (!confirm('Popup löschen?')) return;
+  await db.from('admin_announcements').delete().eq('id', id);
+  showToast('✓ Popup gelöscht');
+  loadPopups();
+}
+
+// ── ANKÜNDIGUNGEN ──
+async function createAnkuendigung() {
+  const text = document.getElementById('ankText').value.trim();
+  const typ = document.getElementById('ankTyp').value;
+  if (!text) { showToast('Text fehlt.'); return; }
+  const { error } = await db.from('ankuendigungen').insert({ text, typ, aktiv: true });
+  if (error) { showToast('Fehler: '+error.message); return; }
+  document.getElementById('ankText').value = '';
+  showToast('✓ Ankündigung erstellt!');
+  loadAnkuendigungen();
+}
+
+async function loadAnkuendigungen() {
+  const { data } = await db.from('ankuendigungen').select('*').order('created_at', { ascending: false });
+  const container = document.getElementById('ankuendList');
+  if (!data || data.length === 0) { container.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;padding:8px 0;">Keine Ankündigungen.</div>'; return; }
+  container.innerHTML = data.map(a => `<div class="ankuend-item">
+    <div class="ankuend-item-info">
+      <div class="ankuend-item-text">${esc(a.text)}</div>
+      <div class="ankuend-item-type">${a.typ} · ${new Date(a.created_at).toLocaleDateString('de-DE')}</div>
+    </div>
+    <button class="popup-toggle ${a.aktiv?'active':'inactive'}" onclick="toggleAnkuend('${a.id}',${a.aktiv})">${a.aktiv?'✓ Aktiv':'Inaktiv'}</button>
+    <button class="ankuend-delete" onclick="deleteAnkuend('${a.id}')">✕</button>
+  </div>`).join('');
+}
+async function toggleAnkuend(id, current) { await db.from('ankuendigungen').update({ aktiv: !current }).eq('id', id); loadAnkuendigungen(); showToast(!current?'✓ Aktiviert':'○ Deaktiviert'); }
+async function deleteAnkuend(id) { if(!confirm('Löschen?'))return; await db.from('ankuendigungen').delete().eq('id', id); loadAnkuendigungen(); showToast('✓ Gelöscht'); }
+
+// ── STATISTIKEN + UMSATZPROGNOSE ──
+function setPeriod(d) { statsPeriod=d; [7,30,90].forEach(n=>document.getElementById('p'+n).classList.toggle('active',n===d)); loadStats(); }
+
+async function loadStats() {
+  const since = new Date(); since.setDate(since.getDate()-statsPeriod);
+  const sinceStr = since.toISOString().split('T')[0];
+  const { data } = await db.from('vorbestellungen').select('*').gte('datum', sinceStr);
+  const orders = data || [];
+  const umsatz = orders.reduce((s,o)=>s+parseFloat(o.preis||0)+parseFloat(o.getraenk_preis||0),0);
+  const onlineCount = orders.filter(o=>o.zahlung==='online').length;
+  const barCount = orders.filter(o=>o.zahlung!=='online').length;
+  const truck = orders.filter(o=>o.typ==='truck').length;
+  const kantine = orders.filter(o=>o.typ==='kantine').length;
+  const m1 = orders.filter(o=>o.menu==='menu1').length;
+  const m2 = orders.filter(o=>o.menu==='menu2').length;
+  document.getElementById('sUmsatz').textContent = umsatz.toFixed(2).replace('.',',')+'€';
+  document.getElementById('sOnline').textContent = `${orders.filter(o=>o.zahlung==='online'&&o.bezahlt).reduce((s,o)=>s+parseFloat(o.preis||0),0).toFixed(2).replace('.',',')}€ online`;
+  document.getElementById('sBestellungen').textContent = orders.length;
+  document.getElementById('sAvg').textContent = (orders.length/statsPeriod).toFixed(1);
+  const maxTK = Math.max(truck,kantine,1); const maxMM = Math.max(m1,m2,1); const maxOB = Math.max(onlineCount,barCount,1);
+  document.getElementById('sBTruck').style.width=(truck/maxTK*100)+'%'; document.getElementById('sBTruckV').textContent=truck;
+  document.getElementById('sBKantine').style.width=(kantine/maxTK*100)+'%'; document.getElementById('sBKantineV').textContent=kantine;
+  document.getElementById('sBM1').style.width=(m1/maxMM*100)+'%'; document.getElementById('sBM1V').textContent=m1;
+  document.getElementById('sBM2').style.width=(m2/maxMM*100)+'%'; document.getElementById('sBM2V').textContent=m2;
+  document.getElementById('sBOnline').style.width=(onlineCount/maxOB*100)+'%'; document.getElementById('sBOnlineV').textContent=onlineCount;
+  document.getElementById('sBBar').style.width=(barCount/maxOB*100)+'%'; document.getElementById('sBBarV').textContent=barCount;
+  await loadUmsatzprognose();
+}
+
+async function loadUmsatzprognose() {
+  // letzte 8 Wochen Umsatz holen
+  const weeks = [];
+  const now = new Date();
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() - (now.getDay()===0?6:now.getDay()-1));
+  thisMonday.setHours(0,0,0,0);
+
+  for (let w=7; w>=0; w--) {
+    const wStart = new Date(thisMonday); wStart.setDate(thisMonday.getDate() - w*7);
+    const wEnd = new Date(wStart); wEnd.setDate(wStart.getDate() + 6);
+    const wStartStr = wStart.toISOString().split('T')[0];
+    const wEndStr = wEnd.toISOString().split('T')[0];
+    const { data } = await db.from('vorbestellungen').select('preis,getraenk_preis').gte('datum',wStartStr).lte('datum',wEndStr);
+    const revenue = (data||[]).reduce((s,o)=>s+parseFloat(o.preis||0)+parseFloat(o.getraenk_preis||0),0);
+    weeks.push({ label: w===0?'Diese Woche':`vor ${w}W`, start: wStartStr, revenue, isCurrent: w===0 });
+  }
+
+  // lineare regression auf wochen 1-7 (exkl. aktuelle)
+  const pastWeeks = weeks.slice(0,7);
+  const n = pastWeeks.length;
+  const xMean = (n-1)/2;
+  const yMean = pastWeeks.reduce((s,w)=>s+w.revenue,0)/n;
+  let num=0, den=0;
+  pastWeeks.forEach((w,i)=>{ num+=(i-xMean)*(w.revenue-yMean); den+=(i-xMean)**2; });
+  const slope = den===0?0:num/den;
+  const intercept = yMean - slope*xMean;
+  const nextWeekForecast = Math.max(0, intercept + slope*n);
+  const currentWeekRevenue = weeks[7].revenue;
+  const lastWeekRevenue = weeks[6].revenue;
+  const trend = nextWeekForecast - lastWeekRevenue;
+
+  document.getElementById('prognoseNaechsteWoche').textContent = nextWeekForecast.toFixed(2).replace('.',',')+'€';
+  document.getElementById('prognoseAktuelleWoche').textContent = currentWeekRevenue.toFixed(2).replace('.',',')+'€';
+
+  const trendEl = document.getElementById('prognosetrend');
+  if (trend >= 0) {
+    trendEl.innerHTML = `<span class="trend-up">▲ +${trend.toFixed(2).replace('.',',')}€ gegenüber letzter Woche</span>`;
+  } else {
+    trendEl.innerHTML = `<span class="trend-down">▼ ${trend.toFixed(2).replace('.',',')}€ gegenüber letzter Woche</span>`;
+  }
+
+  const maxRev = Math.max(...weeks.map(w=>w.revenue), nextWeekForecast, 1);
+  document.getElementById('prognoseWeeks').innerHTML = [
+    ...weeks.map(w=>`<div class="prognose-week">
+      <div class="prognose-week-label">${w.label}</div>
+      <div class="prognose-week-bar"><div class="prognose-week-fill ${w.isCurrent?'current':'prev'}" style="width:${(w.revenue/maxRev*100).toFixed(0)}%"></div></div>
+      <div class="prognose-week-val">${w.revenue.toFixed(2).replace('.',',')}€</div>
+    </div>`),
+    `<div class="prognose-week">
+      <div class="prognose-week-label" style="color:var(--accent);">Prognose</div>
+      <div class="prognose-week-bar"><div class="prognose-week-fill forecast" style="width:${(nextWeekForecast/maxRev*100).toFixed(0)}%"></div></div>
+      <div class="prognose-week-val" style="color:var(--accent);">${nextWeekForecast.toFixed(2).replace('.',',')}€</div>
+    </div>`
+  ].join('');
+}
+
+// ── USER MANAGEMENT ──
+async function loadUsers() {
+  const { data: profiles } = await db.from('profiles').select('*').order('created_at', { ascending: false });
+  const { data: orders } = await db.from('vorbestellungen').select('user_email');
+  const { data: loyalty } = await db.from('loyalty_punkte').select('email,punkte');
+  const orderCounts = {};
+  (orders||[]).forEach(o => { if(o.user_email) orderCounts[o.user_email] = (orderCounts[o.user_email]||0)+1; });
+  const loyaltyMap = {};
+  (loyalty||[]).forEach(l => { loyaltyMap[l.email] = l.punkte; });
+  const tbody = document.getElementById('userTableBody');
+  if (!profiles||profiles.length===0) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Keine Benutzer.</td></tr>'; return; }
+  tbody.innerHTML = profiles.map(p => `<tr>
+    <td>${esc(p.email||'–')}</td>
+    <td>${esc(p.full_name||'–')}</td>
+    <td>${orderCounts[p.email]||0}</td>
+    <td>${(loyaltyMap[p.email]||0).toLocaleString('de-DE')}</td>
+    <td>${p.created_at?new Date(p.created_at).toLocaleDateString('de-DE'):'–'}</td>
+    <td><button class="table-action" onclick="deleteUser('${p.id}','${esc(p.email||'')}')">Löschen</button></td>
+  </tr>`).join('');
+  window._allProfiles = profiles;
+  window._orderCounts = orderCounts;
+  window._loyaltyMap = loyaltyMap;
+}
+
+async function deleteUser(id, email) {
+  if (!confirm(`Benutzer ${email} wirklich löschen?`)) return;
+  await db.from('profiles').delete().eq('id', id);
+  showToast('✓ Benutzer gelöscht'); loadUsers();
+}
+
+function exportUsers() {
+  const profiles = window._allProfiles || [];
+  if (!profiles.length) { showToast('Keine Daten.'); return; }
+  const header = 'Email,Name,Bestellungen,Punkte,Registriert';
+  const rows = profiles.map(p => [
+    `"${p.email||''}"`, `"${(p.full_name||'').replace(/"/g,"'")}"`,
+    window._orderCounts?.[p.email]||0,
+    window._loyaltyMap?.[p.email]||0,
+    p.created_at?new Date(p.created_at).toLocaleDateString('de-DE'):''
+  ].join(','));
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='indernational-users.csv'; a.click(); URL.revokeObjectURL(url);
+  showToast('✓ Export fertig!');
+}
+
+// ── GLOBAL SETTINGS ──
+let globalSettings = {};
+async function loadGlobalSettings() {
+  const { data } = await db.from('global_einstellungen').select('*').maybeSingle();
+  globalSettings = data || {};
+  const toggles = { truck_aktiv:'toggleTruck', kantine_aktiv:'toggleKantine', loyalty_aktiv:'toggleLoyalty', global_gesperrt:'toggleGesperrt' };
+  Object.entries(toggles).forEach(([key,id]) => {
+    const val = globalSettings[key]??true;
+    const el = document.getElementById(id);
+    if (el) { el.classList.toggle('on', !!val); el.classList.toggle('off', !val); }
+  });
+  if (globalSettings.kontakt_email) document.getElementById('settingEmail').value = globalSettings.kontakt_email;
+  if (globalSettings.impressum) document.getElementById('settingImpressum').value = globalSettings.impressum;
+}
+
+async function toggleGlobal(key, btnId) {
+  const btn = document.getElementById(btnId);
+  const current = btn.classList.contains('on');
+  btn.classList.toggle('on', !current); btn.classList.toggle('off', current);
+  await db.from('global_einstellungen').upsert({ id: 1, [key]: !current }, { onConflict: 'id' });
+  showToast(`✓ ${key.replace('_',' ')} ${!current?'aktiviert':'deaktiviert'}`);
+}
+
+async function saveGlobalSettings() {
+  const email = document.getElementById('settingEmail').value.trim();
+  const impressum = document.getElementById('settingImpressum').value.trim();
+  await db.from('global_einstellungen').upsert({ id:1, kontakt_email: email, impressum }, { onConflict:'id' });
+  showToast('✓ Einstellungen gespeichert!');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+</script>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+<script>
+(function(){const saved=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',saved);document.getElementById('themeToggle').textContent=saved==='dark'?'☀️':'🌙';})();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.getElementById('themeToggle').textContent=n==='dark'?'☀️':'🌙';}
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+<div class="version-footer">ver 1.6.0</div>
 </body>
 </html>

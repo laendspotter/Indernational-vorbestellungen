@@ -6,7 +6,6 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // can be called manually via POST or via cron
   const { email, date: dateParam } = req.body || {};
   const reportEmail = email || process.env.REPORT_EMAIL;
   if (!reportEmail) return res.status(400).json({ error: 'Keine E-Mail konfiguriert. REPORT_EMAIL env variable setzen.' });
@@ -21,7 +20,6 @@ module.exports = async (req, res) => {
   const truck = all.filter(o => o.typ === 'truck');
   const kantine = all.filter(o => o.typ === 'kantine');
   const revenue = all.reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
-  const onlineRevenue = all.filter(o => o.zahlung === 'online' && o.bezahlt).reduce((s, o) => s + parseFloat(o.preis || 0) + parseFloat(o.getraenk_preis || 0), 0);
 
   const fmt = arr => arr.map(o => {
     const drink = o.getraenk ? ` + ${o.getraenk}` : '';
@@ -57,29 +55,26 @@ module.exports = async (req, res) => {
   <div style="max-width:680px;margin:0 auto;padding:40px 20px;">
     <p style="font-size:0.75rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#7a7468;margin-bottom:8px;">INDERNATIONAL · TAGESBERICHT</p>
     <h1 style="font-size:1.8rem;font-weight:900;margin:0 0 24px;letter-spacing:-0.02em;">${dateStr}</h1>
-
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:28px;">
       <div style="background:#131726;border:1px solid #1e2236;border-radius:10px;padding:16px;text-align:center;">
         <div style="font-size:1.8rem;font-weight:900;color:#f0ede6;">${all.length}</div>
-        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;letter-spacing:0.06em;">Gesamt</div>
+        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;">Gesamt</div>
       </div>
       <div style="background:#131726;border:1px solid #1e2236;border-radius:10px;padding:16px;text-align:center;">
         <div style="font-size:1.8rem;font-weight:900;color:#f5a623;">${truck.length}</div>
-        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;letter-spacing:0.06em;">🚚 Truck</div>
+        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;">🚚 Truck</div>
       </div>
       <div style="background:#131726;border:1px solid #1e2236;border-radius:10px;padding:16px;text-align:center;">
         <div style="font-size:1.8rem;font-weight:900;color:#3ecf8e;">${kantine.length}</div>
-        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;letter-spacing:0.06em;">🍽️ Kantine</div>
+        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;">🍽️ Kantine</div>
       </div>
       <div style="background:#131726;border:1px solid #1e2236;border-radius:10px;padding:16px;text-align:center;">
         <div style="font-size:1.8rem;font-weight:900;color:#f5a623;">${revenue.toFixed(2)} €</div>
-        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;letter-spacing:0.06em;">Umsatz</div>
+        <div style="font-size:0.7rem;color:#7a7468;text-transform:uppercase;">Umsatz</div>
       </div>
     </div>
-
     ${section('🚚 Food Truck', truck, '#f5a623')}
     ${section('🍽️ Kantine', kantine, '#3ecf8e')}
-
     <p style="text-align:center;color:#7a7468;font-size:0.75rem;margin-top:32px;">Indernational · Vielfalt die schmeckt</p>
   </div>
 </body></html>`;
@@ -89,7 +84,7 @@ module.exports = async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.RESEND_API_KEY}` },
       body: JSON.stringify({
-        from: 'Indernational <onboarding@resend.dev>',
+        from: 'Indernational <vorbestellungen@indernational.laendspotter.com>',
         to: [reportEmail],
         subject: `📊 Tagesbericht ${dateStr} — ${all.length} Bestellungen`,
         html
