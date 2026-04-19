@@ -1079,7 +1079,10 @@ async function saveMenu() {
   payload.fr_menu1_var2=document.getElementById('inp_fr_menu1_var2')?.value.trim()||'';
   payload.fr_menu2_var1=document.getElementById('inp_fr_menu2_var1')?.value.trim()||'';
   payload.fr_menu2_var2=document.getElementById('inp_fr_menu2_var2')?.value.trim()||'';
-  const { error } = await db.from('menus').upsert(payload,{onConflict:'typ,woche_start'});
+  const { data: existing } = await db.from('menus').select('id').eq('typ',payload.typ).eq('woche_start',payload.woche_start).maybeSingle();
+  let error;
+  if (existing) { const r = await db.from('menus').update(payload).eq('id',existing.id); error = r.error; }
+  else { const r = await db.from('menus').insert(payload); error = r.error; }
   btn.disabled=false; btn.textContent='Speichern';
   if (error) showToast('Fehler beim Speichern.'); else showToast('✓ Menü gespeichert!');
 }
