@@ -67,7 +67,7 @@
   <div class="week-grid" id="weekGrid"></div>
 
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-  <div class="version-footer">ver 1.5.1</div>
+  <div class="version-footer">ver 1.5.2</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -86,14 +86,17 @@
       return d.toISOString().split('T')[0];
     }
 
-    // Freitag ab 20:00 Uhr → nächste Woche anzeigen
+    // Fr ≥20h, Sa, So → nächste Woche anzeigen
     function getDisplayDate() {
       const now = new Date();
-      const isFriday = now.getDay() === 5;
+      const dow = now.getDay(); // 0=So, 5=Fr, 6=Sa
       const isAfter20 = now.getHours() >= 20;
-      if (isFriday && isAfter20) {
+      const showNext = dow === 0 || dow === 6 || (dow === 5 && isAfter20);
+      if (showNext) {
         const next = new Date(now);
-        next.setDate(now.getDate() + 3); // +3 Tage = Montag nächste Woche
+        // Tage bis zum nächsten Montag
+        const daysUntilMonday = dow === 0 ? 1 : (8 - dow);
+        next.setDate(now.getDate() + daysUntilMonday);
         return { date: next, isNextWeek: true };
       }
       return { date: now, isNextWeek: false };
@@ -186,9 +189,6 @@
           ${!hasKantine ? '<div class="menu-empty">Kein Menü</div>' : ''}
         </div>`;
 
-        // Bestellbuttons: immer zeigen wenn nicht leer (auch für nächste woche vorbestellbar)
-        const showOrderBtns = !isEmpty;
-
         return `<div class="day-card ${isEmpty?'empty-day':''}" style="animation-delay:${i*0.06}s">
           <div class="day-header">
             <span class="day-name">${DAY_NAMES[dk]}</span>
@@ -198,7 +198,7 @@
             </div>
           </div>
           <div class="day-body">${truckCol}${kantineCol}</div>
-          ${showOrderBtns ? `<div class="order-btns">
+          ${!isEmpty ? `<div class="order-btns">
             <a href="truck.html" class="order-btn truck">🚚 Truck bestellen</a>
             <a href="kantine.html" class="order-btn kantine">🍽️ Kantine bestellen</a>
           </div>` : ''}
