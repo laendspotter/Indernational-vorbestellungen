@@ -18,6 +18,7 @@
     .logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;color:#f2efeb;margin-bottom:12px}
     h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:900;letter-spacing:-0.02em;margin-bottom:6px}
     .week-label{color:var(--muted);font-size:0.88rem}
+    .next-week-badge{display:inline-block;margin-top:6px;font-size:0.72rem;font-weight:700;padding:3px 10px;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);color:var(--truck);border-radius:50px}
     .section-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;width:100%;max-width:780px}
     .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
     .week-grid{width:100%;max-width:780px;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;position:relative;z-index:1}
@@ -59,13 +60,14 @@
     <div class="logo">⬡ Indernational</div>
     <h1>Wochenmenü</h1>
     <div class="week-label" id="weekLabel">KW wird geladen…</div>
+    <div id="nextWeekBadge" style="display:none;"><span class="next-week-badge">📅 Vorschau nächste Woche</span></div>
   </div>
 
   <div class="section-title" id="truckTitle" style="display:none">🚚 Food Truck & 🍽️ Kantine</div>
   <div class="week-grid" id="weekGrid"></div>
 
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-  <div class="version-footer">ver 1.5.0</div>
+  <div class="version-footer">ver 1.5.1</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -82,6 +84,19 @@
       const day = d.getDay();
       d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
       return d.toISOString().split('T')[0];
+    }
+
+    // Freitag ab 20:00 Uhr → nächste Woche anzeigen
+    function getDisplayDate() {
+      const now = new Date();
+      const isFriday = now.getDay() === 5;
+      const isAfter20 = now.getHours() >= 20;
+      if (isFriday && isAfter20) {
+        const next = new Date(now);
+        next.setDate(now.getDate() + 3); // +3 Tage = Montag nächste Woche
+        return { date: next, isNextWeek: true };
+      }
+      return { date: now, isNextWeek: false };
     }
 
     function getKW(dateStr) {
@@ -102,11 +117,18 @@
     }
 
     async function loadMenu() {
-      const today = new Date();
-      const weekStart = getWeekStart(today);
+      const { date: displayDate, isNextWeek } = getDisplayDate();
+      const weekStart = getWeekStart(displayDate);
       const kw = getKW(weekStart);
-      const year = today.getFullYear();
+      const year = displayDate.getFullYear();
+
       document.getElementById('weekLabel').textContent = `KW ${kw} · ${year}`;
+      if (isNextWeek) {
+        document.getElementById('nextWeekBadge').style.display = 'block';
+      }
+
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
 
       const [{ data: truck }, { data: kantine }] = await Promise.all([
         db.from('menus').select('*').eq('typ','truck').eq('woche_start', weekStart).maybeSingle(),
@@ -119,7 +141,6 @@
       }
 
       document.getElementById('truckTitle').style.display = 'flex';
-      const todayStr = today.toISOString().split('T')[0];
       const dow = today.getDay();
 
       const grid = document.getElementById('weekGrid');
@@ -165,6 +186,9 @@
           ${!hasKantine ? '<div class="menu-empty">Kein Menü</div>' : ''}
         </div>`;
 
+        // Bestellbuttons: immer zeigen wenn nicht leer (auch für nächste woche vorbestellbar)
+        const showOrderBtns = !isEmpty;
+
         return `<div class="day-card ${isEmpty?'empty-day':''}" style="animation-delay:${i*0.06}s">
           <div class="day-header">
             <span class="day-name">${DAY_NAMES[dk]}</span>
@@ -174,7 +198,7 @@
             </div>
           </div>
           <div class="day-body">${truckCol}${kantineCol}</div>
-          ${!isEmpty && (dow === 0 || (i >= dow - 1)) ? `<div class="order-btns">
+          ${showOrderBtns ? `<div class="order-btns">
             <a href="truck.html" class="order-btn truck">🚚 Truck bestellen</a>
             <a href="kantine.html" class="order-btn kantine">🍽️ Kantine bestellen</a>
           </div>` : ''}

@@ -240,6 +240,26 @@
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ── HILFSFUNKTION: Freitag ab 20 Uhr → nächste Woche anzeigen ──
+function getDisplayDate() {
+  const now = new Date();
+  const isFriday = now.getDay() === 5;
+  const isAfter20 = now.getHours() >= 20;
+  if (isFriday && isAfter20) {
+    const next = new Date(now);
+    next.setDate(now.getDate() + 3); // +3 = Montag nächste Woche
+    return { date: next, isNextWeek: true };
+  }
+  return { date: now, isNextWeek: false };
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().split('T')[0];
+}
+
 // ── AUTH ──
 db.auth.getSession().then(({ data: { session } }) => {
   const nav = document.getElementById('authNav');
@@ -283,7 +303,6 @@ async function loadNextOrder(email) {
     <span style="color:var(--muted);font-size:1.1rem;">›</span>
   </div>`;
 
-  // live status tracking
   db.channel('index-order-status')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'vorbestellungen', filter: `id=eq.${order.id}` }, (payload) => {
       const o = payload.new;
@@ -361,19 +380,28 @@ async function loadLiveCounter() {
 
 // ── TAGESANGEBOT ──
 async function loadTagesangebot() {
-  const today = new Date();
-  const dow = today.getDay();
-  if (dow === 0 || dow === 6) return;
+  const { date: displayDate, isNextWeek } = getDisplayDate();
+  const displayDow = displayDate.getDay();
+
+  // Wochenende → nichts anzeigen (außer Freitag nach 20h → Montag nächste Woche)
+  if (displayDow === 0 || displayDow === 6) return;
+
   const dayKeys = ['so','mo','di','mi','do','fr','sa'];
-  const dk = dayKeys[dow];
-  const monday = new Date(today); monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  const weekStart = monday.toISOString().split('T')[0];
+  const dk = dayKeys[displayDow];
+
+  const weekStart = getWeekStart(displayDate);
+
   const [{ data: truckMenu }, { data: kantineMenu }] = await Promise.all([
     db.from('menus').select('*').eq('typ','truck').eq('woche_start',weekStart).maybeSingle(),
     db.from('menus').select('*').eq('typ','kantine').eq('woche_start',weekStart).maybeSingle()
   ]);
+
   if (!truckMenu && !kantineMenu) return;
-  const dayName = today.toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit' });
+
+  const dayName = isNextWeek
+    ? displayDate.toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit' }) + ' (nächste Woche)'
+    : displayDate.toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit' });
+
   const renderMenus = (data) => {
     if (!data) return '<div style="color:var(--muted);font-size:0.82rem;">Kein Menü eingetragen</div>';
     const m1 = data[`${dk}_menu1`]; const m2 = data[`${dk}_menu2`];
@@ -385,7 +413,10 @@ async function loadTagesangebot() {
     html += '</div>';
     return html;
   };
-  document.getElementById('tagesangebotContainer').innerHTML = `<div class="tagesangebot"><div class="tagesangebot-header"><span class="tagesangebot-title">🍴 Heute bei uns</span><span class="tagesangebot-date">${dayName}</span></div><div class="tagesangebot-grid"><div class="tagesangebot-item"><div class="tagesangebot-bereich">🚚 Food Truck</div>${renderMenus(truckMenu)}</div><div class="tagesangebot-item"><div class="tagesangebot-bereich">🍽️ Kantine</div>${renderMenus(kantineMenu)}</div></div></div>`;
+
+  const title = isNextWeek ? '📅 Nächste Woche – Montag' : '🍴 Heute bei uns';
+
+  document.getElementById('tagesangebotContainer').innerHTML = `<div class="tagesangebot"><div class="tagesangebot-header"><span class="tagesangebot-title">${title}</span><span class="tagesangebot-date">${dayName}</span></div><div class="tagesangebot-grid"><div class="tagesangebot-item"><div class="tagesangebot-bereich">🚚 Food Truck</div>${renderMenus(truckMenu)}</div><div class="tagesangebot-item"><div class="tagesangebot-bereich">🍽️ Kantine</div>${renderMenus(kantineMenu)}</div></div></div>`;
 }
 
 // ── PWA ──
@@ -421,6 +452,6 @@ checkAnnouncement();
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.getElementById('themeToggle').textContent=n==='dark'?'☀️':'🌙';}
 if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
   </script>
-  <div class="version-footer">ver 1.6.0</div>
+  <div class="version-footer">ver 1.6.1</div>
 </body>
 </html>
