@@ -1,9 +1,8 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { setCors, ALLOWED_ORIGINS } = require('./_cors');
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -25,8 +24,8 @@ module.exports = async (req, res) => {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: `${req.headers.origin || bestellung.origin}/success.html?session_id={CHECKOUT_SESSION_ID}&typ=${bestellung.typ}`,
-      cancel_url: `${req.headers.origin || bestellung.origin}/${bestellung.typ}.html`,
+      success_url: `${ALLOWED_ORIGINS.includes(req.headers.origin) ? req.headers.origin : ALLOWED_ORIGINS[0]}/success.html?session_id={CHECKOUT_SESSION_ID}&typ=${bestellung.typ}`,
+      cancel_url: `${ALLOWED_ORIGINS.includes(req.headers.origin) ? req.headers.origin : ALLOWED_ORIGINS[0]}/${bestellung.typ}.html`,
       metadata: {
         name: bestellung.name,
         datum: bestellung.datum,
