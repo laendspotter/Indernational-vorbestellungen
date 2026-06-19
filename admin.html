@@ -380,16 +380,20 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let statsPeriod = 7;
 
 // ── AUTH ──
-function login() {
+async function login() {
   const pw = document.getElementById('pwInput').value;
-  if (pw === ADMIN_PASSWORDS.main) {
-    sessionStorage.setItem('main_auth','1');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    initAdmin();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-  }
+  try {
+    const r = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'main', password: pw }) });
+    const d = await r.json();
+    if (d.ok) {
+      sessionStorage.setItem('main_auth','1');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      initAdmin();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  } catch(e) { document.getElementById('loginError').style.display = 'block'; }
 }
 function logout() { sessionStorage.removeItem('main_auth'); document.getElementById('adminPanel').style.display='none'; document.getElementById('loginScreen').style.display='flex'; document.getElementById('pwInput').value=''; }
 if (sessionStorage.getItem('main_auth')) { document.getElementById('loginScreen').style.display='none'; document.getElementById('adminPanel').style.display='block'; initAdmin(); }

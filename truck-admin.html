@@ -602,16 +602,20 @@ const DAY_NAMES_FULL = { mo:'Montag', di:'Dienstag', mi:'Mittwoch', do:'Donnerst
 let reconnectDelay = 2000, reconnectTimer = null;
 
 // ── AUTH ──
-function login() {
+async function login() {
   const pw = document.getElementById('pwInput').value;
-  if (pw === ADMIN_PASSWORDS.truck) {
-    sessionStorage.setItem('truck_auth','1');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    initAdmin();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-  }
+  try {
+    const r = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'truck', password: pw }) });
+    const d = await r.json();
+    if (d.ok) {
+      sessionStorage.setItem('truck_auth','1');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      initAdmin();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  } catch(e) { document.getElementById('loginError').style.display = 'block'; }
 }
 function logout() {
   sessionStorage.removeItem('truck_auth');
@@ -1109,11 +1113,8 @@ function processImage(file) {
 }
 async function runOCR() {
   setOcrStatus('loading','KI analysiert die Speisekarte…');
-  const ws=new Date(currentWeekStart+'T00:00:00');
-  const dayDates=DAYS.map((dk,i)=>{const d=new Date(ws);d.setDate(d.getDate()+i);return `${DAY_NAMES_FULL[dk]} (${d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})})`;}).join(', ');
-  const prompt=`Du siehst einen Speiseplan. Extrahiere für jeden Wochentag (Montag bis Freitag): Menü 1 = Fleischgericht, Menü 2 = Vegetarisch/Vegan. Die Wochentage: ${dayDates}. Antworte NUR mit JSON ohne Markdown:\n{"mo":{"menu1":"...","menu2":"...","preis1":0,"preis2":0},"di":{...},"mi":{...},"do":{...},"fr":{...}}`;
   try {
-    const response=await fetch('/api/ocr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageBase64:currentImageBase64,imageType:currentImageType,prompt})});
+    const response=await fetch('/api/ocr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageBase64:currentImageBase64,imageType:currentImageType,weekStart:currentWeekStart})});
     const data=await response.json();
     if(!response.ok) throw new Error(data.error?.message||'API Fehler');
     const text=data.content?.find(b=>b.type==='text')?.text||'';

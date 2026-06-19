@@ -27,6 +27,10 @@ module.exports = async (req, res) => {
     const session = event.data.object;
     const m = session.metadata;
     const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+    const { data: existing } = await db.from('vorbestellungen').select('id').eq('stripe_session_id', session.id).maybeSingle();
+    if (existing) return res.status(200).json({ received: true, duplicate: true });
+
     await db.from('vorbestellungen').insert({
       name: m.name, datum: m.datum, menu: m.menu, typ: m.typ, user_email: m.user_email || null,
       getraenk: m.getraenk, getraenk_preis: parseFloat(m.getraenk_preis),

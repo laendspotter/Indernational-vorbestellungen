@@ -1,13 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
+const { setCors } = require('./_cors');
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { email, date: dateParam } = req.body || {};
-  const reportEmail = email || process.env.REPORT_EMAIL;
+  const { date: dateParam } = req.body || {};
+  const reportEmail = process.env.REPORT_EMAIL;
   if (!reportEmail) return res.status(400).json({ error: 'Keine E-Mail konfiguriert. REPORT_EMAIL env variable setzen.' });
 
   const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
