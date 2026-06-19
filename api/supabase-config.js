@@ -3,7 +3,3 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51TBguZHiA98zVJKpDDaWsHS1SCS9Aei4SVmzr47dbyJPrMPMul8WLQ1q9AtXhrQoj6f7euzBsZJjWQiLmKEluyQJ00vCAsMubF';
 
-const ADMIN_PASSWORDS = {
-  truck: 'truck',
-  kantine: 'kantine'
-};
