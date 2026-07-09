@@ -146,6 +146,31 @@
     .period-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .period-btn.active { background: var(--accent); color: #0b0e1a; border-color: var(--accent); }
 
+    /* UMFRAGEN */
+    .sv-q-row { display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 10px; align-items: start; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .sv-q-opts { grid-column: 1 / -1; }
+    .sv-q-remove { background: transparent; border: 1px solid rgba(224,92,92,0.25); color: var(--error); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; align-self: stretch; }
+    .sv-q-remove:hover { background: rgba(224,92,92,0.1); }
+    .survey-card-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+    .survey-card-top { padding: 16px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .survey-card-info { flex: 1; min-width: 180px; }
+    .survey-card-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; }
+    .survey-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .survey-badge { padding: 2px 9px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+    .survey-badge.live { background: rgba(76,175,125,0.15); color: var(--success); }
+    .survey-badge.scheduled { background: rgba(245,166,35,0.15); color: var(--accent); }
+    .survey-badge.ended { background: rgba(122,116,104,0.15); color: var(--muted); }
+    .survey-badge.inactive { background: rgba(224,92,92,0.12); color: var(--error); }
+    .survey-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .survey-stats-body { border-top: 1px solid var(--border); padding: 18px 20px; display: none; }
+    .survey-stats-body.open { display: block; }
+    .sv-stat-q { margin-bottom: 20px; }
+    .sv-stat-q:last-child { margin-bottom: 0; }
+    .sv-stat-q-text { font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; }
+    .sv-stat-avg { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+    .sv-stat-text-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .sv-stat-text-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; color: var(--text); }
+
     [data-theme="light"] { --bg: #f4f2ee; --surface: #ffffff; --border: #e2dfd8; --text: #1a1816; --muted: #8a8680; }
     [data-theme="dark"] { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --text: #f0ede6; --muted: #7a7468; }
     .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 500; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
@@ -177,6 +202,7 @@
       <button class="tab-btn" id="tabPopups" onclick="showTab('popups')">📢 Popups</button>
       <button class="tab-btn" id="tabAnkuend" onclick="showTab('ankuend')">📣 Ankündigungen</button>
       <button class="tab-btn" id="tabStats" onclick="showTab('stats')">📈 Statistiken</button>
+      <button class="tab-btn" id="tabUmfragen" onclick="showTab('umfragen')">📋 Umfragen</button>
       <button class="tab-btn" id="tabUser" onclick="showTab('user')">👥 Benutzer</button>
       <button class="tab-btn" id="tabGlobal" onclick="showTab('global')">⚙️ Global</button>
     </div>
@@ -303,6 +329,59 @@
       </div>
     </div>
 
+    <!-- UMFRAGEN -->
+    <div id="tabContentUmfragen" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <h3 id="svFormTitle">📋 Neue Umfrage</h3>
+          <span id="svEditHint" style="font-size:0.8rem;color:var(--accent);display:none;">✏️ Bearbeitungsmodus</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <label class="form-label">Titel</label>
+            <input type="text" class="form-input" id="svTitel" placeholder="z.B. Wie hat dir dein Essen geschmeckt?" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Beschreibung (optional)</label>
+            <textarea class="form-input" id="svBeschreibung" placeholder="Kurzer Hinweis für die Teilnehmer…" style="min-height:60px;"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+            <div class="form-row">
+              <label class="form-label">Zielgruppe</label>
+              <select class="form-select" id="svZiel">
+                <option value="beide">🍽 Beide</option>
+                <option value="kantine">🏫 Nur Kantine</option>
+                <option value="truck">🚚 Nur Food Truck</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Von (Start)</label>
+              <input type="date" class="form-input" id="svStart" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Bis (Ende)</label>
+              <input type="date" class="form-input" id="svEnd" />
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top:6px;">Fragen</div>
+          <div id="svQuestions"></div>
+          <button class="table-action" onclick="addSurveyQuestion()" style="margin-top:6px;">＋ Frage hinzufügen</button>
+
+          <div style="display:flex;gap:14px;align-items:center;margin-top:22px;flex-wrap:wrap;">
+            <button class="save-btn" onclick="saveSurvey()" id="svSaveBtn">Umfrage speichern</button>
+            <button class="table-action" onclick="resetSurveyForm()" id="svCancelBtn" style="display:none;padding:12px 20px;">Abbrechen</button>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);cursor:pointer;">
+              <input type="checkbox" id="svAktiv" checked style="width:16px;height:16px;accent-color:var(--accent);" /> Sofort aktiv
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Umfragen & Statistik</div>
+      <div id="surveyList"><div style="color:var(--muted);font-size:0.88rem;">Lade Umfragen…</div></div>
+    </div>
+
     <!-- USER MANAGEMENT -->
     <div id="tabContentUser" style="display:none;">
       <div class="card">
@@ -404,7 +483,7 @@ async function initAdmin() {
 
 // ── TABS ──
 function showTab(tab) {
-  ['uebersicht','popups','ankuend','stats','user','global'].forEach(t => {
+  ['uebersicht','popups','ankuend','stats','umfragen','user','global'].forEach(t => {
     const el = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
     if (el) el.style.display = t === tab ? 'block' : 'none';
     const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -413,6 +492,7 @@ function showTab(tab) {
   if (tab === 'popups') loadPopups();
   if (tab === 'ankuend') loadAnkuendigungen();
   if (tab === 'stats') loadStats();
+  if (tab === 'umfragen') loadSurveys();
   if (tab === 'user') loadUsers();
   if (tab === 'global') loadGlobalSettings();
 }
@@ -689,6 +769,214 @@ async function saveGlobalSettings() {
   await db.from('global_einstellungen').upsert({ id:1, kontakt_email: email, impressum }, { onConflict:'id' });
   showToast('✓ Einstellungen gespeichert!');
 }
+
+// ── UMFRAGEN ──
+let editingSurveyId = null;
+let _surveyCache = {};
+
+function addSurveyQuestion(prefill) {
+  const container = document.getElementById('svQuestions');
+  const row = document.createElement('div');
+  row.className = 'sv-q-row';
+  row.dataset.qid = (prefill && prefill.id) ? prefill.id : ('q' + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  const typ = (prefill && prefill.typ) || 'rating';
+  const text = (prefill && prefill.text) || '';
+  const opts = (prefill && Array.isArray(prefill.optionen)) ? prefill.optionen.join(', ') : '';
+  const ea = s => esc(s).replace(/"/g,'&quot;');
+  row.innerHTML = `
+    <input class="form-input" data-qtext placeholder="Fragetext…" value="${ea(text)}" />
+    <select class="form-select" data-qtype onchange="toggleSurveyOptField(this)">
+      <option value="rating"${typ==='rating'?' selected':''}>⭐ Bewertung (1–5)</option>
+      <option value="choice"${typ==='choice'?' selected':''}>🔘 Auswahl</option>
+      <option value="text"${typ==='text'?' selected':''}>📝 Freitext</option>
+    </select>
+    <button class="sv-q-remove" onclick="removeSurveyQuestion(this)">✕</button>
+    <input class="form-input sv-q-opts" data-qopts placeholder="Optionen mit Komma trennen, z.B. Sehr gut, Gut, Geht so" value="${ea(opts)}" style="${typ==='choice'?'':'display:none;'}" />`;
+  container.appendChild(row);
+}
+function toggleSurveyOptField(select) {
+  const optField = select.closest('.sv-q-row').querySelector('[data-qopts]');
+  optField.style.display = select.value === 'choice' ? 'block' : 'none';
+}
+function removeSurveyQuestion(btn) { btn.closest('.sv-q-row').remove(); }
+
+function collectSurveyQuestions() {
+  const questions = [];
+  document.querySelectorAll('#svQuestions .sv-q-row').forEach(row => {
+    const text = row.querySelector('[data-qtext]').value.trim();
+    const typ = row.querySelector('[data-qtype]').value;
+    if (!text) return;
+    const q = { id: row.dataset.qid, text, typ };
+    if (typ === 'choice') q.optionen = row.querySelector('[data-qopts]').value.split(',').map(s=>s.trim()).filter(Boolean);
+    questions.push(q);
+  });
+  return questions;
+}
+
+async function saveSurvey() {
+  const titel = document.getElementById('svTitel').value.trim();
+  const beschreibung = document.getElementById('svBeschreibung').value.trim();
+  const ziel = document.getElementById('svZiel').value;
+  const start_datum = document.getElementById('svStart').value || null;
+  const end_datum = document.getElementById('svEnd').value || null;
+  const aktiv = document.getElementById('svAktiv').checked;
+  const fragen = collectSurveyQuestions();
+
+  if (!titel) { showToast('Titel ist Pflichtfeld.'); return; }
+  if (fragen.length === 0) { showToast('Mindestens eine Frage mit Text nötig.'); return; }
+  const badChoice = fragen.find(q => q.typ === 'choice' && (!q.optionen || q.optionen.length < 2));
+  if (badChoice) { showToast('Auswahl-Fragen brauchen mind. 2 Optionen.'); return; }
+  if (start_datum && end_datum && end_datum < start_datum) { showToast('Enddatum liegt vor Startdatum.'); return; }
+
+  const payload = { titel, beschreibung, ziel, start_datum, end_datum, aktiv, fragen };
+  let error;
+  if (editingSurveyId) ({ error } = await db.from('umfragen').update(payload).eq('id', editingSurveyId));
+  else ({ error } = await db.from('umfragen').insert(payload));
+  if (error) { showToast('Fehler: ' + error.message); return; }
+  showToast(editingSurveyId ? '✓ Umfrage aktualisiert!' : '✓ Umfrage erstellt!');
+  resetSurveyForm();
+  loadSurveys();
+}
+
+function resetSurveyForm() {
+  editingSurveyId = null;
+  document.getElementById('svTitel').value = '';
+  document.getElementById('svBeschreibung').value = '';
+  document.getElementById('svZiel').value = 'beide';
+  document.getElementById('svStart').value = '';
+  document.getElementById('svEnd').value = '';
+  document.getElementById('svAktiv').checked = true;
+  document.getElementById('svQuestions').innerHTML = '';
+  addSurveyQuestion();
+  document.getElementById('svFormTitle').textContent = '📋 Neue Umfrage';
+  document.getElementById('svEditHint').style.display = 'none';
+  document.getElementById('svCancelBtn').style.display = 'none';
+  document.getElementById('svSaveBtn').textContent = 'Umfrage speichern';
+}
+
+async function loadSurveys() {
+  if (document.getElementById('svQuestions').children.length === 0) addSurveyQuestion();
+
+  const { data } = await db.from('umfragen').select('*').order('created_at', { ascending: false });
+  const container = document.getElementById('surveyList');
+  if (!data || !data.length) { container.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;">Noch keine Umfragen. Erstelle oben deine erste.</div>'; return; }
+
+  const { data: resp } = await db.from('umfrage_antworten').select('umfrage_id');
+  const counts = {};
+  (resp||[]).forEach(r => { counts[r.umfrage_id] = (counts[r.umfrage_id]||0)+1; });
+
+  const today = new Date().toISOString().split('T')[0];
+  _surveyCache = {};
+  container.innerHTML = data.map(s => {
+    _surveyCache[s.id] = s;
+    let badge;
+    if (!s.aktiv) badge = '<span class="survey-badge inactive">Inaktiv</span>';
+    else if (s.start_datum && s.start_datum > today) badge = '<span class="survey-badge scheduled">Geplant</span>';
+    else if (s.end_datum && s.end_datum < today) badge = '<span class="survey-badge ended">Beendet</span>';
+    else badge = '<span class="survey-badge live">● Live</span>';
+    const zielLabel = { beide:'🍽 Beide', kantine:'🏫 Kantine', truck:'🚚 Truck' }[s.ziel] || s.ziel;
+    const period = (s.start_datum ? fmtDate(s.start_datum) : '∞') + ' – ' + (s.end_datum ? fmtDate(s.end_datum) : '∞');
+    const c = counts[s.id] || 0;
+    return `<div class="survey-card-item">
+      <div class="survey-card-top">
+        <div class="survey-card-info">
+          <div class="survey-card-title">${esc(s.titel||'(kein Titel)')} ${badge}</div>
+          <div class="survey-card-meta">
+            <span>${zielLabel}</span><span>📅 ${period}</span><span>❓ ${(s.fragen||[]).length} Fragen</span><span>💬 ${c} Antworten</span>
+          </div>
+        </div>
+        <div class="survey-card-actions">
+          <button class="popup-toggle ${s.aktiv?'active':'inactive'}" onclick="toggleSurveyActive('${s.id}',${s.aktiv})">${s.aktiv?'✓ Aktiv':'Inaktiv'}</button>
+          <button class="table-action" onclick="editSurvey('${s.id}')">✏️ Bearbeiten</button>
+          <button class="table-action" onclick="toggleSurveyStats('${s.id}',this)">📊 Statistik</button>
+          <button class="popup-delete" onclick="deleteSurvey('${s.id}')">✕</button>
+        </div>
+      </div>
+      <div class="survey-stats-body" id="svStats_${s.id}"></div>
+    </div>`;
+  }).join('');
+}
+
+function editSurvey(id) {
+  const s = _surveyCache[id];
+  if (!s) return;
+  editingSurveyId = id;
+  document.getElementById('svTitel').value = s.titel || '';
+  document.getElementById('svBeschreibung').value = s.beschreibung || '';
+  document.getElementById('svZiel').value = s.ziel || 'beide';
+  document.getElementById('svStart').value = s.start_datum || '';
+  document.getElementById('svEnd').value = s.end_datum || '';
+  document.getElementById('svAktiv').checked = !!s.aktiv;
+  document.getElementById('svQuestions').innerHTML = '';
+  (s.fragen||[]).forEach(q => addSurveyQuestion(q));
+  if (!(s.fragen||[]).length) addSurveyQuestion();
+  document.getElementById('svFormTitle').textContent = '✏️ Umfrage bearbeiten';
+  document.getElementById('svEditHint').style.display = 'inline';
+  document.getElementById('svCancelBtn').style.display = 'inline-block';
+  document.getElementById('svSaveBtn').textContent = 'Änderungen speichern';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function toggleSurveyActive(id, current) {
+  await db.from('umfragen').update({ aktiv: !current }).eq('id', id);
+  showToast(!current ? '✓ Umfrage aktiviert' : '○ Umfrage deaktiviert');
+  loadSurveys();
+}
+
+async function deleteSurvey(id) {
+  if (!confirm('Umfrage inklusive aller Antworten unwiderruflich löschen?')) return;
+  await db.from('umfrage_antworten').delete().eq('umfrage_id', id);
+  await db.from('umfragen').delete().eq('id', id);
+  showToast('✓ Umfrage gelöscht');
+  loadSurveys();
+}
+
+async function toggleSurveyStats(id, btn) {
+  const body = document.getElementById('svStats_' + id);
+  if (body.classList.contains('open')) { body.classList.remove('open'); return; }
+  body.classList.add('open');
+  body.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Lade Antworten…</div>';
+  const { data } = await db.from('umfrage_antworten').select('*').eq('umfrage_id', id);
+  renderSurveyStats(_surveyCache[id], data || [], body);
+}
+
+function renderSurveyStats(survey, responses, body) {
+  if (!responses.length) { body.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Noch keine Antworten.</div>'; return; }
+  const fragen = survey.fragen || [];
+  const truck = responses.filter(r=>r.typ==='truck').length;
+  const kantine = responses.filter(r=>r.typ==='kantine').length;
+  let html = `<div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">Gesamt: <b style="color:var(--text);">${responses.length}</b> Teilnahmen · 🚚 ${truck} Truck · 🏫 ${kantine} Kantine</div>`;
+  fragen.forEach((q, idx) => {
+    const answers = responses.map(r => r.antworten ? r.antworten[q.id] : undefined).filter(a => a !== undefined && a !== null && a !== '');
+    html += `<div class="sv-stat-q"><div class="sv-stat-q-text">${idx+1}. ${esc(q.text||'')}</div>`;
+    if (q.typ === 'rating') {
+      const nums = answers.map(Number).filter(n=>!isNaN(n));
+      const avg = nums.length ? (nums.reduce((a,b)=>a+b,0)/nums.length) : 0;
+      const dist = [1,2,3,4,5].map(n => nums.filter(x=>x===n).length);
+      const maxD = Math.max(...dist, 1);
+      html += `<div style="margin-bottom:10px;"><span class="sv-stat-avg">${avg.toFixed(1)} / 5</span> <span style="color:var(--muted);font-size:0.8rem;">(${nums.length} Bewertungen)</span></div>`;
+      html += [5,4,3,2,1].map(n => {
+        const cnt = dist[n-1];
+        return `<div class="bar-row"><div class="bar-label">${'⭐'.repeat(n)}</div><div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxD*100).toFixed(0)}%"></div></div><div class="bar-val">${cnt}</div></div>`;
+      }).join('');
+    } else if (q.typ === 'choice') {
+      const counts = {};
+      (q.optionen||[]).forEach(o => counts[o] = 0);
+      answers.forEach(a => { counts[a] = (counts[a]||0)+1; });
+      const maxC = Math.max(...Object.values(counts), 1);
+      html += Object.entries(counts).map(([o,cnt]) => {
+        const pct = answers.length ? (cnt/answers.length*100).toFixed(0) : 0;
+        return `<div class="bar-row"><div class="bar-label" style="min-width:120px;">${esc(o)}</div><div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxC*100).toFixed(0)}%"></div></div><div class="bar-val">${cnt} · ${pct}%</div></div>`;
+      }).join('');
+    } else {
+      html += `<div class="sv-stat-text-list">${answers.length ? answers.map(a=>`<div class="sv-stat-text-item">${esc(a)}</div>`).join('') : '<div style="color:var(--muted);font-size:0.82rem;">Keine Textantworten.</div>'}</div>`;
+    }
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function fmtDate(d) { try { return new Date(d+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); } catch(e){ return d; } }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
