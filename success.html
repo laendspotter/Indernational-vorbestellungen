@@ -12,8 +12,8 @@
     :root { --bg: #0b0e1a; --surface: #131726; --border: #1e2236; --accent: #f5a623; --text: #f0ede6; --muted: #7a7468; --success: #4caf7d; --loyalty: #a78bfa; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px 80px; }
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 60%); pointer-events: none; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; max-width: 440px; width: 100%; text-align: center; position: relative; z-index: 1; animation: fadeUp 0.6s ease both; }
-    .check { font-size: 3rem; display: block; margin-bottom: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; max-width: 440px; width: 100%; text-align: center; position: relative; z-index: 1; animation: fadeUp 0.6s ease both; box-shadow: 0 20px 50px -20px rgba(0,0,0,0.5); }
+    .check { font-size: 3rem; display: block; margin-bottom: 16px; filter: drop-shadow(0 0 14px rgba(76,175,125,0.35)); }
     h1 { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 900; margin-bottom: 8px; }
     .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
     .order-details { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left; }
@@ -37,12 +37,10 @@
     .order-status-live.vorb { color: #f5c842; font-weight: 600; }
     .order-status-live.done { color: var(--success); font-weight: 700; }
 
-    /* WALLET BUTTONS */
-    .wallet-row { display: flex; gap: 8px; margin-top: 10px; }
-    .wallet-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
-    .wallet-btn:hover { opacity: 0.85; }
-    .wallet-btn.apple { background: linear-gradient(135deg, #000, #1a1a2e); color: white; }
-    .wallet-btn.google { background: linear-gradient(135deg, #4285f4, #34a853); color: white; }
+    /* SECONDARY ACTIONS */
+    .action-row { display: flex; gap: 8px; margin-top: 10px; }
+    .action-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 6px; transition: border-color 0.2s, color 0.2s; }
+    .action-btn:hover { border-color: var(--accent); color: var(--text); }
 
     /* LOYALTY */
     .loyalty-box { display: none; background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(245,166,35,0.07)); border: 1px solid rgba(167,139,250,0.35); border-radius: 14px; padding: 20px; margin-top: 20px; text-align: left; }
@@ -142,15 +140,9 @@
       <a id="nochmalBtn" href="kantine.html" class="btn" style="flex:1;text-align:center;">Nochmal bestellen →</a>
     </div>
 
-    <!-- WALLET BUTTONS -->
-    <div class="wallet-row">
-      <button class="wallet-btn apple" onclick="downloadAppleWallet()">🍎 Apple Wallet</button>
-      <button class="wallet-btn google" onclick="downloadGoogleWallet()">G Google Wallet</button>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button id="calendarBtn" onclick="addToCalendar()" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(66,133,244,0.4);color:#4285f4;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;display:none;">📅 Kalender</button>
-      <button id="shareBtn" onclick="shareOrder()" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;display:none;">🔗 Teilen</button>
+    <div class="action-row">
+      <button id="calendarBtn" class="action-btn" onclick="addToCalendar()">📅 Kalender</button>
+      <button id="shareBtn" class="action-btn" onclick="shareOrder()">🔗 Teilen</button>
     </div>
   </div>
 
@@ -196,8 +188,8 @@ async function init() {
     const qrData = JSON.stringify({ id: order.id, name: order.name, datum: order.datum, menu: order.menu, typ: order.typ, getraenk: order.getraenk || '' });
     document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
     document.getElementById('qrSection').style.display = 'block';
-    document.getElementById('calendarBtn').style.display = 'block';
-    document.getElementById('shareBtn').style.display = 'block';
+    document.getElementById('calendarBtn').style.display = 'flex';
+    document.getElementById('shareBtn').style.display = 'flex';
     document.getElementById('nochmalBtn').href = order.typ === 'truck' ? 'truck.html' : 'kantine.html';
     window._currentOrder = order;
 
@@ -379,18 +371,6 @@ function shareOrder() {
   const text = `🍴 Ich habe ${o.menu==='menu1'?'Menü 1':'Menü 2'} bei Indernational vorbestellt`;
   if (navigator.share) { navigator.share({ title:'Indernational Bestellung', text }); }
   else { navigator.clipboard.writeText(text); showToast('✓ Link kopiert!'); }
-}
-
-function downloadAppleWallet() {
-  const o = window._currentOrder; if(!o) return;
-  const dateStr = o.datum ? new Date(o.datum+'T00:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'}) : '–';
-  alert(`Apple Wallet Pass:\n${o.name || '–'} · ${o.menu==='menu1'?'Menü 1':'Menü 2'} · ${dateStr}${o.zeitslot_uhrzeit?' · ⏰ '+o.zeitslot_uhrzeit+' Uhr':''}\n\nFür echte PKPass-Generierung wird ein Apple Developer Zertifikat auf Server-Seite benötigt.`);
-}
-
-function downloadGoogleWallet() {
-  const o = window._currentOrder; if(!o) return;
-  const dateStr = o.datum ? new Date(o.datum+'T00:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'}) : '–';
-  alert(`Google Wallet Pass:\n${o.name || '–'} · ${o.menu==='menu1'?'Menü 1':'Menü 2'} · ${dateStr}${o.zeitslot_uhrzeit?' · ⏰ '+o.zeitslot_uhrzeit+' Uhr':''}\n\nFür echte JWT-Generierung wird ein Google Service Account auf Server-Seite benötigt.`);
 }
 
 function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }

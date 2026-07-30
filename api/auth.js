@@ -1,4 +1,15 @@
+const crypto = require('crypto');
 const { setCors } = require('./_cors');
+
+function timingSafeEqual(a, b) {
+  const bufA = Buffer.from(String(a));
+  const bufB = Buffer.from(String(b));
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 module.exports = async (req, res) => {
   setCors(req, res);
@@ -18,7 +29,7 @@ module.exports = async (req, res) => {
   const expected = envMap[role];
   if (!expected) return res.status(400).json({ ok: false });
 
-  if (password === expected) {
+  if (timingSafeEqual(password, expected)) {
     return res.status(200).json({ ok: true });
   }
   return res.status(401).json({ ok: false });
