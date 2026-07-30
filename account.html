@@ -112,12 +112,14 @@
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let userEmail = null;
+let accessToken = null;
 let allOrders = [];
 
 async function init() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
   userEmail = session.user.email;
+  accessToken = session.access_token;
   const name = session.user.user_metadata?.full_name || userEmail.split('@')[0];
   document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
   document.getElementById('profileName').textContent = name;
@@ -219,7 +221,7 @@ async function saveChange(orderId, typ) {
   const selectedOpt = drinkSel.options[drinkSel.selectedIndex];
   const drinkName = drinkSel.value;
   const drinkPreis = drinkName ? parseFloat(selectedOpt.dataset.preis || 0) : 0;
-  const resp = await fetch('/api/update-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: orderId, user_email: userEmail, menu: menuSel.value, getraenk: drinkName, getraenk_preis: drinkPreis }) });
+  const resp = await fetch('/api/update-order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` }, body: JSON.stringify({ order_id: orderId, menu: menuSel.value, getraenk: drinkName, getraenk_preis: drinkPreis }) });
   const data = await resp.json();
   btn.disabled = false; btn.textContent = 'Änderung speichern';
   if (data.ok) { showToast('✓ Bestellung aktualisiert!'); await loadOrders(); }
@@ -239,7 +241,7 @@ async function executeCancel() {
   btn.disabled = true; btn.textContent = 'Stornieren…';
   const cancelId = pendingCancelId;
   closeConfirm();
-  const resp = await fetch('/api/cancel-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: cancelId, user_email: userEmail }) });
+  const resp = await fetch('/api/cancel-order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` }, body: JSON.stringify({ order_id: cancelId }) });
   const data = await resp.json();
   btn.disabled = false; btn.textContent = 'Ja, stornieren';
   if (data.ok) { showToast(data.refunded ? '✓ Storniert & Betrag wird erstattet' : '✓ Bestellung storniert'); await loadOrders(); }

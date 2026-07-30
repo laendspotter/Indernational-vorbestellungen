@@ -6,10 +6,18 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { order_id, user_email, menu, getraenk, getraenk_preis } = req.body;
-  if (!order_id || !user_email) return res.status(400).json({ error: 'Fehlende Parameter' });
+  const { order_id, menu, getraenk, getraenk_preis } = req.body;
+  if (!order_id) return res.status(400).json({ error: 'Fehlende Parameter' });
+
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Nicht angemeldet' });
 
   const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+  const { data: { user }, error: authErr } = await db.auth.getUser(token);
+  if (authErr || !user) return res.status(401).json({ error: 'Nicht angemeldet' });
+  const user_email = user.email;
 
   // verify ownership
   const { data: order } = await db.from('vorbestellungen').select('*').eq('id', order_id).eq('user_email', user_email).single();
